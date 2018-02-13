@@ -1,0 +1,20 @@
+{
+  "authors": [
+    {
+      "name": "Loïc PETTITI",
+      "email": "lpettiti@eukles.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "MailevaApiAdapter\\": ""
+    }
+  },
+  "require": {
+  },
+  "require-dev": {
+    "codeception/codeception": "2.3.3"
+  }
+}
+
