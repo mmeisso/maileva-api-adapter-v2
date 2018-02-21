@@ -1,0 +1,2259 @@
+swagger: '2.0'
+info:
+  version: '1.9'
+  title: Maileva / Envoi et Suivi de Lettre Recommandée En Ligne distribuée par le facteur
+  description: >-
+    API pour envoyer et suivre des Lettres Recommandées En Ligne distribuées par le facteur
+
+
+    Elles comprennent les fonctions clés pour :
+    
+     - Créer un envoi,
+     - Ajouter des documents et des destinataires,
+     - Choisir ses options (noir & blanc ou couleur, recto ou recto-verso, avec ou sans AR …),
+     - Suivre la production (date de planification, suivi de l’envoi…).
+     
+    
+     Les évènements disponibles pour la ressource (`resource_type `) `registered_mail/v1/sendings` sont (dans l'ordre):
+
+    |Type d'évènement (`event_type`)|Description|Attributs valorisés|
+    
+    |---|---|---|
+    
+    |ON_STATUS_ACCEPTED|L'envoi est passé au statut *ACCEPTED*|Le nombre de pages à facturer `billed_pages_count`, le nombre de pages `pages_count`, le nombre de feuilles `sheets_count`, la date de planification `scheduled_date` et les codes articles `invoice_items` sont valorisés.|
+    
+    |ON_STATUS_REJECTED|L'envoi est passé au statut *REJECTED*|Non applicable|
+    
+    |ON_DEPOSIT_PROOF_RECEIVED|L'envoi a obtenu sa preuve de dépôt|La preuve de dépôt est disponible pour le téléchargement. La date de la preuve de dépôt `deposit_proof_date` est valorisée.|
+    
+    |ON_STATUS_PROCESSED|L'envoi est passé au statut *PROCESSED*|L'archive du courrier envoyé au destinataire est disponible pour le téléchargement. La date de production `processed_date` est valorisée.|    
+    
+    Exemple de notification renvoyé par le service de notification : 
+    
+    ```
+      {
+        "source":"api.maileva.com",
+        "user_id":"5119f12-3797-4e95-a69f-535860f8b079",
+        "client_id":"f6a05103-826b-439c-a192-86b7606b29f9",
+        "event_type":"ON_STATUS_ACCEPTED",
+        "resource_type":"registered_mail/v1/sendings",
+        "resource_name":"sendings",
+        "event_date":"2017-10-09T09:45:07.252Z",
+        "resource_id":"3dc03fbf-9412-49df-84c6-826e20810d39",
+        "resource_location":"https://maressource?id=3dc03fbf-9412-49df-84c6-826e20810d39"
+      }     
+    ```
+
+    Voir la documentation "notification_center".
+  
+  
+  
+  
+    ### Liste des codes d'erreur
+  
+    |Code|Description|
+    
+    |---|---|
+    
+    |DOCUMENT_NOT_FOUND|Ressource DOCUMENT introuvable|
+
+    |DOCTYPE_NOT_ACCEPTED|Le type de document n'est pas accepté (.pdf, .doc, .docx, .rtf, .txt, .xls, .xlsx autorisés)|
+
+    |EMPTY_DOCUMENT|Aucun document n'a été transmis en multipart|
+
+    |EMPTY_FILE_ID|L'identifiant de fichier est vide|
+
+    |EMPTY_METADATA|Aucune metadata n'a été transmise|
+
+    |EMPTY_NOTIFICATION_EMAIL|Le champ NOTIFICATION_EMAIL est vide|
+
+    |EMPTY_PRIORITY|Le champ PRIORITY est vide|
+
+    |EMPTY_SENDING_NAME|Aucun nom d'envoi n'a été transmis|
+    
+    |INVALID_DOCUMENTS_NUMBER|Erreur lorsque l'on tente d'ajouter plus de 30 documents dans un envoi|
+
+    |INVALID_DOCUMENT_SIZE|La taille du document transmis dépasse les 10 Mo|
+    
+    |INVALID_TOTAL_SENDING_SIZE|La somme des tailles de l'ensemble des documents dépasse 10 Mo|
+
+    |LONGER_SENDING_NAME_ERROR|Le nom de l'envoi est trop long  (256 caractères max)|
+
+    |META_DATA_WRONG_FORMAT|Le paramètre metadata n'est pas correct|
+
+    |MORE_ONE_PARAMETRE_DOCUMENT|Plusieurs documents ont été envoyés en multipart alors que le service limite à un document.|
+    
+    |MORE_ONE_PARAMETRE_METADATA|Le paramètre metadata a été transmis plusieurs fois|
+    
+    |NOTIFICATION_EMAIL_NOT_ACCEPTED|Email incorrect|
+
+    |NULL_PRIORITY|Le champ PRIORITY est nul|
+
+    |RECIPIENT_NOT_FOUND|Ressource RECIPIENT introuvable|
+
+    |SENDING_NOT_FOUND|Ressource SENDING introuvable|
+
+    |SENDING_STATUS_PERMISSION_ADD|Erreur quand on essaie d'ajouter un document ou un destinataire dans un envoi qui n'est pas en état draft|
+
+    |SENDING_STATUT_PERMISSION_DELETE|Erreur quand on essaie de supprimer un envoi qui n'est pas en état draft|
+
+    |SENDING_STATUT_PERMISSION_SUBMIT|Erreur quand on essaie de soumettre un envoi qui n'est pas en état draft|
+
+    |SENDING_STATUS_PERMISSION_UPDATE_OPTION|Erreur quand on essaie de modifier une option d'un envoi qui n'est pas en état draft|
+
+    |LINE1_OR_LINE2_EMPTY|La ligne d'adresse 1 ou la ligne d'adresse 2 doit être renseignée|
+
+    |LINE6_EMPTY|La ligne d'adresse 6 doit être renseignée|
+
+    |ZIP_CODE_WRONG_FORMAT|Code postal incorrect|
+
+    |LINE1_TOO_LONG|La ligne d'adresse 1 est limitée à 38 caractères|
+
+    |LINE2_TOO_LONG|La ligne d'adresse 2 est limitée à 38 caractères|
+
+    |LINE3_TOO_LONG|La ligne d'adresse 3 est limitée à 38 caractères|
+
+    |LINE4_TOO_LONG|La ligne d'adresse 4 est limitée à 38 caractères|
+  
+    |LINE5_TOO_LONG|La ligne d'adresse 5 est limitée à 38 caractères|
+  
+    |LINE6_TOO_LONG|La ligne d'adresse 6 est limitée à 38 caractères|
+  
+    |COUNTRY_CODE_TOO_LONG|Le code pays est limité à 2 caractères|
+
+    |COUNTRY_CODE_UNAVAILABLE|Le code pays n'est pas autorisé|
+
+    |DUPLICATE_PRIORITY|Plusieurs documents ont la même priorité|
+
+  contact:
+    name: Maileva API team
+    url: 'http://www.maileva.com'
+
+host: api.maileva.com
+basePath: /registered_mail/v1/
+schemes:
+  - https
+consumes:
+- "application/json"
+- "multipart/form-data"
+produces:
+- "application/json"
+  
+  
+definitions:
+
+##################################
+# Définition des objets (object) #
+##################################
+
+  contact:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        description: Identifiant du contact dans mon carnet d'adresse
+
+  delivery_statuses:
+    type: object
+    required:
+      - delivery_statuses
+      - paging
+    description: Liste des statuts de distribution
+    properties:
+      delivery_statuses:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Identifiant du statut de distribution
+            status:
+              type: string
+              description: Statut de distribution
+            date:
+              type: string
+              format: datetime
+              description: Date du statut de distribution
+      paging:
+        $ref: '#/definitions/paging'
+
+  document:
+    type: object
+    required:
+      - id
+      - name
+      - priority
+      - type
+      - size
+    description: Les documents sont des éléments de "Mes documents" ou directement importés pour l'envoi
+    properties:
+      id:
+        type: string
+        description: Identifiant du document
+      priority:
+        type: integer
+        description: Ordre d'impression du document
+      name:
+        type: string
+        description: Nom du document
+      type:
+        type: string
+        description: Type du document
+      pages_count:
+        type: integer
+        description: Nombre de pages
+      size:
+        type: integer
+        description: Poids du document en octets
+      drive_file_id:
+        type: string
+        description: Identifiant du document dans "Mes documents"
+
+  document_from_drive:
+    type: object
+    required:
+      - file_id
+      - priority
+    properties:
+      file_id:
+        type: string
+        description: Identifiant du document dans "Mes Documents"
+      priority:
+        description: Ordre d'impression du document
+        type: integer
+
+  documents_response:
+    type: object
+    required:
+      - documents
+      - paging
+    description: Les documents d'un envoi
+    properties:
+      documents:
+        type: array
+        items:
+          $ref: '#/definitions/document'
+      paging:
+        $ref: '#/definitions/paging'
+
+  error:
+    description: Description de l'erreur
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+  errors:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/error'
+
+
+
+  import_recipient:
+    type: object
+    required:
+      - address_line_6
+      - country_code
+    properties:
+      address_line_1:
+        type: string
+        description: Adresse ligne 1
+      address_line_2:
+        type: string
+        description: Adresse ligne 2
+      address_line_3:
+        type: string
+        description: Adresse ligne 3
+      address_line_4:
+        type: string
+        description: Adresse ligne 4
+      address_line_5:
+        type: string
+        description: Adresse ligne 5
+      address_line_6:
+        type: string
+        description: Adresse ligne 6
+      country_code:
+        type: string
+        maxLength: 2
+        description: Code ISO-3166 du pays
+
+  import_recipients_response:
+    type: object
+    required:
+      - status
+      - imported_recipients
+      - paging
+    properties:
+      status:
+        $ref: '#/definitions/import_status'
+      imported_recipients:
+        type: array
+        description: Les destinataires d'un envoi
+        items:
+          $ref: '#/definitions/imported_recipient'
+      paging:
+        $ref: '#/definitions/paging' 
+
+  import_sending_document:
+    type: object
+    required:
+      - sending_type
+      - sending_id
+      - document_id
+      - priority
+    description: Document d'un autre envoi à importer
+    properties:
+      sending_type:
+        type: string
+        description: Type d'envoi
+        enum:
+          - MAIL
+          - REGISTERED_MAIL
+      sending_id:
+        type: string
+        description: Identifiant d'un envoi
+      document_id:
+        type: string
+        description: Identifiant du document
+      priority:
+        description: Ordre d'impression du document
+        type: integer
+
+  import_sending_recipients:
+    type: object
+    required:
+      - sending_type
+      - sending_id
+    description: Envoi avec les contacts à importer
+    properties:
+      sending_type:
+        type: string
+        description: Type d'envoi
+        enum:
+          - MAIL
+          - REGISTERED_MAIL
+      sending_id:
+        type: string
+        description: Identifiant d'un envoi
+
+  imported_recipient:
+    type: object
+    required:
+      - address_line_6
+      - country_code
+      - status
+    properties:
+      address_line_1:
+        type: string
+        description: Adresse ligne 1
+      address_line_2:
+        type: string
+        description: Adresse ligne 2
+      address_line_3:
+        type: string
+        description: Adresse ligne 3
+      address_line_4:
+        type: string
+        description: Adresse ligne 4
+      address_line_5:
+        type: string
+        description: Adresse ligne 5
+      address_line_6:
+        type: string
+        description: Adresse ligne 6
+      country_code:
+        type: string
+        maxLength: 2
+        description: Code ISO-3166 du pays
+      status:
+        $ref: '#/definitions/recipient_import_status'
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/error'
+
+  invoice_items_response:
+    type: object
+    description: article composant un envoi
+    properties:
+      code:
+        type: string
+        description: Code
+        enum:
+          - COLLR01
+          - COLLR02
+          - COLLR11
+          - COLLR12
+          - COULR01
+          - COULR02
+          - COULR11
+          - COULR12
+          - ARCHLRS601
+          - ARCHLRS602
+          - ARCHLRS101
+          - ARCHLRS102
+          - ARCHLRE601
+          - ARCHLRE602
+          - ARCHLRE101
+          - ARCHLRE102
+          - GESTIONAR01
+          - XAFFR10
+          - XAFFR11
+          - PORTEADRESSE
+          - POIDS
+          - OM1
+          - OM2
+      quantity:
+        type: number
+        format: float
+        description: Quantité
+      unit_price_without_tax:
+        type: number
+        format: float
+        description: Prix unitaire
+
+  options:
+    type: object
+    description: "Les options sont des fonctionnalités proposées à l'utilisateur pour paramétrer son envoi"
+    properties:
+      name:
+        type: string
+        maxLength: 256
+        minLength: 1
+      acknowledgement_of_receipt:
+        type: boolean
+        description: Avis de réception (AR)
+      color_printing:
+        type: boolean
+        description: Impression couleur
+      duplex_printing:
+        type: boolean
+        description: Impression recto verso
+      optional_address_sheet:
+        type: boolean
+        description: Feuille porte adresse optionnelle
+      notification_email:
+        type: string
+        description: E-mail du destinataire des notifications
+      sender_address_line_1:
+        description: Société de l'expéditeur
+        type: string
+      sender_address_line_2:
+        description: Civilité, nom et prénom de l'expéditeur
+        type: string
+      sender_address_line_3:
+        description: Bâtiment, immeuble de l'expéditeur
+        type: string
+      sender_address_line_4:
+        description: Numéro et libellé de la voie de l'expéditeur
+        type: string
+      sender_address_line_5:
+        description: Lieu-dit ou BP de l'expéditeur
+        type: string
+      sender_address_line_6:
+        description: Code postal et ville de l'adresse de l'expéditeur
+        type: string
+      sender_country_code:
+        description: Code ISO-3166 du pays de l'expéditeur
+        type: string
+      archiving_duration:
+        type: integer
+        description: Durée d'archivage en années
+        enum:
+          - 3
+          - 6
+          - 10
+
+  paging:
+    description: Pagination des résultats
+    type: object
+    required:
+      - next
+      - prev
+      - total_results
+    properties:
+      next:
+        description: Page suivante
+        type: string
+      prev:
+        description: Page précédente
+        type: string
+      total_results:
+        description: Nombre de résultats
+        type: number
+
+
+
+
+
+  priority:
+    type: object
+    required:
+      - priority
+    properties:
+      priority:
+        description: Ordre d'impression du document
+        type: integer
+
+  recipient:
+    type: object
+    description: "Les destinataires sont des contacts de Mon Carnet d'adresses ou directement importés pour l'envoi"
+    required:
+      - id
+      - address_line_6
+      - country_code
+      - status
+    properties:
+      id :
+        type: string
+        description: Identifiant du destinataire
+      address_line_1:
+        type: string
+        description: Adresse ligne 1
+      address_line_2:
+        type: string
+        description: Adresse ligne 2
+      address_line_3:
+        type: string
+        description: Adresse ligne 3
+      address_line_4:
+        type: string
+        description: Adresse ligne 4
+      address_line_5:
+        type: string
+        description: Adresse ligne 5
+      address_line_6:
+        type: string
+        description: Adresse ligne 6
+      country_code:
+        type: string
+        maxLength: 2
+        description: Code ISO-3166 du pays
+      status:
+        $ref: '#/definitions/recipient_status'
+      status_detail:
+        description: Détail du statut
+        type: string
+      last_delivery_status:
+        type: string
+        description: Dernier statut de distribution
+      last_delivery_status_date:
+        type: string
+        format: datetime
+        description: Date du dernier statut de distribution
+      contact_id:
+        type: string
+      postage_price:
+        type: number
+        format : float
+        description: Coût de l'affranchissement en euros
+      registered_number:
+        type: string
+        description: Numéro de recommandé
+      archive_url:
+        type: string
+        description: URL de l'archive du pli
+
+  recipient_creation:
+    type: object
+    required:
+       - address_line_6
+       - country_code
+    properties:
+      address_line_1:
+        type: string
+        description: Adresse ligne 1
+      address_line_2:
+        type: string
+        description: Adresse ligne 2
+      address_line_3:
+        type: string
+        description: Adresse ligne 3
+      address_line_4:
+        type: string
+        description: Adresse ligne 4
+      address_line_5:
+        type: string
+        description: Adresse ligne 5
+      address_line_6:
+        type: string
+        description: Adresse ligne 6
+      country_code:
+        type: string
+        maxLength: 2
+        description: Code ISO-3166 du pays
+
+  recipients_counts:
+    type: object
+    properties:
+      draft:
+        type: integer
+        description: Nombre de destinataires au statut DRAFT
+      pending:
+        type: integer
+        description: Nombre de destinataires au statut PENDING
+      processed:
+        type: integer
+        description: Nombre de destinataires au statut PROCESSED
+      rejected:
+        type: integer
+        description: Nombre de destinataires au statut REJECTED
+      total:
+        type: integer
+        description: Nombre de destinataires total
+
+  recipients:
+    type: object
+    required:
+       - recipients
+       - paging
+    description: Les destinataires d'un envoi
+    properties:
+      recipients:
+        type: array
+        items:
+          $ref: '#/definitions/recipient'
+      paging:
+        $ref: '#/definitions/paging'
+
+
+  sending:
+    type: object
+    required:
+      - id
+      - name
+      - status
+      - recipients_counts
+      - creation_date
+      - documents_count
+    description: Un envoi de LREL
+    properties:
+      id:
+        type: string
+        description: Identifiant de l'envoi
+      order_id:
+        type: string
+        description: Identifiant de la commnande
+      name:
+        type: string
+        description: Nom de l'envoi
+      status:
+        $ref: '#/definitions/sending_status'
+      status_detail:
+        type: string
+        description: Détail d'un statut
+      recipients_counts:
+        $ref: '#/definitions/recipients_counts'
+      creation_date:
+        type: string
+        format: date-time
+        description: Date et heure de création
+      submission_date:
+        type: string
+        format: date-time
+        description: Date et heure de soumission
+      scheduled_date:
+        type: string
+        format: date-time
+        description: Date et heure de planification
+      processed_date:
+        type: string
+        format: date-time
+        description: Date et heure de production
+      documents_count:
+        type: integer
+        description: Nombre de documents dans l'envoi
+      billed_pages_count:
+        type: integer
+        description: Nombre de pages facturées
+
+  sending_creation:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: Nom de l'envoi
+        maxLength: 256
+        minLength: 1
+
+  sending_creation_submission:
+    type: object
+    required:
+      - name
+      - sender_address_line_6
+      - sender_country_code
+      - recipients
+    description: Paramètres d'un envoi
+    properties:
+      name:
+        type: string
+        description: Nom de l'envoi
+      acknowledgement_of_receipt:
+        type: boolean
+        description: Avis de réception (AR)
+      color_printing:
+        type: boolean
+        description: Impression couleur
+      duplex_printing:
+        type: boolean
+        description: Impression recto verso
+      optional_address_sheet:
+        type: boolean
+        description: Feuille porte adresse optionnelle
+      sender_address_line_1:
+        description: Société de l'expéditeur
+        type: string
+      sender_address_line_2:
+        description: Civilité, nom et prénom de l'expéditeur
+        type: string
+      sender_address_line_3:
+        description: Bâtiment, immeuble de l'expéditeur
+        type: string
+      sender_address_line_4:
+        description: Numéro et libellé de la voie de l'expéditeur
+        type: string
+      sender_address_line_5:
+        description: Lieu-dit ou BP de l'expéditeur
+        type: string
+      sender_address_line_6:
+        description: Code postal et ville de l'expéditeur
+        type: string
+      sender_country_code:
+        description: Code ISO-3166 du pays de l'expéditeur
+        type: string
+      archiving_duration:
+        type: integer
+        description: Durée d'archivage en années
+        enum:
+          - 3
+          - 6
+          - 10
+      recipients:
+        type: array
+        items:
+          $ref: '#/definitions/recipient_creation'
+
+  sending_creation_response:
+    type: object
+    required:
+      - id
+      - name
+      - status
+      - creation_date
+      - sender_address_line_6
+      - sender_country_code
+    description: Un envoi "Sending" est un élément de l'application d'envoi
+    properties:
+      id:
+        type: string
+        description: Identifiant d'un envoi
+      order_id:
+        type: string
+        description: Identifiant de la commnande
+      name:
+        type: string
+        description: Nom d'un envoi
+      status:
+        $ref: '#/definitions/sending_status'
+      status_detail:
+        type: string
+      acknowledgement_of_receipt:
+        type: boolean
+        description: Avis de réception (AR)
+      creation_date:
+        type: string
+        format: date-time
+        description: Date et heure de création
+      submission_date:
+        type: string
+        format: date-time
+        description: Date et heure de soumission
+      scheduled_date:
+        type: string
+        format: date-time
+        description: Date et heure de planification
+      processed_date:
+        type: string
+        format: date-time
+        description: Date et heure de production
+      documents_count:
+        type: integer
+        description: Nombre de documents
+      pages_count:
+        type: integer
+        description: Nombre de pages
+      billed_pages_count:
+        type: integer
+        description: Nombre de pages facturées
+      sheets_count:
+        type: integer
+        description: Nombre de feuilles
+      envelope_type:
+        $ref: '#/definitions/envelope_type'
+      color_printing:
+        type: boolean
+        description: Impression couleur
+      duplex_printing:
+        type: boolean
+        description: Impression recto verso
+      optional_address_sheet:
+        type: boolean
+        description: Feuille porte adresse optionnnelle (payante)
+      system_address_sheet:
+        type: boolean
+        description: Feuille porte adresse imposée (gratuite)
+      notification_email:
+        type: string
+        description: Email de notification
+      recipients_counts:
+        $ref: '#/definitions/recipients_counts'
+      sender_address_line_1:
+        description: Société de l'expéditeur
+        type: string
+      sender_address_line_2:
+        description: Civilité, nom et prénom de l'expéditeur
+        type: string
+      sender_address_line_3:
+        description: Bâtiment, immeuble de l'expéditeur
+        type: string
+      sender_address_line_4:
+        description: Numéro et libellé de la voie de l'expéditeur
+        type: string
+      sender_address_line_5:
+        description: Lieu-dit ou BP de l'expéditeur
+        type: string
+      sender_address_line_6:
+        description: Code postal et ville de l'adresse de l'expéditeur
+        type: string
+      sender_country_code:
+        description: Code ISO-3166 du pays de l'expéditeur
+        type: string
+      archiving_duration:
+        type: integer
+        description: Durée d'archivage en années
+        enum:
+          - 3
+          - 6
+          - 10
+      desposit_proof_date:
+        description: Date de la preuve de dépôt
+        type: string
+        format: datetime
+      desposit_proof_url:
+        description: Lien de téléchargement de la preuve de dépôt
+        type: string
+
+  sendings_response:
+    type: object
+    required:
+      - sendings
+      - paging
+    description: Les envois
+    properties:
+      sendings:
+        type: array
+        items:
+          $ref: '#/definitions/sending'
+      paging:
+        $ref: '#/definitions/paging'
+
+###################################
+# Définition des tableaux (array) #
+###################################
+
+  contacts:
+    type: array
+    description: Les contacts à importer
+    items:
+      $ref: '#/definitions/contact'
+
+  import_recipients:
+    type: object
+    description: Les destinataires d'un envoi
+    properties:
+      import_recipients:
+        type: array
+        items:
+          $ref: '#/definitions/import_recipient'
+    required:
+      - import_recipients
+
+###################################
+# Définition des chaines (string) #
+###################################
+
+  envelope_type:
+    type: string
+    description: Type de l'envelope
+    enum:
+      - DL
+      - C4
+      - AUTOMATIC
+
+  recipient_import_status:
+    type: string
+    description: "Statut d'une ligne d'import
+      
+      PENDING: le destinataire vient d'être importé, il est en cours de traitement;
+      
+      PROCESSED : le destinataire a été validé et inséré à l'envoi;
+      
+      REJECTED : le destinataire n'a pas été validé et n'est pas inséré à l'envoi
+      "
+    enum:
+      - PENDING
+      - PROCESSED
+      - REJECTED
+
+  recipient_status:
+    type: string
+    description: "Statut du destinataire.
+      
+      DRAFT : le destinataire a été ajouté à l'envoi qui est au statut draft; 
+      
+      PENDING : le destinataire a été ni traité, ni rejeté;
+      
+      PROCESSED : le destinataire a été mis sous pli (liasse appairée si recommandée);
+      
+      REJECTED : le destinataire n'est pas valide.
+      "
+    enum:
+      - DRAFT
+      - PENDING
+      - PROCESSED
+      - REJECTED
+
+  sending_status:
+    type: string
+    description: "Statut d''un envoi :
+      
+      DRAFT : envoi au statut de brouillon, non validé par l’utilisateur; 
+      
+      PAYMENT_REQUIRED : L'envoi est verrouillé et attente de paiemen;
+      
+      
+      PENDING : le client a fait un envoi, mais il n’a pas encore été analysé par le système ou l'envoi a été reçu mais il n’a pas encore été analysé;
+      
+      ACCEPTED : l'envoi a été accepté mais il est planifiée pour plus tard ou l'envoi a été accepté et va être produit;
+      
+      REJECTED : l'envoi est refusé;
+      
+      PROCESSED : l'envoi a été traité et tous les destinataires étaient valides;
+      
+      PROCESSED_WITH_ERRORS : lenvoi a été traité
+      mais certains destinataires n’étaient pas valides "
+    enum:
+    - DRAFT
+    - PAYMENT_REQUIRED
+    - PENDING
+    - ACCEPTED
+    - REJECTED
+    - PROCESSED
+    - PROCESSED_WITH_ERRORS
+
+        
+  import_status:
+    type: string
+    description: "Statut de l'import
+
+      PENDING : l'avancement de l'import des destinateurs est en cours;
+      
+      PROCESSED : l'avancement de l'import des destinateurs est achevé (destinataires KO et/ou OK);
+      "
+      
+    enum:
+      - PENDING
+      - PROCESSED
+
+parameters:
+
+  contacts:
+    name: contacts
+    in: body
+    description: Identifiant des contacts à importer
+    required: true
+    schema:
+      $ref: '#/definitions/contacts'
+
+  document:
+    in: formData
+    name: document
+    description: Le document
+    required: true
+    type: file
+
+  document_id:
+    name: document_id
+    in: path
+    description: Identifiant du document
+    required: true
+    maxLength: 40
+    type: string
+
+  file_id:
+    name: document
+    in: body
+    description: détail du document
+    required: true
+    schema:
+      $ref: '#/definitions/document_from_drive'
+
+  import_recipients_id:
+    name: import_id
+    in: path
+    description: Identifiant de l'import
+    required: true
+    maxLength: 40
+    type: string
+
+  import_recipients:
+    in: body
+    name: recipients
+    description: Les destinataires
+    required: true
+    schema:
+      $ref: '#/definitions/import_recipients'
+
+  import_sending_document:
+    name: sending
+    in: body
+    description: Document d'un autre envoi à importer
+    required: true
+    schema:
+      $ref: '#/definitions/import_sending_document'
+
+  metadata:
+    in: formData
+    name: metadata
+    type: string
+    required: true
+    description: Metadatas = {"priority":4,"name":"test"}
+
+  options:
+    in: body
+    name: options
+    description: Les options à ajouter
+    required: true
+    schema:
+      $ref: '#/definitions/options'
+
+  paging_start_index:
+    name: start_index
+    in: query
+    description: Le premier élément à retourner
+    required: false
+    type: number
+    default: 1
+    minLength: 1
+
+  paging_count:
+    name: count
+    in: query
+    description: Le nombre d'élément à retourner
+    required: false
+    type: number
+    default: 1
+    minLength: 1
+    maxLength: 20
+
+  picture_id:
+    name: picture_id
+    in: path
+    description: Identifiant de l'image du bon à tirer
+    required: true
+    maxLength: 256
+    type: string
+
+  preview_id:
+    name: preview_id
+    in: path
+    description: Identifiant du bon à tirer
+    required: true
+    maxLength: 256
+    type: string
+
+  priority:
+    in: body
+    name: priority
+    description: priorité du document
+    required: true
+    schema:
+      $ref: '#/definitions/priority'
+
+  recipient_creation:
+    in: body
+    name: recipient_creation
+    description: Les destinataires
+    required: true
+    schema:
+      $ref: '#/definitions/recipient_creation'
+
+  recipient_id:
+    name: recipient_id
+    in: path
+    description: Identifiant du destinataire
+    required: true
+    maxLength: 40
+    type: string
+
+  sending_creation:
+    in: body
+    name: sending
+    description: Le nom d'un envoi
+    required: true
+    schema:
+      $ref: '#/definitions/sending_creation'
+
+  sending_creation_submission:
+    in: body
+    name: sending_creation
+    description: L'envoi
+    required: true
+    schema:
+      $ref: '#/definitions/sending_creation_submission'
+
+  sending_id:
+    name: sending_id
+    in: path
+    description: Identifiant d'un envoi
+    required: true
+    maxLength: 40
+    type: string
+
+  import_sending_recipients:
+    name: sending
+    in: body
+    description: Envoi avec les destinataires à importer
+    required: true
+    schema:
+      $ref: '#/definitions/import_sending_recipients'
+
+paths:
+  /sendings:
+    post:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Création d'un envoi
+      description: >-
+        Cette API permet de créer un envoi.
+
+
+        Le champ obligatoire pour créer un envoi est le nom. Sont autorisés les
+        majuscules, minuscules, caractères spéciaux et lettres accentuées. La
+        longueur de champs est de 256 caractères maximum.
+      parameters:
+        - $ref: '#/parameters/sending_creation'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/sending_creation_response'
+          examples:
+            application/json:
+              {
+
+                  "id":"110e8400-e29b-11d4-a716-446655440000",
+                  "name":"Mon1erEnvoi",
+                  "status":"DRAFT",
+                  "status_detail":"0",
+                  "acknowledgement_of_receipt":true,
+                  "creation_date":"2015-12-25T23:56:34Z",
+                  "submission_date":"2015-12-25T23:56:34Z",
+                  "scheduled_date":"2015-12-25T23:56:34Z",
+                  "processed_date":"2015-12-25T23:56:34Z",
+                  "documents_count":"2",
+                  "pages_count":"2",
+                  "billed_pages_count":"2",
+                  "sheets_count":"2",
+                  "envelope_type":"DL",
+                  "color_printing":"1",
+                  "duplex_printing":"1",
+                  "optional_address_sheet":"0",
+                  "system_address_sheet":"0",
+                  "notification_email":"pierre.dupont@monemail.com",
+                  "recipients_count": {
+                      "draft":"2",
+                      "pending":"0",
+                      "processed":"0",
+                      "rejected":"0",
+                      "total":"2"
+                  },
+                  
+                  "sender_address_line_1":"Maileva",
+                  "sender_address_line_2":"M Pierre DUPONT",
+                  "sender_address_line_3":"10 avenue Charles de Gaulle",
+                  "sender_address_line_4":"Batiment DOCAPOST",
+                  "sender_address_line_5":"",
+                  "sender_address_line_6":"94673 Charenton-Le-Pont",
+                  "sender_country_code":"FR",
+                  "archiving_duration":"3",
+                  "desposit_proof_date":"2015-12-25T23:56:34Z"
+
+              }
+
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+          examples:
+            application/json:
+              {
+                "errors": [
+                  {
+                    "code": "EMPTY_SENDING_NAME",
+                    "message": "SENDING_NAME is empty."
+                  }
+                ]
+              }        
+        '401':
+          description: Unauthorized
+
+    get:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Liste des envois
+      description: >-
+        Cette API permet d'obtenir la liste des envois. 
+
+
+        Il est possible de rajouter un attribut dans les paramètres afin de
+        filtrer la liste des envois. La liste des envois peut être paginée. Par
+        défaut, la pagination est de 50 résultats. Elle peut être modifiée pour atteindre jusqu'à 500 résultats. 
+      parameters:
+        - $ref: '#/parameters/paging_start_index'
+        - $ref: '#/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/sendings_response'
+          examples:
+            application/json: 
+              {
+                  "sendings": [
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440000",
+                          "name":"Mon1erEnvoi",
+                          "status":"DRAFT",
+                          "status_detail":"0",
+                          "recipients_count":"20",
+                          "creation_date":"2015-12-25T23:56:34Z",
+                          "submission_date":"2015-12-25T23:56:34Z",
+                          "processed_date":"2015-12-25T23:56:34Z",
+                          "documents_count":"2"
+                      },
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440001",
+                          "name":"Campagne Noel",
+                          "status":"DRAFT",
+                          "status_detail":"0",
+                          "recipients_count":"20",
+                          "creation_date":"2015-12-25T23:56:34Z",
+                          "submission_date":"2015-12-25T23:56:34Z",
+                          "processed_date":"2015-12-25T23:56:34Z",
+                          "documents_count":"1"
+                      }
+                  ],
+                  "paging": {
+                        "prev":"",
+                        "next":"",
+                        "total_results":2
+                  }
+
+              }
+
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+          examples:
+            application/json:
+              {
+                "errors": [
+                  {
+                    "code": "SENDING_NOT_FOUND",
+                    "message": "The SENDING resource not found."
+                  }
+                ]
+              }        
+        '401':
+          description: Unauthorized
+
+  '/sendings/{sending_id}':
+    get:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Détail d'un envoi
+      description: Cette API permet de récupérer un envoi à partir de son identifiant.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/sending_creation_response'
+          examples:
+            application/json:
+              {
+
+                  "id":"110e8400-e29b-11d4-a716-446655440000",
+                  "name":"Mon1erEnvoi",
+                  "status":"DRAFT",
+                  "status_detail":"0",
+                  "acknowledgement_of_receipt":true,
+                  "creation_date":"2015-12-25T23:56:34Z",
+                  "submission_date":"2015-12-25T23:56:34Z",
+                  "scheduled_date":"2015-12-25T23:56:34Z",
+                  "processed_date":"2015-12-25T23:56:34Z",
+                  "documents_count":"2",
+                  "pages_count":"2",
+                  "billed_pages_count":"2",
+                  "sheets_count":"2",
+                  "envelope_type":"DL",
+                  "color_printing":"1",
+                  "duplex_printing":"1",
+                  "optional_address_sheet":"0",
+                  "system_address_sheet":"0",
+                  "notification_email":"pierre.dupont@monemail.com",
+                  "recipients_count": {
+                      "draft":"2",
+                      "pending":"0",
+                      "processed":"0",
+                      "rejected":"0",
+                      "total":"2"
+                  },
+                  
+                  "sender_address_line_1":"Maileva",
+                  "sender_address_line_2":"M Pierre DUPONT",
+                  "sender_address_line_3":"10 avenue Charles de Gaulle",
+                  "sender_address_line_4":"Batiment DOCAPOST",
+                  "sender_address_line_5":"",
+                  "sender_address_line_6":"94673 Charenton-Le-Pont",
+                  "sender_country_code":"FR",
+                  "archiving_duration":"3",
+                  "desposit_proof_date":"2015-12-25T23:56:34Z"
+
+              }
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+          examples:
+            application/json:
+              {
+                "errors": [
+                  {
+                    "code": "SENDING_NOT_FOUND",
+                    "message": "The SENDING resource not found."
+                  }
+                ]
+              }        
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    patch:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/merge-patch+json
+      summary: Modification des options d'envoi
+      description: >-
+        Cette API permet de modifier les options liées à l'envoi d'un courrier :
+
+        - Avec AR ou sans AR (avec AR, par défaut),
+
+        - le coloris d'impression : couleur ou noir et blanc (couleur par défaut),
+
+        - le format d'impression : recto ou recto-verso (recto-verso par défaut),
+
+        - l'ajout d'une page porte-adresse : oui /non (non par défaut),
+
+        - notifications par e-mail : adresse e-mail à
+        laquelle les notifications doivent être envoyées. (obligatoire)
+
+        - impression de la référence interne : oui ou non (non par défaut)
+        
+        - Gestion électronique des AR : oui ou non (non par défaut)
+        
+        - Durée d'archivage : 3 ans, 6 ans ou 10 ans (3 ans par défaut)
+        
+        - Adresse postale de l'expéditeur (obligatoire). L'expéditeur doit être en France métropolitaine, dans un DOM, à Monaco ou en Andorre.
+        
+        
+        Le type d'enveloppe est choisi automatiquement. 1 à 4 feuilles (hors feuille porte-adresse) : enveloppe DL. 5 à 30 feuilles (hors feuille porte-adresse) : enveloppe C4.
+        
+        Seuls les paramètres pour lesquels une valeur est fournie sont modifiés.
+    
+        Si votre système ne permet pas d'utiliser le verbe PATCH, il est possible d'utiliser le verbe POST.
+        
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/options'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Suppression d'un envoi
+      description: Cette API permet de supprimer un envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  '/sendings/{sending_id}/submit':
+    post:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Finalisation d'un envoi
+      description: >-
+        Cette API permet de valider l'envoi et de déclencher ainsi la demande de production.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  '/sendings/create_and_submit':
+    post:
+      tags:
+      - "Envoi"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Création et finalisation d'un envoi
+      description: >-
+        Cette API permet de créer un envoi, de le valider et de déclencher ainsi la demande de production.
+        
+        Cette API est limitée à un document (à fournir en multipart) et à 10 destinataires.
+      parameters:
+        - $ref: '#/parameters/sending_creation_submission'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Location:
+              description: URL vers la ressource
+              type: string
+              format: url
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+            
+  '/sendings/{sending_id}/documents':
+    post:
+      tags:
+      - "Documents"
+      produces:
+      - application/json
+      consumes:
+      - multipart/form-data
+      summary: 'Ajout d''un document à l''envoi.'
+      description: >-
+        Cette API permet d'ajouter un document à l'envoi. 
+
+        Les types de documents autorisés sont :
+          - Adobe (.pdf)
+          - Word (.doc, .docx et .rtf)
+          - Texte (.txt)
+          - Excel (.xls, .xlsx)  
+          
+        Le document ajouté ne doit pas dépasser 10 Mo.
+        
+        Le nombre total de documents est limité à 30 par envoi.
+        
+        Le document doit être transmis en mutipart ainsi que la metadata. La metadata est contituée de "priority" (permet de définir l'ordre d'impression des documents) et de "name" (permet de donner un nom au fichier).
+        
+        Le document téléchargé est ajouté en dernière position de la liste de documents si priority n'est pas indiqué. 
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/document'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: URL vers la ressource
+              type: string
+              format: url
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    get:
+      tags:
+      - "Documents"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Liste des documents d'un envoi
+      description: >-
+        Cette API permet de récupérer la liste des documents associés à l'envoi.
+
+        La liste des documents d'un envoi peut être paginée. Par défaut et au
+        maximum, la pagination est de 30 résultats.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/paging_start_index'
+        - $ref: '#/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/documents_response'
+          examples:
+            application/json: 
+              {
+                  "documents": [
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440000",
+                          "priority":1,
+                          "name":"MonFichierPDF",
+                          "type":"pdf",
+                          "page_count":"2",
+                          "size":256
+                      },
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440001",
+                          "priority":2,
+                          "name":"MonFichierTXT",
+                          "type":"txt",
+                          "page_count":"1",
+                          "size":10
+                      }
+                  ],
+                  "paging": {
+                        "prev":"",
+                        "next":"",
+                        "total_results":2
+                  }
+
+              }
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  '/sendings/{sending_id}/documents/{document_id}':
+   get:
+      tags:
+      - "Documents"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Détail d'un document
+      description: >-
+        Cette API permet de récupérer le détail d'un document utilisé lors de
+        l'envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/document_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/document'
+          examples:
+            application/json: 
+              {
+                  "id":"110e8400-e29b-11d4-a716-446655440000",
+                  "priority":1,
+                  "name":"MonFichierPDF",
+                  "type":"pdf",
+                  "page_count":"2",
+                  "size":256
+
+              }
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+   delete:
+      tags:
+      - "Documents"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Suppression d'un document
+      description: Cette API permet de supprimer un document d'un envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/document_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+            
+  '/sendings/{sending_id}/documents/{document_id}/set_priority':
+    post:
+      tags:
+      - "Documents"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Classement des documents
+      description: >-
+        Cette API permet d'ordonner les documents d'un envoi.
+
+
+        Les documents seront imprimés et mis sous pli dans l'ordre choisi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/document_id'
+        - $ref: '#/parameters/priority'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+
+
+            
+
+
+
+  
+  '/sendings/{sending_id}/recipients':
+    post:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Ajout d'un destinataire à l'envoi
+      description: Cette API permet d'ajouter un destinataire à l'envoi. Le nombre de destinataires est limité à 6 000.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_creation'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: URL vers la ressource
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/recipient'
+          examples:
+            application/json: 
+              {
+                  "id":"110e8400-e29b-11d4-a716-446655440000",
+                  "address_line_1":"Maileva",
+                  "address_line_2":"M. Richard DUPONT",
+                  "address_line_3":"Batiment C",
+                  "address_line_4":"10 rue de la nouvelle france",
+                  "address_line_5":"",
+                  "address_line_6":"7500 Paris",
+                  "country_code":"FR",
+                  "status":"DRAFT",
+                  "status_detail":"",
+                  "last_delivery_status":"",
+                  "last_delivery_status_date":"",
+                  "contact_id":"",
+                  "postage_price":0,
+                  "registered_number":"1E00232062142",
+                  "archive_url":""
+
+              }
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    get:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Liste des destinataires d'un envoi
+      description: >-
+        Cette API permet de récupérer la liste des destinataires d'un envoi.
+
+        Cette liste peut être paginée. Par défaut, la pagination est de 50
+        résultats. Elle peut atteindre 500 au maximum.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/paging_start_index'
+        - $ref: '#/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/recipients'
+          examples:
+            application/json: 
+              {
+                  "recipients": [
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440000",
+                          "address_line_1":"Maileva",
+                          "address_line_2":"M. Richard DUPONT",
+                          "address_line_3":"Batiment C",
+                          "address_line_4":"10 rue de la nouvelle france",
+                          "address_line_5":"",
+                          "address_line_6":"7500 Paris",
+                          "country_code":"FR",
+                          "status":"DRAFT",
+                          "status_detail":"",
+                          "last_delivery_status":"",
+                          "last_delivery_status_date":"",
+                          "contact_id":"",
+                          "postage_price":0,
+                          "registered_number":"1E00232062142",
+                          "archive_url":""
+                      },
+                      {
+                          "id":"110e8400-e29b-11d4-a716-446655440001",
+                          "address_line_1":"Maileva",
+                          "address_line_2":"M. Suzanne FRANCIS",
+                          "address_line_3":"Batiment T",
+                          "address_line_4":"9 rue de Paris",
+                          "address_line_5":"",
+                          "address_line_6":"7500 Paris",
+                          "country_code":"FR",
+                          "status":"DRAFT",
+                          "status_detail":"",
+                          "last_delivery_status":"",
+                          "last_delivery_status_date":"",
+                          "contact_id":"",
+                          "postage_price":0,
+                          "registered_number":"1F00067884810",
+                          "archive_url":""
+                      }
+                  ],
+                  "paging": {
+                        "prev":"",
+                        "next":"",
+                        "total_results":2
+                  }
+
+              }
+      
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Suppression de tous les destinataires
+      description: >-
+        Cette API permet de supprimer tous les destinataires d'un
+        envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  '/sendings/{sending_id}/recipients/{recipient_id}':
+    get:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Détail d'un destinataire
+      description: Cette API permet de lister les données d'un destinataire d'un envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/recipient'
+          examples:
+            application/json: 
+              {
+                  "id":"110e8400-e29b-11d4-a716-446655440000",
+                  "address_line_1":"Maileva",
+                  "address_line_2":"M. Richard DUPONT",
+                  "address_line_3":"Batiment C",
+                  "address_line_4":"10 rue de la nouvelle france",
+                  "address_line_5":"",
+                  "address_line_6":"7500 Paris",
+                  "country_code":"FR",
+                  "status":"DRAFT",
+                  "status_detail":"",
+                  "last_delivery_status":"",
+                  "last_delivery_status_date":"",
+                  "contact_id":"",
+                  "postage_price":0,
+                  "registered_number":"1E00232062142",
+                  "archive_url":""
+
+              }
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Suprression d'un destinataire
+      description: Cette API permet de supprimer un destinataire d'un envoi.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+
+  '/sendings/{sending_id}/recipients/imports':
+    post:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Ajout d'un ou de plusieurs destinataire(s) à l'envoi
+      description: Cette API permet d'ajouter un ou plusieurs destinataire(s) à l'envoi. Le nombre de destinataires à l'importation est limité à 6 000.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/import_recipients'
+      responses:
+        '202':
+          description: Successful operation
+          headers:
+            Location:
+              description: URL vers la ressource
+              type: string
+              format: url
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+  '/sendings/{sending_id}/recipients/imports/{import_id}':
+    get:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Avancement d'import des destinataire(s) d'un envoi
+      description: >-
+        Cette API permet de connaitre l'état d'avancement des destinataire(s)
+        importé(s).
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/import_recipients_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/import_recipients_response'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+
+
+  '/sendings/{sending_id}/recipients/{recipient_id}/delivery_statuses':
+    get:
+      tags:
+      - "Destinataires"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Liste des statuts de distribution d'un destinataire
+      description: >-
+        Cette API permet de lister les statuts de distribution d'un destinataire.
+        
+        Cette liste peut être paginée. Par défaut, la pagination est de 50 résultats.
+        Elle peut atteindre 500 au maximum.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_id'
+        - $ref: '#/parameters/paging_start_index'
+        - $ref: '#/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/delivery_statuses'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+ 
+  '/sendings/{sending_id}/recipients/{recipient_id}/download_archive':
+    get:
+      tags:
+      - "Archive"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Télécharger le courrier envoyé au destinataire
+      description: >-
+        Cette API permet de télécharger au format PDF le courrier envoyé au destinataire.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: file
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  '/sendings/{sending_id}/recipients/{recipient_id}/download_acknowledgement_of_receipt':
+    get:
+      tags:
+      - "Avis de réception (AR)"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      summary: Télécharger l'avis de réception archivé du destinataire
+      description: >-
+        Cette API permet de télécharger au format PDF l'avis de réception archivé du destinataire.
+      parameters:
+        - $ref: '#/parameters/sending_id'
+        - $ref: '#/parameters/recipient_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: file
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+
+
+
+
+
+
+
+  '/sendings/{sending_id}/download_deposit_proof':
+    get:
+      tags:
+      - "Preuve de dépôt"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      description: >-
+        Cette API permet de télécharger la preuve de dépôt
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: file
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'
+
+  /sendings/{sending_id}/invoice_items:
+    get:
+      tags:
+      - "Facturation"
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      description: "Cette API permet de retourner la liste des articles qui composent l'envoi.
+      
+        Voici la liste des articles ci-dessous : 
+      
+      
+          |Code|Désignation|TVA|description|
+          
+          |---|---|---|---|
+          
+          |COLLR01|1ere Page Couleur (LREL Facteur C6)|Taux plein|Première page couleur LREL facteur C6|
+
+          |COLLR02|Page Suiv Couleur (LREL Facteur C6)|Taux plein|Pages suivantes couleur LREL facteur C6|
+
+          |COLLR11|1ere Page Couleur (LREL Facteur C4)|Taux plein|Première page couleur LREL facteur C4|
+
+          |COLLR12|Page Suiv Couleur (LREL Facteur C4)|Taux plein|Pages suivantes couleur LREL facteur C4|
+
+          |COULR01|1ere Page N&B (LREL Facteur C6)|Taux plein|Première page noir & blanc LREL facteur C6|
+
+          |COULR02|Page Suiv N&B (LREL Facteur C6)|Taux plein|Pages suivantes noir & blanc LREL facteur C6|
+
+          |COULR11|1ere Page N&B (LREL Facteur C4)|Taux plein| Première page noir & blanc LREL facteur C4|
+
+          |COULR12|Page Suiv N&B (LREL Facteur C4)|Taux plein|Pages suivantes noir & blanc LREL facteur C4|
+
+          |ARCHLRS601|Archivea LREL 6 ans Secure, 1e|Taux plein|Archivage 6 ans de la première page|
+
+          |ARCHLRS602|Archivea LREL 6 ans Secure, 2e|Taux plein|Archivage 6 ans des  pages suivantes|
+
+          |ARCHLRS101|Archivea LREL 10 ans Secure, 1e|Taux plein|Archivage 10 ans de la première page|
+          
+          |ARCHLRS102|Archivea LREL 10 ans Secure, 2e|Taux plein|Archivage 10 ans des pages suivantes|
+
+          |ARCHLRE601|Archivea LREL 6 ans Online 1e p|Taux plein|consultation 6 ans de l'archivage de la première page|
+
+          |ARCHLRE602|Archivea LREL 6 ans Online 2e p|Taux plein|consultation 6 ans de l'archivage des pages suivantes|
+
+          |ARCHLRE101|Archivea LREL 10 ans Online, 1e|Taux plein|consultation 10 ans de l'archivage de la première page|
+
+          |ARCHLRE102|Archivea LREL 10 ans Online, 2e|Taux plein|consultation 10 ans de l'archivage des pages suivantes|
+
+          |GESTIONAR01|Option Gestion des AR|Taux plein|Gestion des AR|
+
+          |XAFFR10|Affranch Lettre Recom En Ligne ss|Sans TVA|Affranchissement LREL sans AR|
+
+          |XAFFR11|Affranch Lettre Recom En Ligne av|Sans TVA|Affranchissement LREL avec AR|
+
+          |PORTEADRESSE|Page porte-adresse|Sans TVA|Nombre de pages porte-adresse|
+
+          |POIDS|Poids d'un destinataire (un pli)|Sans TVA|Poids en gramme|
+
+          |OM1|Complément aérien vers la zone OM1|Sans TVA|Nombre de destinataires vers la zone OM1|
+
+          |OM2|Complément aérien vers la zone OM2|Sans TVA|Nombre de destinataires vers la zone OM2|
+
+      
+      "
+      
+      parameters:
+        - $ref: '#/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/invoice_items_response'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error'

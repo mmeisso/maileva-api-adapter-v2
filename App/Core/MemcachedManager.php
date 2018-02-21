@@ -8,7 +8,10 @@
 
 namespace MailevaApiAdapter\App\Core;
 
-
+/**
+ * Class MemcachedManager
+ * @package MailevaApiAdapter\App\Core
+ */
 class MemcachedManager
 {
 
@@ -19,11 +22,16 @@ class MemcachedManager
      */
     private $memcached;
 
-    private function __construct()
+    /**
+     * MemcachedManager constructor.
+     * @param string $host
+     * @param int $port
+     */
+    private function __construct(string $host, int $port)
     {
         try {
             $this->memcached = new \Memcached();
-            $this->memcached->addServer('localhost', 11211);
+            $this->memcached->addServer($host, $port);
         } catch (\MemcachedException $e) {
             throw $e;
         } catch (\Exception $e) {
@@ -31,10 +39,10 @@ class MemcachedManager
         }
     }
 
-    public static function getInstance(): MemcachedManager
+    public static function getInstance(string $host, int $port): MemcachedManager
     {
         if (is_null(self::$instance)) {
-            self::$instance = new MemcachedManager();
+            self::$instance = new MemcachedManager($host, $port);
         }
         return self::$instance;
     }

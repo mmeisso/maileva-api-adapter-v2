@@ -1,23 +1,21 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Loïc
- * Date: 08/02/2018
- * Time: 14:28
+ * User: loic
+ * Date: 21/02/2018
+ * Time: 11:05
  */
 
 namespace MailevaApiAdapter\App\Exception;
 
 /**
- * Class RoutingException
+ * Class MailevaParameterException
  * @package MailevaApiAdapter\App\Exception
  */
-class RoutingException extends MailevaException
+class MailevaParameterException extends \Exception
 {
-
-
     /**
-     * RoutingException constructor.
+     * MailevaParameterException constructor.
      * @param string $message
      * @param int $code
      * @param \Throwable|null $previous
@@ -29,5 +27,4 @@ class RoutingException extends MailevaException
         error_log('[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString()));
         echo '[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString());
     }
-
 }

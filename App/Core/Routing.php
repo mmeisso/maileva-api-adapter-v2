@@ -11,10 +11,14 @@ namespace MailevaApiAdapter\App\Core;
 
 use MailevaApiAdapter\App\Core\Http\Request\Method;
 
+/**
+ * Class Routing
+ * @package MailevaApiAdapter\App\Core
+ */
 class Routing
 {
 
-    const BASE_URI = 'https://api.recette.aws.maileva.net';
+
 
     const REQUIRED = "REQUIRED";
 
@@ -27,7 +31,7 @@ class Routing
         [
             'authenticated_route' => false,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/authentication/oauth2/authorize',
+            'url' => '/oauth2/authorize',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -46,16 +50,14 @@ class Routing
         [
             'authenticated_route' => false,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/authentication/oauth2/token',
+            'url' => '/oauth2/token',
             'headers' => [
                 'accept' => 'application/json',
-                #'Authorization' => Routing::REQUIRED,
+                'Authorization' => Routing::REQUIRED,
                 'Content-Type' => 'application/x-www-form-urlencoded',
                 'cache-control' => 'no-cache'
             ],
             'params' => [
-                'client_id' => Routing::REQUIRED,
-                'client_secret' => Routing::REQUIRED,
                 'grant_type' => 'password',
                 'username' => Routing::REQUIRED,
                 'password' => Routing::REQUIRED
@@ -71,7 +73,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings',
+            'url' => '/sendings',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -90,7 +92,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/sendings-api/v1/mail/sendings',
+            'url' => '/sendings',
             'headers' => [
                 'accept' => 'application/json',
             ],
@@ -108,7 +110,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}',
+            'url' => '/sendings/{sending_id}',
             'headers' => [
                 'accept' => 'application/json',
             ],
@@ -125,7 +127,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::DELETE,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}',
+            'url' => '/sendings/{sending_id}',
             'headers' => [
                 'accept' => 'application/json',
             ],
@@ -143,14 +145,16 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents',
+            'url' => '/sendings/{sending_id}/documents',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'multipart/form-data'
             ],
             'params' => [
                 'sending_id' => Routing::REQUIRED,
-                'file' => Routing::REQUIRED
+                'multipart' => Routing::REQUIRED,
+                //'document' => Routing::REQUIRED,
+                //'metadata' => Routing::REQUIRED
             ],
 
         ];
@@ -163,7 +167,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents',
+            'url' => '/sendings/{sending_id}/documents',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -182,7 +186,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents/{document_id}/set_position',
+            'url' => '/sendings/{sending_id}/documents/{document_id}/set_position',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -202,7 +206,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents/import_from_library',
+            'url' => '/sendings/{sending_id}/documents/import_from_library',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -220,7 +224,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::DELETE,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents/{document_id}',
+            'url' => '/sendings/{sending_id}/documents/{document_id}',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -237,7 +241,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/documents/{document_id}',
+            'url' => '/sendings/{sending_id}/documents/{document_id}',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -254,7 +258,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients/imports',
+            'url' => '/sendings/{sending_id}/recipients/imports',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -272,7 +276,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients/imports/{import_id}',
+            'url' => '/sendings/{sending_id}/recipients/imports/{import_id}',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -290,7 +294,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients',
+            'url' => '/sendings/{sending_id}/recipients',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -308,7 +312,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::DELETE,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients',
+            'url' => '/sendings/{sending_id}/recipients',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -324,7 +328,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients/import_from_address_book',
+            'url' => '/sendings/{sending_id}/recipients/import_from_address_book',
             'headers' => [
                 'accept' => 'application/json',
                 'Content-Type' => 'application/json'
@@ -342,7 +346,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::GET,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients/{recipient_id}',
+            'url' => '/sendings/{sending_id}/recipients/{recipient_id}',
             'headers' => [
                 'accept' => 'application/json'
             ],
@@ -360,7 +364,7 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::DELETE,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/recipients/{recipient_id}',
+            'url' => '/sendings/{sending_id}/recipients/{recipient_id}',
             'headers' => [
                 'accept' => 'application/json',
             ],
@@ -385,9 +389,9 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::PATCH,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/options',
+            'url' => '/sendings/{sending_id}/options',
             'headers' => [
-                'accept' => 'application/json',
+                'accept' => '*/*',
                 'Content-Type' => 'application/json'
             ],
             'params' => [
@@ -404,9 +408,9 @@ class Routing
         [
             'authenticated_route' => true,
             'method' => Method::POST,
-            'url' => Routing::BASE_URI . '/mail/v1/sendings/{sending_id}/submit',
+            'url' => '/sendings/{sending_id}/submit',
             'headers' => [
-                'accept' => 'application/json',
+                'accept' => '*/*',
             ],
             'params' => [
                 'sending_id' => Routing::REQUIRED
@@ -416,3 +420,5 @@ class Routing
 
 
 }
+
+

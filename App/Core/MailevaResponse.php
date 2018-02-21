@@ -8,16 +8,18 @@
 
 namespace MailevaApiAdapter\App\Core;
 
-
-use MailevaApiAdapter\App\Core\Http\Client\Header;
-use MailevaApiAdapter\App\Core\Http\Client\Response;
+use GuzzleHttp\Psr7\Response;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 
+/**
+ * Class MailevaResponse
+ * @package MailevaApiAdapter\App\Core
+ */
 class MailevaResponse
 {
 
     private $route;
-    private $responseAsJson = null;
+    private $responseAsArray = null;
 
     /**
      * MailevaResponse constructor.
@@ -28,51 +30,64 @@ class MailevaResponse
     public function __construct(Route $route, Response $response)
     {
         $this->route = $route;
-        $this->checkValidityResponse($response->header, $response->body);
+
+        $this->checkValidityResponse($response->getStatusCode(), $response->getBody()->getContents(), $response->getHeaders());
         $this->registerAuthentication();
     }
 
     /**
-     * checkValidityResponse
-     * @param Header $header
+     * @param int $statusCode
      * @param string $body
+     * @param array $headers
      * @throws MailevaResponseException
      */
-    private function checkValidityResponse(Header $header, string $body)
+    private function checkValidityResponse(int $statusCode, string $body, array $headers)
     {
 
-        if ($header->statusCode !== 200) {
-            throw new MailevaResponseException('Wrong statusCode ' . $header->statusCode);
+        if ($statusCode > 300) {
+            throw new MailevaResponseException('Wrong statusCode ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod() . ' body ' . $body);
+        }
+
+        #201, 204 no data...
+        if ($statusCode !== 201 && $statusCode !== 204) {
+
+            if (strlen(trim($body)) > 0) {
+                $json = json_decode($body, true);
+                if (is_null($json)) {
+                    throw new MailevaResponseException('Response is not Json compliant ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod() . ' body ' . $body);
+                }
+
+                $this->responseAsArray = json_decode($body, true);
+            }
+        } else {
+            if ($statusCode === 201) {
+                if (array_key_exists('Location', $headers) && count($headers['Location']) > 0) {
+                    $asArray = explode('/', $headers['Location'][0]);
+                    $this->responseAsArray = [
+                        'sendingId' => $asArray[count($asArray) - 1]
+                    ];
+                }
+            }
         }
 
 
-        if ($header->statusMessage !== 'OK') {
-            throw new MailevaResponseException('Wrong statusMessage ' . $header->statusMessage);
-        }
 
-        $json = json_decode($body, true);
-
-        if (is_null($json)) {
-            throw new MailevaResponseException('Response is not Json compliant ' . $header->statusMessage);
-        }
-
-        $this->responseAsJson = json_decode($body, true);
 
     }
 
     private function registerAuthentication()
     {
-        if (isset($this->responseAsJson['access_token']) && isset($this->responseAsJson['expires_in'])) {
-            $this->route->getMailevaApiAdapter()->setAccessToken($this->responseAsJson['access_token'], $this->responseAsJson['expires_in']);
+        if (isset($this->responseAsArray['access_token']) && isset($this->responseAsArray['expires_in'])) {
+            $this->route->getMailevaApiAdapter()->setAccessToken($this->responseAsArray['access_token'], $this->responseAsArray['expires_in']);
         }
     }
 
     /**
      * @return mixed
      */
-    public function getResponseAsJson()
+    public function getResponseAsArray()
     {
-        return $this->responseAsJson;
+        return $this->responseAsArray;
     }
 
 

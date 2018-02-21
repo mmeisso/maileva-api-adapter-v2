@@ -1,0 +1,18 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: loic
+ * Date: 21/02/2018
+ * Time: 11:05
+ */
+
+namespace MailevaApiAdapter\App\Exception;
+
+/**
+ * Class MailevaException
+ * @package MailevaApiAdapter\App\Exception
+ */
+class MailevaException  extends \Exception
+{
+
+}

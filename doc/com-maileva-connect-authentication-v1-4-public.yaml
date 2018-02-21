@@ -1,0 +1,283 @@
+openapi: 3.0.0
+################################################################################
+#                              API Information                                 #
+################################################################################
+info:
+  version: "1.4"
+  contact:
+    name: Maileva API team
+    url: 'http://www.maileva.com'
+  title: Maileva / Authentification
+  description: |
+  
+  
+      # Description générale
+      
+      
+        L'authentification aux API Maileva est régie par un serveur d'authentification centrale qui implémente le protocole OAuth2. Le serveur d'authentification délivre des jetons d'accès (*token*). La présente documentation décrit les différentes méthodes pour obetnir un jeton.
+        
+        Ensuite, lors des appels aux API Maileva, ce jeton d'accès devra être envoyé dans l'entête HTTP Authorization de la requête de la manière suivante :
+
+      ```sh
+      Authorization: Bearer <access_token>
+      ```
+
+
+      # Identification des applications clientes
+
+        Pour qu'une application cliente (Site web, application mobile, partenaire) puisse interroger et authentifier des utilisateurs, elle doit s'enregistrer auprès de Maileva afin de pouvoir appeler (au nom de l'utilisateur connecté) les API. Maileva fournit alors un jeu d'identifiants *client_id*, *client_secret* qui permettra à l'application d'être identifiée auprès du serveur OAuth2.
+
+      # Les modes d'authentification OAuth2
+      Le protocole OAuth2 prévoit plusieurs modes d'authentification, appelés *grant_type*, suivant les cas d'utilisation.
+      
+      1. Implicit grant_type : ce mode est conçu pour les applications de type SPA (Single Page application), autrement dit les applications 'pur client' ne disposant pas de serveur backend comme les applications angular.js par exemple. Ce protocole consiste en un jeu de redirection de l'utilisateur entre l'application et les pages d'authentification Maileva pour authentifier et attribuer un jeton d'accès.
+      Ce mode est sécurisé pour l'utilisateur Maileva vu qu'il saisit ses identifiants Maileva sur le serveur d'authentification Maileva (sur le domaine maileva.com).
+      Ce mode est le mode d'authentification proposé par défaut.
+      Cette authentification s'utilise en appelant la méthode `GET /oauth2/authorize` 
+      2. Ressource Owner Password Credentials grant_type : ce mode est basé sur un appel serveur à serveur (machine-2-machine ou m2m) sans aucune IHM ni jeu de redirection (l'utilisateur n'étant pas forcément derrière un navigateur). Ce mode est conçu principalement pour des applications riches (dans lesquelles les redirections web ne sont pas évidentes) ou encore pour des applications souhaitant proposer leur propre IHM ou une page d'authentification autre que celle du serveur d'authentification OAuth2 Maileva. Ce mode d'authentification nécessite une qualification de la part de Maileva pour être accessible.
+      Cette authentification s'utilise en appelant la méthode `POST /oauth2/token` 
+      3. Client Credentials grant_type : ce mode peut s'assimiler à l'authentification classique par login et mot de passe (Basic Auth par exemple). Ce mode est adapté aux applications accédant à leurs propres ressources. L'utilisateur et l'application cliente se confondent. Ce mode d'authentification nécessite une qualification de la part de Maileva pour être accessible.
+      Cette authentification s'utilise en appelant la méthode `POST /oauth2/token` 
+
+
+      # Format du jeton
+      
+        Le jeton d'accès retourné par l'application d'authentification est au format JWT ([JSON Web Token](https://jwt.io/)).
+
+
+      ```
+      {
+        "type": "JWT",
+        "alg": "HS256"
+      }
+      .
+      {
+        "iss": "Maileva OAuth2",                                   // émetteur du jeton
+        "sub": "acme.dupont",                                      // login de l'utilisateur
+        "exp": 1466263628069,                                      // date d'expiration
+        "iat": 1466177228069,                                      // date d'émission
+        "jti": "e2e279a3-f19c-4cec-bc02-d12961d1f2dc",             // identifiant du jeton
+        "context": {                                               // champs libre
+          "user": {
+            "login": "acme.dupont",                                // login de l'utilisateur
+            "email": "jean.dupont@gmail.com",                      // e-mail de l'utilisateur
+            "last_name": "Dupont",                                 // nom de l'utilisateur
+            "first_name": "Jean",                                  // prénom de l'utilisateur
+            "id": "d34500fa-85d6-40f6-a4ef-246f43042540",          // identifiant unique de l'utilisateur
+            "contract_id": "cc5b1531-81e6-4baa-8b45-4c2662459396", // identifiant unique du contrat
+            "roles": "<user roles>"                                // roles
+          },
+          "client_id": "7ea15580beed2xxxx290ffa37a11a"             // identifiant de l'application
+        }
+      }
+      .
+      <signature du token>
+      
+      ```
+
+
+      # Références
+      
+        OAuth2 RFC-6749 : https://tools.ietf.org/html/rfc6749
+        
+        OAuth2 portal : https://oauth.net/2/
+        
+        Comprendre OAuth2 : http://www.bubblecode.net/fr/2016/01/22/comprendre-oauth2/
+        
+        jwt.io : https://jwt.io/
+        
+################################################################################
+#                  Host, Base Path, Schemes and Content Types                  #
+################################################################################
+servers:
+  - url: https://connect.maileva.com/authentication
+    description:  Production
+  - url: https://api.recette.aws.maileva.net/authentication
+    description:  Recette
+
+###########################################################################
+#                         Components                                      #
+###########################################################################
+components:
+
+  schemas:
+  
+    Authorize:
+      type: object
+      required:
+        - client_id
+        - redirect_uri
+        - response_type
+      properties:
+        client_id:
+          type: string
+          description: Identifiant de l’application
+        redirect_uri:
+          type: string
+          description: URL de redirection de l’application cliente
+        state:
+          type: string
+          description: Identifiant généré par l’application cliente souhaitant identifier son appel (au retour du serveur)
+        response_type:
+          type: string
+          description: Type de réponse (obligatoirement ‘token’)
+          enum: 
+            - token
+  
+    Error:
+      description: Description de l'erreur
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  
+    Errors:
+      description: Liste des erreurs
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+  
+    Token_Response:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Token d'accès pour accéder aux ressources de l'utilisateur
+        expires_in:
+          type: integer
+          description: Délai d'expiration du token (en secondes)
+
+###############################################################################
+#                                   Paths                                     #
+###############################################################################
+
+paths:
+
+  /oauth2/authorize:
+    get:
+      description: Permet d'obtenir un jeton d'authentification OAuth2 en utilisant le mode d'authentification `Implicit Credentials`.
+        
+        
+        Si l’identification de l’application (client_id) est réussie, l'utilisateur est redirigé vers la page d'authentification Maileva. Il est alors invité à saisir ces identifiants de connexion. Si ces identifiants sont corrects, il est alors redirigé vers l'application cliente d'origine où le token d'accès est passé dans le fragment de l'URL de redirection fournie en paramètre (redirect_uri).
+        
+        
+        Exemple d'url appelée en retour
+        ```
+        http://my-application.com/redirect_page#access_token=2YotnFZFEjr1zCsicMWpAA&expires_in=3600&state=123-dfd-fdd-fd1
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Authorize'
+
+      responses:
+        302: 
+          description: (Temporarily moved) si l’identification de l’application est réussie, l'utilisateur est redirigé vers la page d'authentification Maileva
+        401:
+          description: (Unauthorized) les identifiants de l'application cliente (client_id ou redirect_uri) sont invalides
+        403:
+          description: (Forbidden) l'application cliente n'est pas autorisée ou n'est pas enregistrée sur le mode `Implicit Credentials`
+        404:
+          description: (Bad Request) un des paramètres requis est manquant
+
+  /oauth2/token:
+    post:
+      description: "Permet d'obtenir un jeton d'authentification OAuth2 utilisant le mode d'authentification `Ressource Owner Password Credentials` ou le mode `Client Credentials`.
+      
+      
+        Mode `Ressource Owner Password Credentials`  
+        Le paramètre *grant_type* doit être positionné à *password*.
+        Les paramètres *username* et *password* sont obligatoires.
+      
+      
+        Mode `Client Credentials`  
+        Le paramètre *grant_type* doit être positionné à *client_credentials*.
+        Les paramètres *username* et *password* ne sont pas requis.
+        "
+      parameters:
+        - in: header
+          name: Authorization
+          description: "Identifiant de l'application et son mot de passe. De la forme Basic base64(client_id:client_secret)"
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+              properties:
+                grant_type:
+                  description: Mode d’authentification
+                  type: string
+                  enum:
+                    - password
+                    - client_credentials
+                username:
+                  description: Identifiant de l’utilisateur Maileva
+                  type: string
+                password:
+                  description: Mot de passe de l’utilisateur
+                  type: string
+        
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token_Response'
+                examples:
+                  application/json: |
+                    {
+      
+                      "access_token": "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFMyNTYifQ==.eyJpc3MiOiJNYWlsZXZhIE9BdXRoMiIsInN1YiI6InRlc3RjbGllbnQiLCJleHAiOjE0NjY1ODk4MjgxMzYsImlhdCI6MTQ2NjUwMzQyODEzNiwianRpIjoiMmIzNzRhNzItYzg2NC00YmFjLThjYjAtYmQ1MTJkYzM3ZDU5IiwiY29udGV4dCI6eyJ1c2VyIjp7ImxvZ2luIjoidGVzdGNsaWVudCIsImVtYWlsIjoiIiwibGFzdF9uYW1lIjoiVEVTVCIsImZpcnN0X25hbWUiOiJERVZFTE9QUEVNRU5UIn0sImNsaWVudF9pZCI6IjdlYTE1NTgwYmVlZDJhMDRiMWUzMjkwZmZhMzdhMTFhIn19.b5535d8f544e810c32ca78021b39e3cbe22a6150f50f36d9384d4917fba80bb9",
+                      "expires_in": "1440000"
+                    }        
+        400:
+          description: (Bad request)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+                examples:
+                  application/json: |
+                    {
+                      "errors": [
+                        {
+                          "code": "CLIENT_ERROR",
+                          "message": "Invalid grant type parameter"
+                        }
+                      ]
+                    }
+        401:
+          description: (Unauthorized) les identifiants de l'application cliente ou les  identifiants de l'utilisateur sont invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Errors"
+                examples:
+                  application/json: |
+                    {
+                      "errors": [
+                        {
+                          "code": "CLIENT_ERROR",
+                          "message": "Authentication failed"
+                        }
+                      ]
+                    }
+        403:
+          description: (Forbidden) l'application cliente n'est pas autorisée ou n'est pas enregistrée sur le mode `Ressource Owner Password Credentials` ou `Client Credentials`
+        404:
+          description: (Bad Request) un des paramètres requis est manquant

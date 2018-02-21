@@ -5,22 +5,211 @@ ini_set('display_errors', 1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-$clientId = 'd9ca6d5e349d44acacdce7e3bb0d0c14';
-$clientSecret = '976b0aa3dbd74ce0a107586ac1d6c528';
-$username = 'recette.eukles';
-$password = '3ukl3s!';
 
-$mailevaApiAdapter = new \MailevaApiAdapter\App\MailevaApiAdapter($clientId, $clientSecret, $username, $password);
+
+$mailevaConnection = new \MailevaApiAdapter\App\MailevaConnection();
+$mailevaConnection->setEnv('DEV')
+    ->setClientId('d9ca6d5e349d44acacdce7e3bb0d0c14')
+    ->setClientSecret('976b0aa3dbd74ce0a107586ac1d6c528')
+    ->setUsername('recette.eukles')
+    ->setPassword('3ukl3s!')
+    ->setMemcacheHost('localhost')
+    ->setMemcachePort(11211);
+
+
+$mailevaApiAdapter = new \MailevaApiAdapter\App\MailevaApiAdapter($mailevaConnection);
+
+
+function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
+{
+
+
+    $mailevaSending = new \MailevaApiAdapter\App\MailevaSending();
+    $mailevaSending
+        ->setName((new DateTime())->format('Y-m-d H:i:s'))
+        ->setPostageType('FAST')
+        ->setColorPrinting(true)
+        ->setDuplexPrinting(true)
+        ->setOptionalAddressSheet(false)
+        ->setNotificationEmail('lpettiti@eukles.com')
+        ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
+        //->setFilepriority()  #optionnal default 1
+        ->setFilename('document.pdf')
+        ->setAddressLine1('Mr Robert jacques')
+        ->setAddressLine2('8 boulevard saint léger')
+        //->setAddressLine3()  #optionnal default ''
+        //->setAddressLine4() #optionnal default ''
+        //->setAddressLine5() #optionnal default ''
+        ->setAddressLine6('13001 Marseille')
+        //->setCountryCode() #optionnal default FR
+        ->setCustomId('My custom ID')
+        ->validate();
+
+    try {
+        $sendingId = $mailevaApiAdapter->post($mailevaSending);
+        echo "sendingId = " . $sendingId;
+    } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
+
+    }
+
+}
+
+#testPost($mailevaApiAdapter);
+#deleteAll($mailevaApiAdapter);
+
+
+#$result = $mailevaApiAdapter->getSendingBySendingId('b69d7cc3-a8b8-4840-ae14-4196421bfa51');
+#var_dump($result->getResponseAsArray());
+#$result = $mailevaApiAdapter->getRecipientsBySendingId('677adbf1-66ef-4583-8362-893f5bb09810');
+#$result = $mailevaApiAdapter->getDocumentsBySendingId('677adbf1-66ef-4583-8362-893f5bb09810');
+#$result = $mailevaApiAdapter->getDocumentBySendingId('b021db9a-fa18-4327-ab8c-83cf0f910fc3', '99baabe7-a828-4941-9fcc-a0e691a876a3');
+
+
+function deleteAll(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
+{
+    $result = $mailevaApiAdapter->getSendings();
+    if (empty($result->getResponseAsArray()['sendings']) === false) {
+        for ($i = 0; $i < count($result->getResponseAsArray()['sendings']); $i++) {
+            if ($result->getResponseAsArray()['sendings'][$i]['status'] === "DRAFT") {
+                $sendingId = $result->getResponseAsArray()['sendings'][$i]['id'];
+                $result = $mailevaApiAdapter->deleteSendingBySendingId($sendingId);
+                var_dump($result->getResponseAsArray());
+            }
+        }
+
+    }
+    $result = $mailevaApiAdapter->getSendings();
+    var_dump($result->getResponseAsArray());
+
+}
 
 
 function testCall(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 {
-    $result = $mailevaApiAdapter->getSendings();
-    var_dump($result);
+
+
+    $sendings = $mailevaApiAdapter->getSendings();
+    echo "lecture des envois" . PHP_EOL;
+    var_dump($sendings->getResponseAsArray());
+
+
+    if (empty($sendings->getResponseAsArray()['sendings'])) {
+        $result = $mailevaApiAdapter->postSending(['name' => 'test loic' . rand()]);
+        echo "réponse creation de l'envoi" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+        echo "lecture des envois" . PHP_EOL;
+        $result = $mailevaApiAdapter->getSendings();
+        var_dump($result->getResponseAsArray());
+    } else {
+        for ($i = 0; $i < count($sendings->getResponseAsArray()['sendings']); $i++) {
+            if ($sendings->getResponseAsArray()['sendings'][$i]['status'] === "DRAFT") {
+                $sendingId = $sendings->getResponseAsArray()['sendings'][$i]['id'];
+            }
+        }
+    }
+
+    if (isset($sendingId)) {
+
+        $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+
+        echo "information du premier envoi de la liste" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+
+        $result = $mailevaApiAdapter->patchSendingBySendingId($sendingId,
+            ["postage_type" => "FAST",
+                "color_printing" => true,
+                "duplex_printing" => true,
+                "optional_address_sheet" => true,
+                "undelivered_mails_management" => true,
+                "notification_email" => "loic.pettiti@gmail.com",
+                //"return_envelope_reference" => "envelope_reference"
+            ]
+        );
+        echo "réponse du patch de l'envoi" . PHP_EOL;
+        var_dump($result);
+
+        $result = $mailevaApiAdapter->postDocumentBySendingId($sendingId,
+
+            [
+                [
+                    'name' => 'document',
+                    'contents' => \GuzzleHttp\Psr7\stream_for('/var/www/maileva/cybble/public/testFiles/document.pdf')
+                ],
+                [
+                    'name' => 'metadata',
+                    'contents' => '{"priority": 4,"name":"document.pdf"}'
+                ]
+
+            ]
+
+        );
+        echo "réponse de l'ajout du fichier" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+        $result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
+        echo "lecture des informations du fichier ajouté" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+
+        $result = $mailevaApiAdapter->postImportRecipientsBySendingId($sendingId,
+            ['import_recipients' =>
+                [
+                    [
+                        'address_line_1' => 'Mr Nom8 Prénom8',
+                        'address_line_2' => '8 boulevard de la tapenade',
+                        'address_line_3' => 'Quartier clemenceau',
+                        'address_line_4' => '',
+                        'address_line_5' => '',
+                        'address_line_6' => '13001 Marseille',
+                        'country_code' => 'FR',
+                        'custom_id' => 'My custom ID'
+                    ]
+                ]
+            ]
+        );
+        echo "réponse de l'ajout d'un destinataire" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+        $result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId, 1, 100);
+        echo "lecture des informations du destinataire" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+
+        $result = $mailevaApiAdapter->postSendingBySendingId($sendingId);
+        echo "réponse de la soumission du formulaire" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+
+        $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+
+        echo "relecture des informations du premier envoi de la liste" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+        echo "relecture des envois" . PHP_EOL;
+        $result = $mailevaApiAdapter->getSendings();
+        var_dump($result->getResponseAsArray());
+
+    } else {
+        $result = $mailevaApiAdapter->postSending(['name' => 'test loic' . rand()]);
+        echo "réponse creation de l'envoi" . PHP_EOL;
+        var_dump($result->getResponseAsArray());
+
+        echo "lecture des envois" . PHP_EOL;
+        $result = $mailevaApiAdapter->getSendings();
+        var_dump($result->getResponseAsArray());
+    }
+
+
+    //
+
 
 }
 
-testCall($mailevaApiAdapter);
+#testCall($mailevaApiAdapter);
+#deleteAll($mailevaApiAdapter);
+
 
 /*
 function testRoute(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
