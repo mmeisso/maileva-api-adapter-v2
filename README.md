@@ -43,14 +43,14 @@
         error_log($e);
     }
     
-##Get sending details
+## Get sending details
     $result = $mailevaApiAdapter->getSendingBySendingId('[SENDING_ID]');
     var_dump($result->getResponseAsArray());
 
-##Get recipients details
+## Get recipients details
     $result = $mailevaApiAdapter->getRecipientsBySendingId('[SENDING_ID]');
     var_dump($result->getResponseAsArray());
 
-##Get documents details
+## Get documents details
     $result = $mailevaApiAdapter->getDocumentsBySendingId('[SENDING_ID]');
     var_dump($result->getResponseAsArray());
