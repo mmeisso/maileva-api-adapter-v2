@@ -3,7 +3,6 @@
   "license": "MIT",
   "type": "library",
   "description": "Maileva api adapter",
-  "version" : "1.0.1",
   "authors": [
     {
       "name": "Loïc PETTITI",
@@ -18,8 +17,5 @@
   },
   "require": {
     "guzzlehttp/guzzle": "~6.0"
-  },
-  "require-dev": {
-    "codeception/codeception": "2.3.3"
   }
 }
