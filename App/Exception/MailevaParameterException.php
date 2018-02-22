@@ -12,7 +12,7 @@ namespace MailevaApiAdapter\App\Exception;
  * Class MailevaParameterException
  * @package MailevaApiAdapter\App\Exception
  */
-class MailevaParameterException extends \Exception
+class MailevaParameterException extends MailevaException
 {
     /**
      * MailevaParameterException constructor.
