@@ -3,6 +3,7 @@
   "license": "MIT",
   "type": "library",
   "description": "Maileva api adapter",
+  "version" : "1.0.1",
   "authors": [
     {
       "name": "Loïc PETTITI",
