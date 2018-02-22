@@ -14,5 +14,8 @@
     "psr-4": {
       "MailevaApiAdapter\\": ""
     }
+  },
+  "require": {
+    "guzzlehttp/guzzle": "~6.0"
   }
 }
