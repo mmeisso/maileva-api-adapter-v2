@@ -1,4 +1,8 @@
 {
+  "name": "eukles/maileva-api-adapter ",
+  "license": "MIT",
+  "type": "library",
+  "description": "Maileva api adapter",
   "authors": [
     {
       "name": "Loïc PETTITI",
