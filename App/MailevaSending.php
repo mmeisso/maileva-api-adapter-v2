@@ -22,7 +22,7 @@ class MailevaSending
     /**@var Bool */
     Private $optionalAddressSheet = null;
     /**@var String */
-    Private $notificationEmail = null;
+    Private $notificationEmail = '';
     /**@var String */
     Private $file = null;
     /**@var Int */
