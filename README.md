@@ -11,6 +11,8 @@
         ->setPassword('[CLIENT_PASSWORD]')
         ->setMemcacheHost('localhost')
         ->setMemcachePort(11211);
+        
+    $mailevaApiAdapter = new \MailevaApiAdapter\App\MailevaApiAdapter($mailevaConnection);
 
 ## Post sending
     #Sending settings
