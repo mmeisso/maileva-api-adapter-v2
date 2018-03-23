@@ -6,7 +6,6 @@ ini_set('display_errors', 1);
 require __DIR__ . '/vendor/autoload.php';
 
 
-
 $mailevaConnection = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnection->setEnv('DEV')
     ->setClientId('d9ca6d5e349d44acacdce7e3bb0d0c14')
@@ -16,6 +15,15 @@ $mailevaConnection->setEnv('DEV')
     ->setMemcacheHost('localhost')
     ->setMemcachePort(11211);
 
+/*
+$mailevaConnection->setEnv('PROD')
+    ->setClientId('6ebf75c54d60440eaf1b07115bff0bc5')
+    ->setClientSecret('3148349a1d19467f8c40f4f7dfa49454')
+    ->setUsername('test.eukless')
+    ->setPassword('Aegp1s')
+    ->setMemcacheHost('localhost')
+    ->setMemcachePort(11211);
+*/
 
 $mailevaApiAdapter = new \MailevaApiAdapter\App\MailevaApiAdapter($mailevaConnection);
 
@@ -31,8 +39,8 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         ->setColorPrinting(true)
         ->setDuplexPrinting(true)
         ->setOptionalAddressSheet(false)
-        ->setNotificationEmail('lpettiti@eukles.com')
-        ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
+        ->setNotificationEmail('')
+        ->setFile('/var/www/maileva/cybble/public/testFiles/pdf_result_23-03-2018_15-34-59.pdf')
         //->setFilepriority()  #optionnal default 1
         ->setFilename('document.pdf')
         ->setAddressLine1('Mr Robert jacques')
@@ -49,7 +57,7 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         $sendingId = $mailevaApiAdapter->post($mailevaSending);
         echo "sendingId = " . $sendingId;
     } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
-
+        var_dump($e);
     }
 
 }
@@ -57,12 +65,14 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 #testPost($mailevaApiAdapter);
 #deleteAll($mailevaApiAdapter);
 
-
-#$result = $mailevaApiAdapter->getSendingBySendingId('b69d7cc3-a8b8-4840-ae14-4196421bfa51');
-#var_dump($result->getResponseAsArray());
-#$result = $mailevaApiAdapter->getRecipientsBySendingId('677adbf1-66ef-4583-8362-893f5bb09810');
-#$result = $mailevaApiAdapter->getDocumentsBySendingId('677adbf1-66ef-4583-8362-893f5bb09810');
-#$result = $mailevaApiAdapter->getDocumentBySendingId('b021db9a-fa18-4327-ab8c-83cf0f910fc3', '99baabe7-a828-4941-9fcc-a0e691a876a3');
+$sendingId = "cb97075f-6c8d-44de-8e62-d0284652cf7e";
+$result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+var_dump($result->getResponseAsArray());
+$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
+var_dump($result->getResponseAsArray());
+$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
+var_dump($result->getResponseAsArray());
+//$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, '76968db3-52c6-4bf6-92ce-9a95def66bef');
 
 
 function deleteAll(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
@@ -135,7 +145,7 @@ function testCall(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             [
                 [
                     'name' => 'document',
-                    'contents' => \GuzzleHttp\Psr7\stream_for('/var/www/maileva/cybble/public/testFiles/document.pdf')
+                    'contents' => \GuzzleHttp\Psr7\stream_for(fopen('/var/www/maileva/cybble/public/testFiles/pdf_result_23-03-2018_15-34-59.pdf', 'rb'))
                 ],
                 [
                     'name' => 'metadata',

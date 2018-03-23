@@ -107,7 +107,7 @@ class MailevaApiAdapter
 
         $this->postDocumentBySendingId($sendingId,
             [
-                ['name' => 'document', 'contents' => \GuzzleHttp\Psr7\stream_for($file)],
+                ['name' => 'document', 'contents' => \GuzzleHttp\Psr7\stream_for(fopen($file, 'rb'))],
                 ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
             ]
         );

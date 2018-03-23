@@ -321,7 +321,7 @@ class Route
                 break;
             case 'prod':
                 if ($this->isAuthenticatedRoute()) {
-                    return 'https://api.maileva.com/mail/v1' . $this->url;
+                    return 'https://api.maileva.com/sendings-api/v1/mail' . $this->url;
                 } else {
                     return 'https://connect.maileva.com/authentication' . $this->url;
                 }
