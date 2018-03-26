@@ -148,7 +148,7 @@ class Routing
             'url' => '/sendings/{sending_id}/documents',
             'headers' => [
                 'accept' => 'application/json',
-                'Content-Type' => 'multipart/form-data'
+                'encType' => 'multipart/form-data'
             ],
             'params' => [
                 'sending_id' => Routing::REQUIRED,

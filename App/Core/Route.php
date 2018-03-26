@@ -92,13 +92,13 @@ class Route
                 switch ($key) {
                     case 'headers':
                         $this->headers = $value;
-                        break;
+                        continue;
                     case 'params':
                         $this->params = $value;
-                        break;
+                        continue;
+                    default:
+                        $this->populate($value);
                 }
-                $this->populate($value);
-
             } else {
                 # a value -> set
                 if ($value === Routing::REQUIRED) {
@@ -108,13 +108,15 @@ class Route
                 switch ($key) {
                     case 'method':
                         $this->method = $value;
-                        break;
+                        continue;
                     case 'url':
                         $this->url = $value;
-                        break;
+                        continue;
                     case 'authenticated_route':
                         $this->authenticatedRoute = $value;
-                        break;
+                        continue;
+                    default:
+                        continue;
 
 
                 }

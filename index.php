@@ -40,7 +40,7 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         ->setDuplexPrinting(true)
         ->setOptionalAddressSheet(false)
         ->setNotificationEmail('')
-        ->setFile('/var/www/maileva/cybble/public/testFiles/pdf_result_23-03-2018_15-34-59.pdf')
+        ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
         //->setFilepriority()  #optionnal default 1
         ->setFilename('document.pdf')
         ->setAddressLine1('Mr Robert jacques')
@@ -65,13 +65,13 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 #testPost($mailevaApiAdapter);
 #deleteAll($mailevaApiAdapter);
 
-$sendingId = "cb97075f-6c8d-44de-8e62-d0284652cf7e";
-$result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
-var_dump($result->getResponseAsArray());
-$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
-var_dump($result->getResponseAsArray());
-$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
-var_dump($result->getResponseAsArray());
+//$sendingId = "cb97075f-6c8d-44de-8e62-d0284652cf7e";
+//$result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+//var_dump($result->getResponseAsArray());
+//$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
+//var_dump($result->getResponseAsArray());
+//$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
+//var_dump($result->getResponseAsArray());
 //$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, '76968db3-52c6-4bf6-92ce-9a95def66bef');
 
 
