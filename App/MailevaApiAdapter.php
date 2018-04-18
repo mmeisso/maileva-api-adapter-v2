@@ -28,7 +28,8 @@ class MailevaApiAdapter
     private $clientSecret;
     private $username;
     private $password;
-    private $env;
+    private $authenticationHost;
+    private $host;
     private $useMemcache = false;
     private $memcacheHost = null;
     private $memcachePort = null;
@@ -40,7 +41,8 @@ class MailevaApiAdapter
      */
     public function __construct(MailevaConnection $mailevaConnection)
     {
-        $this->env = $mailevaConnection->getEnv();
+        $this->authenticationHost = $mailevaConnection->getAuthenticationHost();
+        $this->host = $mailevaConnection->getHost();
         $this->clientId = $mailevaConnection->getClientId();
         $this->clientSecret = $mailevaConnection->getClientSecret();
         $this->username = $mailevaConnection->getUsername();
@@ -57,9 +59,17 @@ class MailevaApiAdapter
     /**
      * @return string
      */
-    public function getEnv(): string
+    public function getHost(): string
     {
-        return $this->env;
+        return $this->host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthenticationHost(): string
+    {
+        return $this->authenticationHost;
     }
 
 

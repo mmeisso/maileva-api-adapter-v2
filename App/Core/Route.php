@@ -243,8 +243,7 @@ class Route
     /**
      * @return bool
      */
-    public
-    function isAuthenticatedRoute(): bool
+    public function isAuthenticatedRoute(): bool
     {
         return $this->authenticatedRoute;
     }
@@ -252,8 +251,7 @@ class Route
     /**
      * @return array
      */
-    public
-    function getHeaders(): array
+    public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -261,8 +259,7 @@ class Route
     /**
      * @return String
      */
-    public
-    function getMethod(): String
+    public function getMethod(): String
     {
         return $this->method;
     }
@@ -270,8 +267,7 @@ class Route
     /**
      * @return array
      */
-    public
-    function getParams(): array
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -279,8 +275,7 @@ class Route
     /**
      * @return mixed
      */
-    public
-    function getMultipart()
+    public function getMultipart()
     {
         return $this->multipart;
     }
@@ -288,8 +283,7 @@ class Route
     /**
      * @param mixed $multipart
      */
-    public
-    function setMultipart($multipart)
+    public function setMultipart($multipart)
     {
         $this->multipart = $multipart;
     }
@@ -299,8 +293,7 @@ class Route
      *
      * @return mixed
      */
-    public
-    function getBody()
+    public function getBody()
     {
         return $this->body;
     }
@@ -309,33 +302,14 @@ class Route
      * @return String
      * @throws RoutingException
      */
-    public
-    function getUrl(): String
+    public function getUrl(): String
     {
-
-        switch (strtolower($this->getMailevaApiAdapter()->getEnv())) {
-            case 'dev':
-                if ($this->isAuthenticatedRoute()) {
-                    return 'https://api.recette.aws.maileva.net/sendings-api/v1/mail' . $this->url;
-                } else {
-                    return 'https://api.recette.aws.maileva.net/authentication' . $this->url;
-                }
-                break;
-            case 'prod':
-                if ($this->isAuthenticatedRoute()) {
-                    return 'https://api.maileva.com/sendings-api/v1/mail' . $this->url;
-                } else {
-                    return 'https://connect.maileva.com/authentication' . $this->url;
-                }
-                break;
-            default:
-                throw new RoutingException('No env specified');
-                break;
+        if ($this->isAuthenticatedRoute()) {
+            return $this->getMailevaApiAdapter()->getHost() . '/sendings-api/v1/mail' . $this->url;
+        } else {
+            return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
         }
-
-
     }
-
 
 }
 

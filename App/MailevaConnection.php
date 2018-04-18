@@ -14,7 +14,8 @@ namespace MailevaApiAdapter\App;
  */
 class MailevaConnection
 {
-    private $env = 'DEV';
+    private $authenticationHost;
+    private $host;
     private $clientId = null;
     private $clientSecret = null;
     private $username = null;
@@ -27,22 +28,41 @@ class MailevaConnection
     }
 
     /**
-     * @return string
+     * @param string $host
+     * @return MailevaConnection
      */
-    public function getEnv(): string
+    public function setHost(string $host): MailevaConnection
     {
-        return $this->env;
+        $this->host = $host;
+        return $this;
     }
 
     /**
-     * @param string $env
+     * @return string
+     */
+    public function getHost(): string
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param string $authenticationHost
      * @return MailevaConnection
      */
-    public function setEnv(string $env): MailevaConnection
+    public function setAuthenticationHost(string $authenticationHost): MailevaConnection
     {
-        $this->env = $env;
+        $this->authenticationHost = $authenticationHost;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getAuthenticationHost(): string
+    {
+        return $this->authenticationHost;
+    }
+
 
     /**
      * @return string
@@ -159,5 +179,6 @@ class MailevaConnection
         $this->memcachePort = $memcachePort;
         return $this;
     }
+
 
 }
