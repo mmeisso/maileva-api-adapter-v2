@@ -305,7 +305,12 @@ class Route
     public function getUrl(): String
     {
         if ($this->isAuthenticatedRoute()) {
-            return $this->getMailevaApiAdapter()->getHost() . '/sendings-api/v1/mail' . $this->url;
+            if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
+                return $this->getMailevaApiAdapter()->getHost() . '/mail/v1' . $this->url;
+            } else {
+                return $this->getMailevaApiAdapter()->getHost() . '/sendings-api/v1/mail' . $this->url;
+            }
+
         } else {
             return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
         }

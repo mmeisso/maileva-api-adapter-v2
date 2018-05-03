@@ -7,15 +7,27 @@ require __DIR__ . '/vendor/autoload.php';
 
 
 $mailevaConnection = new \MailevaApiAdapter\App\MailevaConnection();
+
 $mailevaConnection
+    /*
     ->setAuthenticationHost('https://api.recette.aws.maileva.net')
     ->setHost('https://api.recette.aws.maileva.net')
     ->setClientId('d9ca6d5e349d44acacdce7e3bb0d0c14')
     ->setClientSecret('976b0aa3dbd74ce0a107586ac1d6c528')
-    ->setUsername('recette.eukles')
-    ->setPassword('3ukl3s!')
+
+    */
+    ->setAuthenticationHost('https://api.sandbox.aws.maileva.net')
+    ->setHost('https://api.sandbox.aws.maileva.net')
+    ->setClientId('2382a479-a4a6-4618-9854-0dbd6bcec849')
+    ->setClientSecret('3151dfc6-fbab-4597-86f9-fa7ecb799137')
+
+    ->setUsername('sandbox.1567')
+    ->setPassword('o93126')
     ->setMemcacheHost('localhost')
     ->setMemcachePort(11211);
+
+
+
 
 /*
 $mailevaConnection
@@ -23,8 +35,8 @@ $mailevaConnection
     ->setHost('https://api.maileva.com')
     ->setClientId('6ebf75c54d60440eaf1b07115bff0bc5')
     ->setClientSecret('3148349a1d19467f8c40f4f7dfa49454')
-    ->setUsername('test.eukless')
-    ->setPassword('3uklEs2016+')
+    ->setUsername('EUKLES.EUKLES')
+    ->setPassword('XeL9yAJyvy')
     ->setMemcacheHost('localhost')
     ->setMemcachePort(11211);
 */
@@ -66,18 +78,20 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 
 }
 
-testPost($mailevaApiAdapter);
+#testPost($mailevaApiAdapter);
+#die;
 #deleteAll($mailevaApiAdapter);
-/*
-$sendingId = "8c918f4a-7d3d-4db6-9669-eaa7d89b55ad";
+
+$sendingId = "38e744d1-f96d-4a80-8436-8371628a228a";
 $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
 var_dump($result->getResponseAsArray());
-$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
+//$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
+//var_dump($result->getResponseAsArray());
+//$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
+//var_dump($result->getResponseAsArray());
+/*$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, 'c393a14f-cba3-4b56-8ea8-eb0663fcc6bb');
 var_dump($result->getResponseAsArray());
-$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
-var_dump($result->getResponseAsArray());
-$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, 'c393a14f-cba3-4b56-8ea8-eb0663fcc6bb');
-var_dump($result->getResponseAsArray());*/
+*/
 
 function deleteAll(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 {
