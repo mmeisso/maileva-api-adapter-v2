@@ -15,5 +15,6 @@ class MailevaSendingStatus
     const REJECTED = "REJECTED";
     const PROCESSED = "PROCESSED";
     const PROCESSED_WITH_ERRORS = "PROCESSED_WITH_ERRORS";
+    const ERROR = "ERROR";
 
 }
