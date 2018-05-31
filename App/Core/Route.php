@@ -217,7 +217,7 @@ class Route
                     break;
             }
 
-            $client = new Client();
+            $client = new Client(['verify' => false ]);
 
             $res = $client->request($this->getMethod(), $this->getUrl(), $requestParameters);
 
