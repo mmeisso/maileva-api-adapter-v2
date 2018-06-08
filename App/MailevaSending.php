@@ -380,4 +380,25 @@ class MailevaSending
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getUID(): String
+    {
+        $postageType = is_null($this->getPostageType()) ? "postageType" : $this->getPostageType();
+        $colorPrinting = is_null($this->isColorPrinting()) ? "colorPrinting" : (String)$this->isColorPrinting();
+        $isDuplexPrinting = is_null($this->isDuplexPrinting()) ? "duplexPrinting" : (String)$this->isDuplexPrinting();
+        $isOptionalAddressSheet = is_null($this->isOptionalAddressSheet()) ? "optionalAddressSheet" : (String)$this->isOptionalAddressSheet();
+        $getAddressLine1 = is_null($this->getAddressLine1()) ? "addressLine1" : $this->getAddressLine1();
+        $getAddressLine2 = is_null($this->getAddressLine2()) ? "addressLine2" : $this->getAddressLine2();
+        $getAddressLine3 = is_null($this->getAddressLine3()) ? "addressLine3" : $this->getAddressLine3();
+        $getAddressLine4 = is_null($this->getAddressLine4()) ? "addressLine4" : $this->getAddressLine4();
+        $getAddressLine5 = is_null($this->getAddressLine5()) ? "addressLine5" : $this->getAddressLine5();
+        $getAddressLine6 = is_null($this->getAddressLine6()) ? "addressLine6" : $this->getAddressLine6();
+        $getFile = is_null($this->getFile()) ? "file" : file_exists($this->getFile()) ? md5_file($this->getFile()) : "";
+
+        return base64_encode($postageType . $colorPrinting . $isDuplexPrinting . $isOptionalAddressSheet . $getAddressLine1 . $getAddressLine2 . $getAddressLine3 . $getAddressLine4 . $getAddressLine5 . $getAddressLine6 . $getFile);
+
+    }
+
 }

@@ -60,7 +60,7 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         //->setFilepriority()  #optionnal default 1
         ->setFilename('document.pdf')
         ->setAddressLine1('Mr Robert jacques')
-        ->setAddressLine2('8 boulevard saint léger')
+        ->setAddressLine2('8 boulevard saint Leger')
         //->setAddressLine3()  #optionnal default ''
         //->setAddressLine4() #optionnal default ''
         //->setAddressLine5() #optionnal default ''
@@ -69,17 +69,17 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         ->setCustomId('My custom ID')
         ->validate();
 
-    try {
-        $sendingId = $mailevaApiAdapter->post($mailevaSending);
+   // try {
+        $sendingId = $mailevaApiAdapter->post($mailevaSending, true);
         echo "sendingId = " . $sendingId;
-    } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
-        var_dump($e);
-    }
+   // } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
+        //var_dump($e);
+   // }
 
 }
 
-#testPost($mailevaApiAdapter);
-#die;
+testPost($mailevaApiAdapter);
+die;
 #deleteAll($mailevaApiAdapter);
 
 $sendingId = "38e744d1-f96d-4a80-8436-8371628a228a";

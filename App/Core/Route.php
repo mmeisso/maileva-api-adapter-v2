@@ -237,6 +237,8 @@ class Route
 
         } catch (GuzzleException $guzzleException) {
             throw new MailevaResponseException($guzzleException->getMessage());
+        } catch (\Throwable $throwable) {
+            throw new MailevaResponseException($throwable->getMessage());
         }
     }
 

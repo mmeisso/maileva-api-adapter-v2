@@ -12,7 +12,7 @@ use MailevaApiAdapter\App\Core\MailevaResponse;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\Route;
 use MailevaApiAdapter\App\Core\Routing;
-use MailevaApiAdapter\App\Exception\MailevaParameterException;
+use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 
 /**
@@ -72,14 +72,14 @@ class MailevaApiAdapter
         return $this->authenticationHost;
     }
 
-
     /**
      * @param MailevaSending $mailevaSending
+     * @param bool $checkSimilarPreviousHasAlreadyBeenSent
      * @return string
-     * @throws MailevaParameterException
+     * @throws MailevaException
      * @throws MailevaResponseException
      */
-    public function post(MailevaSending $mailevaSending): string
+    public function post(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
     {
         $name = $mailevaSending->getName();
         $postageType = $mailevaSending->getPostageType();
@@ -98,6 +98,17 @@ class MailevaApiAdapter
         $addressLine6 = $mailevaSending->getAddressLine6();
         $countryCode = $mailevaSending->getCountryCode();
         $customId = $mailevaSending->getCustomId();
+
+        if ($checkSimilarPreviousHasAlreadyBeenSent === true) {
+            if ($this->useMemcache === false) {
+                throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
+            }
+            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($mailevaSending->getUID(), false);
+            if ($sendingIdSimilarPrevious !== false) {
+                throw new MailevaException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+            }
+        }
+
 
         $sending = $this->postSending(['name' => $name]);
         $sendingId = $sending->getResponseAsArray()['sendingId'];
@@ -140,6 +151,11 @@ class MailevaApiAdapter
         );
 
         $this->postSendingBySendingId($sendingId);
+
+        if ($this->useMemcache === true) {
+            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
+        }
+
 
         return $sendingId;
 

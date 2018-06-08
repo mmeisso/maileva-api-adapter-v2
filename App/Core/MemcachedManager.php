@@ -115,7 +115,7 @@ class MemcachedManager
         $result = $this->memcached->set($key, $value, ($duration > 0) ? $duration : 0);
 
         if ($result === false) {
-            throw new \MemcachedException('ERROR_CANNOT_STORE_KEY', $key);
+            throw new \MemcachedException('ERROR_CANNOT_STORE_KEY_'. $key);
         }
 
         return true;
