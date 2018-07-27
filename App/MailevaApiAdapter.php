@@ -122,7 +122,7 @@ class MailevaApiAdapter
                 "color_printing" => $colorPrinting,
                 "duplex_printing" => $duplexPrinting,
                 "optional_address_sheet" => $optionalAddressSheet,
-                "notification_email" => $notificationEmail
+//                "notification_email" => $notificationEmail
             ]
         );
 
