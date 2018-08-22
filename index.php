@@ -29,7 +29,7 @@ $mailevaConnection
 
 
 
-/*
+
 $mailevaConnection
     ->setAuthenticationHost('https://connect.maileva.com')
     ->setHost('https://api.maileva.com')
@@ -39,7 +39,7 @@ $mailevaConnection
     ->setPassword('XeL9yAJyvy')
     ->setMemcacheHost('localhost')
     ->setMemcachePort(11211);
-*/
+
 
 $mailevaApiAdapter = new \MailevaApiAdapter\App\MailevaApiAdapter($mailevaConnection);
 
@@ -83,9 +83,9 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 
 #deleteAll($mailevaApiAdapter);
 
-# PROD à vérifier $sendingId = "8440f245-f9d0-4384-aed5-7edea05611bd";
-# SANDBOX
-$sendingId = '85653ecb-453c-407b-81a2-1499b041358d';
+# PROD à vérifier
+$sendingId = "8440f245-f9d0-4384-aed5-7edea05611bd";
+# SANDBOX $sendingId = '85653ecb-453c-407b-81a2-1499b041358d';
 $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
 var_dump($result->getResponseAsArray());
 $result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
@@ -93,10 +93,10 @@ var_dump($result->getResponseAsArray());
 $result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
 var_dump($result->getResponseAsArray());
 
-$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, 'dff17cae-2741-43b0-8066-978ec13c4c14');
+$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, '649d7bd8-84a3-44b6-b1db-3878623a9eb3');
 var_dump($result->getResponseAsArray());
 
-$result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, "5fa4cddd-aee3-417c-8027-bb769e1d90ce");
+$result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, "743f40ee-b273-4f8e-90f5-7a221e19d11c");
 var_dump($result->getResponseAsArray());
 die;
 

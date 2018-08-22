@@ -23,7 +23,7 @@ use MailevaApiAdapter\App\MailevaApiAdapter;
 class Route
 {
 
-    const DEBUG = true;
+    const DEBUG = false;
 
     private $mailevaApiAdapter;
     private $url;
