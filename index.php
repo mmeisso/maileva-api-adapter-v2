@@ -59,14 +59,14 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
         //->setFilepriority()  #optionnal default 1
         ->setFilename('document.pdf')
-        ->setAddressLine1('Mr Robert jacques')
-        ->setAddressLine2('8 boulevard saint Leger')
-        //->setAddressLine3()  #optionnal default ''
+        ->setAddressLine1('Mr Pettiti Loïc')
+        ->setAddressLine2('Eukles Solutions')
+        ->setAddressLine3('236 Rue de St Honorat')  #optionnal default ''
         //->setAddressLine4() #optionnal default ''
         //->setAddressLine5() #optionnal default ''
-        ->setAddressLine6('13001 Marseille')
+        ->setAddressLine6('83510 Lorgues')
         //->setCountryCode() #optionnal default FR
-        ->setCustomId('My custom ID')
+        ->setCustomId('1')
         ->validate();
 
    // try {
@@ -78,20 +78,27 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 
 }
 
-testPost($mailevaApiAdapter);
-die;
+#testPost($mailevaApiAdapter);
+#die;
+
 #deleteAll($mailevaApiAdapter);
 
-$sendingId = "38e744d1-f96d-4a80-8436-8371628a228a";
+# PROD à vérifier $sendingId = "8440f245-f9d0-4384-aed5-7edea05611bd";
+# SANDBOX
+$sendingId = '85653ecb-453c-407b-81a2-1499b041358d';
 $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
 var_dump($result->getResponseAsArray());
-//$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
-//var_dump($result->getResponseAsArray());
-//$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
-//var_dump($result->getResponseAsArray());
-/*$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, 'c393a14f-cba3-4b56-8ea8-eb0663fcc6bb');
+$result = $mailevaApiAdapter->getRecipientsBySendingId($sendingId);
 var_dump($result->getResponseAsArray());
-*/
+$result = $mailevaApiAdapter->getDocumentsBySendingId($sendingId);
+var_dump($result->getResponseAsArray());
+
+$result = $mailevaApiAdapter->getDocumentBySendingId($sendingId, 'dff17cae-2741-43b0-8066-978ec13c4c14');
+var_dump($result->getResponseAsArray());
+
+$result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, "5fa4cddd-aee3-417c-8027-bb769e1d90ce");
+var_dump($result->getResponseAsArray());
+die;
 
 function deleteAll(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
 {

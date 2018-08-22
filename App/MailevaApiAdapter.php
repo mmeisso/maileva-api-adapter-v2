@@ -86,7 +86,6 @@ class MailevaApiAdapter
         $colorPrinting = $mailevaSending->isColorPrinting();
         $duplexPrinting = $mailevaSending->isDuplexPrinting();
         $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
-        $notificationEmail = $mailevaSending->getNotificationEmail();
         $file = $mailevaSending->getFile();
         $filePriority = $mailevaSending->getFilepriority();
         $fileName = $mailevaSending->getFilename();
@@ -133,22 +132,19 @@ class MailevaApiAdapter
             ]
         );
 
-        $this->postImportRecipientsBySendingId($sendingId,
-            ['import_recipients' =>
-                [
-                    [
-                        'address_line_1' => $addressLine1,
-                        'address_line_2' => $addressLine2,
-                        'address_line_3' => $addressLine3,
-                        'address_line_4' => $addressLine4,
-                        'address_line_5' => $addressLine5,
-                        'address_line_6' => $addressLine6,
-                        'country_code' => $countryCode,
-                        'custom_id' => $customId
-                    ]
-                ]
+        $this->postRecipientBySendingId($sendingId,
+            [
+                'address_line_1' => $addressLine1,
+                'address_line_2' => $addressLine2,
+                'address_line_3' => $addressLine3,
+                'address_line_4' => $addressLine4,
+                'address_line_5' => $addressLine5,
+                'address_line_6' => $addressLine6,
+                'country_code' => $countryCode,
+                'custom_id' => $customId
             ]
         );
+
 
         $this->postSendingBySendingId($sendingId);
 
@@ -225,12 +221,33 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      * @param array $body
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException*
+     */
+    public function postRecipientBySendingId(string $sendingId, array $body): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_RECIPIENT_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body' => $body
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+
+    /**
+     * @deprecated
+     * @param string $sendingId
+     * @param array $body
      * @throws MailevaResponseException
      * @return MailevaResponse
      */
     public function postImportRecipientsBySendingId(string $sendingId, array $body): MailevaResponse
     {
-        #$body : [{"address_line_1": "string","address_line_2": "string","address_line_3": "string","address_line_4": "string","address_line_5": "string","address_line_6": "string","country_code": "string","custom_id": "string"}]
         $route = new Route($this, Routing::POST_IMPORT_RECIPIENTS_BY_SENDING_ID,
             [
                 'params' => [
@@ -465,7 +482,7 @@ class MailevaApiAdapter
      * @throws MailevaResponseException
      * @return MailevaResponse
      */
-    public function getImportRecipientsBySendingIdAndImportId(string $sendingId, int $importId): MailevaResponse
+    public function getImportRecipientsBySendingIdAndImportId(string $sendingId, string $importId): MailevaResponse
     {
         $route = new Route($this, Routing::GET_IMPORT_RECIPIENTS_BY_SENDING_ID_AND_IMPORT_ID,
             [
@@ -544,7 +561,7 @@ class MailevaApiAdapter
      * @throws MailevaResponseException
      * @return MailevaResponse
      */
-    public function getRecipientBySendingIdAndRecipientId(string $sendingId, int $recipientId): MailevaResponse
+    public function getRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
         $route = new Route($this, Routing::GET_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
             [
@@ -564,7 +581,7 @@ class MailevaApiAdapter
      * @throws MailevaResponseException
      * @return MailevaResponse
      */
-    public function deleteRecipientBySendingIdAndRecipientId(string $sendingId, int $recipientId): MailevaResponse
+    public function deleteRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
         $route = new Route($this, Routing::DELETE_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
             [

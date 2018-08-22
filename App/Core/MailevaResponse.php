@@ -10,6 +10,7 @@ namespace MailevaApiAdapter\App\Core;
 
 use GuzzleHttp\Psr7\Response;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
+use MailevaApiAdapter\App\Exception\RoutingException;
 
 /**
  * Class MailevaResponse
@@ -70,6 +71,13 @@ class MailevaResponse
             }
         }
 
+
+        try {
+            $this->responseAsArray['method'] = $this->route->getMethod();
+            $this->responseAsArray['url'] = $this->route->getUrl();
+            $this->responseAsArray['requestParameters']  = $this->route->getRequestParameters();
+        } catch (RoutingException $e) {
+        }
 
 
 

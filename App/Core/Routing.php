@@ -251,8 +251,29 @@ class Routing
             ],
         ];
 
+
     /**
      * Cette API permet d’ajouter un ou plusieurs destinataire(s) à l’envoi.
+     */
+    const POST_RECIPIENT_BY_SENDING_ID =
+        [
+            'authenticated_route' => true,
+            'method' => Method::POST,
+            'url' => '/sendings/{sending_id}/recipients',
+            'headers' => [
+                'accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ],
+            'params' => [
+                'sending_id' => Routing::REQUIRED,
+                'body' => Routing::REQUIRED
+            ],
+        ];
+
+
+    /**
+     * @deprecated
+     * Cette API permet d’ajouter un ou plusieurs destinataire(s) à l’envoi de manière asynchrone.
      */
     const POST_IMPORT_RECIPIENTS_BY_SENDING_ID =
         [

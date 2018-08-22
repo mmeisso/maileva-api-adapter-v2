@@ -1,0 +1,2054 @@
+openapi: 3.0.0
+servers:
+  - url: https://api.sandbox.aws.maileva.net/mail/v1
+    description: Sandbox
+  - url: 'https://api.maileva.com/mail/v1'
+    description: Production
+  - url: https://api.maileva.com/sendings-api/v1/mail
+    description: Production (deprecated)
+  - url: https://api.preprd.maileva.pop.smartpanda.eu/mail/v1
+    description: Préproduction
+  - url: https://api.release.aws.maileva.net/mail/v1
+    description: Release
+  - url: https://api.qa.aws.maileva.net/mail/v1
+    description: QA
+  - url: https://api.ci.aws.maileva.net/mail/v1
+    description: CI
+
+info:
+  version: '1.6'
+  title: Maileva / Envoi et Suivi de courrier
+  description: >-
+    API pour envoyer et suivre des courriers postaux.
+
+
+    Elles comprennent les fonctions clés pour :
+    
+     - créer un envoi,
+     - ajouter des documents et des destinataires,
+     - choisir ses options (noir & blanc ou couleur, recto ou recto-verso, envoi rapide ou économique …),
+     - suivre la production (date de planification, suivi de l’envoi…).
+
+  contact:
+    name: Maileva API team
+    email: support@maileva.com
+    url: http://www.maileva.com
+
+
+security:
+  - bearerAuth: []
+  #- oAuth2Password: [] 
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    oAuth2Password:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://connect.maileva.com/
+
+  schemas:
+
+    preview_response:
+      type: object
+      properties:
+        preview_id:
+          type: string
+
+    check_response:
+      type: object
+      properties:
+        pages_count:
+          description: Nombre de pages du document
+          type: integer
+          example: 3
+
+    error_response:
+      description: Description de l'erreur
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    errors_response:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/error_response'
+
+
+    recipient_creation:
+      type: object
+      required:
+         - address_line_6
+         - country_code
+      properties:
+        address_line_1:
+          type: string
+          description: Ligne d'adresse n°1 (Société)
+          example: "La Poste"
+        address_line_2:
+          type: string
+          description: Ligne d'adresse n°2 (Civilité, Prénom, Nom)
+          example: "Me Eva DUPONT"
+        address_line_3:
+          type: string
+          description: Ligne d'adresse n°3 (Résidence, Bâtiement ...)
+          example: "Résidence des Peupliers"
+        address_line_4:
+          type: string
+          description: Ligne d'adresse n°4 (N° et libellé de la voie)
+          example: "33 avenue de Paris"
+        address_line_5:
+          type: string
+          description: Ligne d'adresse n°5 (Lieu dit, BP...)
+          example: "BP 356"
+        address_line_6:
+          type: string
+          description: Ligne d'adresse n°6 (Code postal et ville)
+          example: "75000 Paris"
+        country_code:
+          $ref: '#/components/schemas/country_code'
+
+    sending_response:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant de l'envoi
+          example: "7ff5ca48-fce7-47d2-b56a-99abdc2e4c86"
+        name:
+          description: Nom de l'envoi
+          type: string
+          minLength: 1
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/sending_status'
+        postage_type:
+          $ref: '#/components/schemas/postage_type'
+        creation_date:
+          type: string
+          format: date-time
+          description: Date et heure de création
+          example: "2018-03-14T07:21:40.757Z"
+        submission_date:
+          type: string
+          format: date-time
+          description: Date et heure de soumission
+          example: "2018-03-14T07:21:40.757Z"
+        scheduled_date:
+          type: string
+          format: date-time
+          description: Date et heure de planification
+          example: "2018-03-14T07:21:40.757Z"
+        processed_date:
+          type: string
+          format: date-time
+          description: Date et heure de production
+          example: "2018-03-14T07:21:40.757Z"
+        documents_count:
+          type: integer
+          description: Nombre de documents
+          example: 1
+        pages_count:
+          type: integer
+          description: Nombre de pages
+          example: 3
+        sheets_count:
+          type: integer
+          description: Nombre de feuilles
+          example: 2
+        envelope_type:
+          $ref: '#/components/schemas/envelope_type'
+        color_printing:
+          type: boolean
+          description: Impression couleur
+          example: true
+        duplex_printing:
+          type: boolean
+          description: Impression recto verso
+          example: true
+        optional_address_sheet:
+          type: boolean
+          description: Page porte adresse ajoutée manuellement
+          example: false
+        system_address_sheet:
+          type: boolean
+          description: Page porte adresse système  manuellement
+          example: false
+        order_id:
+          type: string
+          description: Identifiant de la commnande
+          format: uuid
+        recipients_counts:
+          $ref: '#/components/schemas/recipients_counts'
+  
+    recipient_postage_class:
+      type: string
+      description: Catégorie de l'affranchissement
+      enum:
+      - PRIORITY
+      - PRIORITY_INDUSTRIAL
+      - ECONOMY
+      - ECONOMY_INDUSTRIAL
+      - GREEN_LETTER
+      example: PRIORITY
+
+    sending_status:
+      type: string
+      description: "Statut d'un envoi :
+        <table>
+          <tr>
+            <td>DRAFT</td>
+            <td>L'envoi est au statut de brouillon, non validé par l’utilisateur</td>
+          </tr>
+          <tr>
+            <td>PAYMENT_REQUIRED</td>
+            <td>L'envoi est verrouillé et attente de paiement</td>
+          </tr>
+          <tr>
+            <td>PENDING</td>
+            <td>Le client a fait un envoi, mais il n’a pas encore été analysé par le système ou l'envoi a été reçu mais il n’a pas encore été analysé</td>
+          </tr>
+          <tr>
+            <td>ACCEPTED</td>
+            <td>L'envoi a été accepté mais il est planifiée pour plus tard ou l'envoi a été accepté et va être produit</td>
+          </tr>
+          <tr>
+            <td>REJECTED</td>
+            <td>L'envoi est refusé</td>
+          </tr>
+          <tr>
+            <td>PROCESSED</td>
+            <td>L'envoi a été traité et tous les destinataires étaient valides</td>
+          </tr>
+          <tr>
+            <td>PROCESSED_WITH_ERRORS</td>
+            <td>L'envoi a été traité mais certains destinataires n’étaient pas valides</td>
+          </tr>
+        </table> "
+      enum:
+      - DRAFT
+      - PAYMENT_REQUIRED
+      - PENDING
+      - ACCEPTED
+      - REJECTED
+      - PROCESSED
+      - PROCESSED_WITH_ERRORS
+    postage_type:
+      type: string
+      description: Type d'affranchissement d'un envoi
+      enum:
+      - FAST
+      - ECONOMIC
+    recipient_status:
+      type: string
+      description: "Statut du destinataire.
+        
+        <table>
+          <tr>
+            <td>DRAFT</td>
+            <td>le destinataire a été ajouté à l'envoi qui est au statut draft</td>
+          </tr>
+          <tr>
+            <td>PENDING</td>
+            <td>le destinataire a été ni traité, ni rejeté</td>
+          </tr>
+          <tr>
+            <td>PROCESSED</td>
+            <td>le destinataire a été mis sous pli (liasse appairée si recommandée)</td>
+          </tr>
+          <tr>
+            <td>REJECTED</td>
+            <td>le destinataire n'est pas valide</td>
+          </tr>
+        </table>
+        "
+      enum:
+      - DRAFT
+      - PENDING
+      - PROCESSED
+      - REJECTED
+    envelope_type:
+      type: string
+      description: Type de l'envelope
+      enum:
+      - DL
+      - C4
+
+    country_code:
+      type: string
+      description: Code du pays (Code ISO-3166)
+      enum:
+        - AD
+        - AE
+        - AF
+        - AG
+        - AI
+        - AL
+        - AM
+        - AN
+        - AO
+        - AQ
+        - AR
+        - AS
+        - AT
+        - AU
+        - AW
+        - AX
+        - AZ
+        - BA
+        - BB
+        - BD
+        - BE
+        - BF
+        - BG
+        - BH
+        - BI
+        - BJ
+        - BL
+        - BM
+        - BN
+        - BO
+        - BQ
+        - BR
+        - BS
+        - BT
+        - BV
+        - BW
+        - BY
+        - BZ
+        - CA
+        - CC
+        - CD
+        - CF
+        - CG
+        - CH
+        - CI
+        - CK
+        - CL
+        - CM
+        - CN
+        - CO
+        - CR
+        - CS
+        - CU
+        - CV
+        - CW
+        - CX
+        - CY
+        - CZ
+        - DE
+        - DJ
+        - DK
+        - DM
+        - DO
+        - DZ
+        - EC
+        - EE
+        - EG
+        - EH
+        - ER
+        - ES
+        - ET
+        - FI
+        - FJ
+        - FK
+        - FM
+        - FO
+        - FR
+        - GA
+        - GB
+        - GD
+        - GE
+        - GF
+        - GG
+        - GH
+        - GI
+        - GL
+        - GM
+        - GN
+        - GP
+        - GQ
+        - GR
+        - GS
+        - GT
+        - GU
+        - GW
+        - GY
+        - HK
+        - HM
+        - HN
+        - HR
+        - HT
+        - HU
+        - ID
+        - IE
+        - IL
+        - IM
+        - IN
+        - IO
+        - IQ
+        - IR
+        - IS
+        - IT
+        - JE
+        - JM
+        - JO
+        - JP
+        - KE
+        - KG
+        - KH
+        - KI
+        - KM
+        - KN
+        - KP
+        - KR
+        - KW
+        - KY
+        - KZ
+        - LA
+        - LB
+        - LC
+        - LI
+        - LK
+        - LR
+        - LS
+        - LT
+        - LU
+        - LV
+        - LY
+        - MA
+        - MC
+        - MD
+        - ME
+        - MF
+        - MG
+        - MH
+        - MK
+        - ML
+        - MM
+        - MN
+        - MO
+        - MP
+        - MQ
+        - MR
+        - MS
+        - MT
+        - MU
+        - MV
+        - MW
+        - MX
+        - MY
+        - MZ
+        - NA
+        - NC
+        - NE
+        - NF
+        - NG
+        - NI
+        - NL
+        - NO
+        - NP
+        - NR
+        - NU
+        - NZ
+        - OM
+        - PA
+        - PE
+        - PF
+        - PG
+        - PH
+        - PK
+        - PL
+        - PM
+        - PN
+        - PR
+        - PS
+        - PT
+        - PW
+        - PY
+        - QA
+        - RE
+        - RO
+        - RS
+        - RU
+        - RW
+        - SA
+        - SB
+        - SC
+        - SD
+        - SE
+        - SG
+        - SH
+        - SI
+        - SJ
+        - SK
+        - SL
+        - SM
+        - SN
+        - SO
+        - SR
+        - SS
+        - ST
+        - SV
+        - SX
+        - SY
+        - SZ
+        - TC
+        - TD
+        - TF
+        - TG
+        - TH
+        - TJ
+        - TK
+        - TL
+        - TM
+        - TN
+        - TO
+        - TP
+        - TR
+        - TT
+        - TV
+        - TW
+        - TZ
+        - UA
+        - UG
+        - UM
+        - US
+        - UY
+        - UZ
+        - VA
+        - VC
+        - VE
+        - VG
+        - VI
+        - VN
+        - VU
+        - WF
+        - WS
+        - YE
+        - YT
+        - YU
+        - ZA
+        - ZM
+        - ZR
+        - ZW
+      example: "FR"    
+    
+    document_response:
+      type: object
+      required:
+        - id
+        - name
+        - priority
+        - type
+        - size
+      description: Les documents sont des éléments de "Mes documents" ou directement importés pour l'envoi
+      properties:
+        id:
+          type: string
+          description: Identifiant du document
+          example: "cbb7a0f3-bf9b-4179-9a46-c0f28d839e8d"
+        priority:
+          type: integer
+          description: Ordre d'impression du document
+          example: 1
+        name:
+          type: string
+          description: Nom du document
+          example: "Lettre_résiliation.pdf"
+        type:
+          type: string
+          description: Type du document
+          example: "application/pdf"
+        pages_count:
+          type: integer
+          description: Nombre de pages
+          example: 3
+        size:
+          type: integer
+          description: Poids du document en octets
+          example: 139071
+        drive_file_id:
+          type: string
+          description: Identifiant du document dans "Mes documents"
+          example: "5e142bd6-1cb1-4471-8c00-de7b873fddf6"
+    recipients_counts:
+      type: object
+      properties:
+        draft:
+          type: integer
+          description: Nombre de destinataires au statut DRAFT
+        pending:
+          type: integer
+          description: Nombre de destinataires au statut PENDING
+        processed:
+          type: integer
+          description: Nombre de destinataires au statut PROCESSED
+        rejected:
+          type: integer
+          description: Nombre de destinataires au statut REJECTED
+        total:
+          type: integer
+          description: Nombre de destinataires total
+    contact:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant du contact dans le service "Mes Contacts"
+          format: uuid
+    imported_recipient:
+      type: object
+      required:
+        - address_line_6
+        - country_code
+        - status
+      properties:
+        contact_id:
+          type: string
+          description: Identifiant du destinataire dans le carnet d'adresses
+          format: uuid
+        custom_id:
+          type: string
+          maxLength: 32
+          description: Identifiant du destinataire fourni par le client
+        recipient_id:
+          type: string
+          description: Identifiant du destinataire
+          format: uuid
+        address_line_1:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°1 (Société)
+          example: "La Poste"
+        address_line_2:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°2 (Civilité, Prénom, Nom)
+          example: "Me Eva DUPONT"
+        address_line_3:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°3 (Résidence, Bâtiement ...)
+          example: "Résidence des Peupliers"
+        address_line_4:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°4 (N° et libellé de la voie)
+          example: "33 avenue de Paris"
+        address_line_5:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°5 (Lieu dit, BP...)
+          example: "BP 356"
+        address_line_6:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°6 (Code postal et ville)
+          example: "75000 Paris"
+        country_code:
+          $ref: '#/components/schemas/country_code'
+        status:
+          $ref: '#/components/schemas/imported_recipient_status'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/error_response'
+
+    recipients_import_status:
+      type: string
+      enum:
+      - PENDING
+      - PROCESSED
+    imported_recipient_status:
+      type: string
+      enum:
+      - PENDING
+      - PROCESSED
+      - REJECTED
+    recipient_response:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant du destinataire
+          format: uuid
+        custom_id:
+          type: string
+          maxLength: 32
+          description: Identifiant du destinataire en cours d'import et fourni par le client
+        contact_id:
+          type: string
+          description: Identifiant du destinataire dans le carnet d'adresse
+          format: uuid
+        address_line_1:
+          type: string
+          maxLength: 38
+          description: Ligne d'adresse n°1 (Société)
+          example: "La Poste"
+        address_line_2:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°2 (Civilité, Prénom, Nom)
+          example: "Me Eva DUPONT"
+        address_line_3:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°3 (Résidence, Bâtiement ...)
+          example: "Résidence des Peupliers"
+        address_line_4:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°4 (N° et libellé de la voie)
+          example: "33 avenue de Paris"
+        address_line_5:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°5 (Lieu dit, BP...)
+          example: "BP 356"
+        address_line_6:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°6 (Code postal et ville)
+          example: "75000 Paris"
+        country_code:
+          $ref: '#/components/schemas/country_code'
+        status:
+          $ref: '#/components/schemas/recipient_status'
+        postage_class:
+          $ref: '#/components/schemas/recipient_postage_class'
+        postage_price:
+          type: number
+          format: float
+          description: Coût de l'affranchissement en centimes d'euros
+
+    recipient_modification:
+      type: object
+      properties:
+        custom_id:
+          type: string
+          maxLength: 32
+          description: Identifiant du destinataire en cours d'import et fourni par le client
+        contact_id:
+          type: string
+          description: Identifiant du destinataire dans le carnet d'adresse
+          format: uuid
+        address_line_1:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°1 (Société)
+          example: "La Poste"
+        address_line_2:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°2 (Civilité, Prénom, Nom)
+          example: "Me Eva DUPONT"
+        address_line_3:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°3 (Résidence, Bâtiement ...)
+          example: "Résidence des Peupliers"
+        address_line_4:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°4 (N° et libellé de la voie)
+          example: "33 avenue de Paris"
+        address_line_5:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°5 (Lieu dit, BP...)
+          example: "BP 356"
+        address_line_6:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°6 (Code postal et ville)
+          example: "75000 Paris"
+        country_code:
+          $ref: '#/components/schemas/country_code'
+
+    priority:
+      type: object
+      properties:
+        priority:
+          type: integer
+          example: 1
+          
+    document_from_drive:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+        priority:
+          type: integer
+    import_recipient:
+      type: object
+      properties:
+        address_line_1:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°1 (Société)
+          example: "La Poste"
+        address_line_2:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°2 (Civilité, Prénom, Nom)
+          example: "Me Eva DUPONT"
+        address_line_3:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°3 (Résidence, Bâtiement ...)
+          example: "Résidence des Peupliers"
+        address_line_4:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°4 (N° et libellé de la voie)
+          example: "33 avenue de Paris"
+        address_line_5:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°5 (Lieu dit, BP...)
+          example: "BP 356"
+        address_line_6:
+          type: string
+          minLength: 1
+          maxLength: 38
+          description: Ligne d'adresse n°6 (Code postal et ville)
+          example: "75000 Paris"
+        country_code:
+          $ref: '#/components/schemas/country_code'
+        custom_id:
+          type: string
+          maxLength: 32
+          description: Identifiant du destinataire en cours d'import et fourni par le client
+          example: "123456789"
+
+    recipients_response:
+      type: object
+      properties:
+        recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/recipient_response'
+        paging:
+          $ref: '#/components/schemas/paging'
+
+    import_recipients:
+      type: object
+      properties:
+        import_recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/import_recipient'
+
+    contacts:
+      type: array
+      description: Les contacts à importer
+      items:
+        $ref: '#/components/schemas/contact'
+
+    sending_creation:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 256
+          minLength: 1
+
+    recipients_import_response:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/recipients_import_status'
+        imported_recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/imported_recipient'
+        paging:
+          $ref: '#/components/schemas/paging'
+
+    documents_response:
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/document_response'
+        paging:
+          $ref: '#/components/schemas/paging'
+
+    estimate_response:
+      type: object
+      description: Estimation de l'envoi
+      properties:
+        amount:
+          type: number
+          format: float
+          description: Montant total HT de la commande
+        postage_amount:
+          type: number
+          format: float
+          description: Montant total des affranchissements
+        service_amount:
+          type: number
+          format: float
+          description: Montant total HT des impression (total HT - total des affranchissements)
+        amount_including_tax:
+          type: number
+          format: float
+          description: Montant total TTC de la commande
+        tax_amount:
+          type: number
+          format: float
+          description: Montant total des taxes de la commande
+        items:
+          description: Eléments constituant le coût de l'envoi
+          type: array
+          items:
+            description: Elément constituant le coût de l'envoi
+            type: object
+            properties:
+              type:
+                description: Type d'élément
+                type: string
+                enum:
+                  - FOLD_1_PAGE_NB
+                  - FOLD_2_PAGES_NB
+                  - FOLD_3_PAGES_NB
+                  - FOLD_4_PAGES_NB
+                  - FOLD_5_PAGES_NB
+                  - FOLD_6_PAGES_NB
+                  - FOLD_7_PAGES_NB
+                  - FOLD_8_PAGES_NB
+                  - FOLD_9_PAGES_NB
+                  - FOLD_10_PAGES_NB
+                  - ADDITIONNAL_PAGES_NB
+                  - FOLD_1_PAGE_COLOR
+                  - FOLD_2_PAGES_COLOR
+                  - FOLD_3_PAGES_COLOR
+                  - FOLD_4_PAGES_COLOR
+                  - FOLD_5_PAGES_COLOR
+                  - FOLD_6_PAGES_COLOR
+                  - FOLD_7_PAGES_COLOR
+                  - FOLD_8_PAGES_COLOR
+                  - FOLD_9_PAGES_COLOR
+                  - FOLD_10_PAGES_COLOR
+                  - ADDITIONNAL_PAGES_COLOR
+                  - ADDRESS_SHEET
+                  - FAST_PRIORITY_INDUSTRIAL
+                  - FAST_PRIORITY
+                  - FAST_GREEN_LETTER
+                  - ECONOMIC_PRIORITY
+                  - ECONOMIC_ECONOMIC
+                  - ECONOMIC_ECONOMIC_INDUSTRIAL
+              quantity:
+                description: Quantité de l'élément
+                type: integer
+              unit_price:
+                description: Prix unitaire de l'élément
+                type: number
+              amount: 
+                description: Montant de l'élément facturable
+                type: number
+                format: float
+    preview_image:
+      type: object
+      properties:
+        url:
+          type: string
+        width:
+          type: number
+          format: float
+        height:
+          type: number
+          format: float
+    previews_response:
+      type: object
+      description: Les images du BAT de l'envoi
+      properties:
+        pictures:
+          type: array
+          items:
+            $ref: '#/components/schemas/preview_image'
+        paging:
+          $ref: '#/components/schemas/paging'
+    sendings_response:
+      type: object
+      description: Liste d'envois
+      properties:
+        sendings:
+          type: array
+          items:
+            $ref: '#/components/schemas/sending_response'
+        paging:
+          $ref: '#/components/schemas/paging'
+    paging:
+      description: Pagination des résultats
+      type: object
+      properties:
+        next:
+          description: Page suivante
+          type: string
+        prev:
+          description: Page précédente
+          type: string
+        total_results:
+          description: Nombre de résultats
+          type: number
+    options:
+      type: object
+      description: Les options sont des fonctionnalités proposées à l'utilisateur pour paramétrer son envoi
+      properties:
+        postage_type:
+          $ref: '#/components/schemas/postage_type'
+        color_printing:
+          type: boolean
+          description: Impression couleur
+          example: true
+        duplex_printing:
+          type: boolean
+          description: Impression recto verso
+          example: true
+        optional_address_sheet:
+          type: boolean
+          description: Page porte adresse
+          example: false
+  
+    sending_document_import:
+      type: object
+      description: Document d'un autre envoi à importer
+      properties:
+        sending_type:
+          type: string
+          description: Type d'envoi
+          enum:
+            - MAIL
+            - REGISTERED_LETTER
+          example: MAIL
+        sending_id:
+          type: string
+          description: Identifiant d'un envoi
+          format: uuid
+          example: "7ff5ca48-fce7-47d2-b56a-99abdc2e4c86"
+        document_id:
+          type: string
+          description: Identifiant du document
+          format: uuid
+  
+    sending_recipients_import:
+      type: object
+      description: Envoi avec les contacts à importer
+      properties:
+        sending_type:
+          type: string
+          description: Type d'envoi
+          enum:
+            - MAIL
+            - REGISTERED_LETTER
+          example: MAIL
+        sending_id:
+          type: string
+          description: Identifiant d'un envoi
+          format: uuid
+          example: "7ff5ca48-fce7-47d2-b56a-99abdc2e4c86"
+
+  parameters:
+    sending_id:
+      name: sending_id
+      in: path
+      description: L'ID de l'envoi
+      required: true
+      schema:
+        type: string
+        maxLength: 40
+        format: uuid
+    import_id:
+      name: import_id
+      in: path
+      description: L'ID de l'import
+      required: true
+      schema:
+        maxLength: 40
+        type: string
+        format: uuid
+    document_id:
+      name: document_id
+      in: path
+      description: L'ID du document
+      required: true
+      schema:
+        maxLength: 40
+        type: string
+        format: uuid
+    recipient_id:
+      name: recipient_id
+      in: path
+      description: L'ID du destinataire
+      required: true
+      schema:
+        maxLength: 40
+        type: string
+        format: uuid
+    preview_id:
+      name: preview_id
+      in: path
+      description: L'ID du BAT
+      required: true
+      schema:
+        maxLength: 256
+        type: string
+        format: uuid
+    picture_id:
+      name: picture_id
+      in: path
+      description: L'ID de l'image du BAT
+      required: true
+      schema:
+        maxLength: 256
+        type: string
+        format: uuid
+    paging_start_index:
+      name: start_index
+      in: query
+      description: Le premier élément à retourner
+      required: false
+      schema:
+        type: number
+        default: 1
+        minLength: 1
+    paging_count:
+      name: count
+      in: query
+      description: Le nombre d'élément à retourner
+      required: false
+      schema:
+        type: number
+        default: 1
+        minLength: 1
+        maxLength: 20
+paths:
+  /sendings:
+    post:
+      tags:
+      - "Envoi"
+      summary: Création d'un envoi
+      description: |-
+        Cette API permet de créer un envoi.
+
+        Le champ obligatoire pour créer un envoi est le nom. Sont autorisés les majuscules, minuscules, caractères spéciaux et lettres accentuées. La longueur de champs est de 256 caractères maximum.
+      operationId: createSendings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/sending_creation'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: Retourne une URL vers le détail de la ressource
+              schema:
+                type: string
+                format: url
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    get:
+      tags:
+      - "Envoi"
+      summary: Liste des envois
+      description: "Cette API permet de récupérer la liste des envois. \n\nIl est\
+        \ possible de rajouter un attribut dans les paramètres afin de filtrer la\
+        \ liste des envois. La liste des envois peut être paginée. Par défaut, la\
+        \ pagination est de 50 résultats. Elle peut être modifiée pour atteindre jusqu'à\
+        \ 500 résultats. "
+      operationId: getAllSendings
+      parameters:
+      - $ref: '#/components/parameters/paging_start_index'
+      - $ref: '#/components/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/sendings_response'
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  /sendings/{sending_id}:
+    get:
+      tags:
+      - "Envoi"
+      summary: Détail d'un envoi
+      description: Cette API permet de récupérer un envoi à partir de son identifiant.
+      operationId: getSendings
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/sending_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    delete:
+      tags:
+      - "Envoi"
+      summary: Suppression d'un envoi
+      description: Cette API permet de supprimer un envoi.
+      operationId: deleteSendings
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+
+  /sendings/{sending_id}/documents:
+    post:
+      tags:
+      - "Documents"
+      summary: Ajout d'un document à l'envoi, depuis mon poste de travail
+      description: "Cette API permet d'ajouter un document à l'envoi. \nLe document\
+        \ ajouté ne peut dépasser 20Mo."
+      operationId: addDocument
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                document:
+                  type: string
+                  format: binary
+                metadata:
+                  type: object
+                  properties:
+                    priority:
+                      type: integer
+                    name:
+                      type: string
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    get:
+      tags:
+      - "Documents"
+      summary: Liste des documents de l'envoi
+      description: |-
+        Cette API permet de récupérer la liste des documents associés à l'envoi.
+        La liste des documents de l'envoi peut être paginée. Par défaut et au maximum, la pagination est de 30 résultats.
+      operationId: getAllDocuments
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/paging_start_index'
+      - $ref: '#/components/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/documents_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+                
+  /sendings/{sending_id}/documents/{document_id}:
+    delete:
+      tags:
+      - "Documents"
+      description: Cette API permet de supprimer un document d'un envoi.
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/document_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    get:
+      tags:
+      - "Documents"
+      summary: Détail d'un document
+      description: Cette API permet de récupérer les détails d'un document de l'envoi.
+      operationId: getDocument
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/document_id'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/document_response'
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+  
+  /sendings/{sending_id}/documents/{document_id}/set_priority:
+    post:
+      tags:
+      - "Documents"
+      summary: Classement des documents
+      description: |-
+        Cette API permet d'ordonner les documents de l'envoi.
+
+        L'ordre des documents choisi sert de référence à l'opération de prévisualisation du courrier et à sa mise sous pli.
+      operationId: orderDocuments
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/document_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/priority'
+
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+                
+
+  /sendings/{sending_id}/documents/import_from_drive:
+    post:
+      tags:
+      - "Documents"
+      summary: Ajouter un document à l'envoi, depuis le service "Mes Documents"
+      description: Cette API permet d'ajouter un document depuis le service "Mes Documents", à l'envoi.
+      operationId: getDocumentFromMyDrive
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/document_from_drive'
+      
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+          
+  '/sendings/{sending_id}/documents/import_from_sending':
+    post:
+      tags:
+      - "Documents"
+      summary: 'Ajouter un document appartenant à un autre envoi.'
+      description: >-
+        Cette API permet d'ajouter un document appartenant à un autre envoi.
+
+
+        Le document ajouté se positionne en dernière position de la liste de
+        documents.
+      parameters:
+        - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/sending_document_import'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+
+  /sendings/{sending_id}/recipients/imports:
+    post:
+      tags:
+      - "Destinataires"
+      description: Cette API permet d'ajouter une liste de destinataires à l'envoi de manière asynchrone.
+      operationId: addRecipients
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/import_recipients'
+
+      responses:
+        '202':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+                
+  /sendings/{sending_id}/recipients/imports/{import_id}:
+    get:
+      tags:
+      - "Destinataires"
+      description: Cette API permet de connaitre l'état d'avancement des destintaires importés.
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/import_id'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipients_import_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  /sendings/{sending_id}/recipients:
+    post:
+      tags:
+      - "Destinataires"
+      summary: Ajout d'un destinataire à l'envoi
+      description: >- 
+        Cette API permet d'ajouter un destinataire à l'envoi. Le nombre de destinataires est limité à 30 000.
+        
+        
+        Chaque ligne d’adresse doit contenir au plus 38 caractères.
+         La ligne d’adresse 1 ou 2 doit être définie.
+        La ligne d’adresse 6 doit être définie.
+        Pour les adresses françaises, la ligne d’adresse 6 doit contenir un code postal sur 5 chiffres, suivi d’un espace, suivi d’une ville.
+      
+      parameters:
+        - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/recipient_creation'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: URL vers le détail de la ressource
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipient_response'
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+
+
+    get:
+      tags:
+      - "Destinataires"
+      summary: Liste des destinataires de l'envoi
+      description: |-
+        Cette API permet de récupérer la liste des destinataires de l'envoi.
+        Cette liste peut être paginée. Par défaut, la pagination est de 50 résultats. Elle peut atteindre 500 au maximum.
+      operationId: getAllRecipients
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/paging_start_index'
+      - $ref: '#/components/parameters/paging_count'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipients_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    delete:
+      tags:
+      - "Destinataires"
+      summary: Suppression de tous les destinataires
+      description: Cette API permet de supprimer tous les destinataires d'un envoi.
+      operationId: deleteRecipients
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  /sendings/{sending_id}/recipients/import_from_address_book:
+    post:
+      tags:
+      - "Destinataires"
+      summary: Ajout d'un ou plusieurs destinataire(s), depuis le service "Mes Contacts"
+      description: Cette API permet d'ajouter un destinataire à l'envoi depuis le service "Mes Contacts".
+      operationId: addFromBookAddress
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/contacts'
+      responses:
+        '202':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  '/sendings/{sending_id}/recipients/import_from_sending':
+    post:
+      tags:
+      - "Destinataires"
+      summary: 'Ajout d''une liste de destinataire depuis un autre envoi'
+      description: >-
+        Cette API permet d'ajouter une liste de destinataire à l'envoi depuis un autre envoi.
+      parameters:
+        - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/sending_recipients_import'
+      responses:
+        '202':
+          description: Successful operation
+          headers:
+            Location:
+              description: url ressource
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  /sendings/{sending_id}/recipients/{recipient_id}:
+    get:
+      tags:
+      - "Destinataires"
+      summary: Détail d'un destinataire
+      description: Cette API permet de lister les données d'un destinataire d'un envoi.
+      operationId: getRecipient
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/recipient_id'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipient_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+    patch:
+      tags:
+      - "Destinataires"
+      summary: Modification partielle d'un destinataire
+      description: Cette API permet de modifier partiellement un destinataire
+      operationId: patchRecipient
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/recipient_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/recipient_modification'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipient_response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+    delete:
+      tags:
+      - "Destinataires"
+      summary: Suprression d'un destinataire
+      description: Cette API permet de supprimer un destinataire d'un envoi.
+      operationId: deleteRecipient
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      - $ref: '#/components/parameters/recipient_id'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+  /sendings/{sending_id}/options:
+    patch:
+      tags:
+      - "Envoi"
+      summary: Sélection des options d'envoi du courrier
+      description: |-
+        Cette API permet de choisir les options liées à l'envoi d'un courrier :
+        - le mode d'envoi : rapide ou économique (rapide, par défaut),
+        - le coloris d'impression : couleur ou noir et blanc (couleur, par défaut),
+        - le format d'impression : recto ou recto-verso (recto-verso, par défaut),
+        - l'ajout d'une page porte-adresse : oui /non,
+
+      operationId: patchOptions
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/options'
+
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+
+
+
+  /sendings/{sending_id}/submit:
+    post:
+      tags:
+      - "Envoi"
+      summary: Finalisation de l'envoi
+      description: Cette API permet de valider l'envoi et de déclencher la demande de production.
+      operationId: produceSending
+      parameters:
+      - $ref: '#/components/parameters/sending_id'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors_response'
+
+

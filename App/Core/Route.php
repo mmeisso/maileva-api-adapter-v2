@@ -23,7 +23,7 @@ use MailevaApiAdapter\App\MailevaApiAdapter;
 class Route
 {
 
-    const DEBUG = false;
+    const DEBUG = true;
 
     private $mailevaApiAdapter;
     private $url;
@@ -34,6 +34,9 @@ class Route
     private $file;
     private $authenticatedRoute;
     private $multipart;
+    private $requestParameters;
+
+
 
     /**
      * Route constructor.
@@ -169,7 +172,7 @@ class Route
     public function call(): MailevaResponse
     {
         $response = null;
-        $requestParameters = [];
+        $this->requestParameters = [];
 
         try {
 
@@ -186,28 +189,28 @@ class Route
 
             }
 
-            $requestParameters[RequestOptions::HEADERS] = $this->getHeaders();
+            $this->requestParameters[RequestOptions::HEADERS] = $this->getHeaders();
 
 
             switch ($this->getMethod()) {
                 case Method::DELETE:
                 case Method::GET:
-                    $requestParameters [RequestOptions::QUERY] = $this->getParams();
+                $this->requestParameters[RequestOptions::QUERY] = $this->getParams();
                     break;
                 case Method::PATCH:
                 case Method::POST:
 
                     if (!is_null($this->getMultipart())) {
 
-                        $requestParameters [RequestOptions::MULTIPART] = $this->getMultipart();
+                        $this->requestParameters[RequestOptions::MULTIPART] = $this->getMultipart();
 
                     } elseif (!is_null($this->getBody())) {
 
-                        $requestParameters[RequestOptions::JSON] = $this->getBody();
+                        $this->requestParameters[RequestOptions::JSON] = $this->getBody();
 
                     } elseif (!empty($this->getParams())) {
 
-                        $requestParameters [RequestOptions::FORM_PARAMS] = $this->getParams();
+                        $this->requestParameters [RequestOptions::FORM_PARAMS] = $this->getParams();
 
                     }
                     break;
@@ -217,18 +220,27 @@ class Route
                     break;
             }
 
-            $client = new Client(['verify' => false ]);
+            $client = new Client(['verify' => false]);
 
-            $res = $client->request($this->getMethod(), $this->getUrl(), $requestParameters);
+            if (self::DEBUG) {
+                error_log('*****************************************************************************');
+                echo '*****************************************************************************'.'<br/>';
+                echo '*****************************************************************************'.'<br/>';
+                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------'.'<br/>';
+                error_log('-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------');
+                echo '*****************************************************************************'.'<br/>';
+            }
+
+
+            $res = $client->request($this->getMethod(), $this->getUrl(),  $this->requestParameters);
+
+
 
             $mailevaResponse = new MailevaResponse($this, $res);
 
             if (self::DEBUG) {
-                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . '-------------';
                 var_dump($mailevaResponse->getResponseAsArray());
-                echo '*****************************************************************************';
-
-                error_log('-------------' . $this->getMethod() . ' ' . $this->getUrl() . '-------------');
+                echo '*****************************************************************************'.'<br/>';
                 error_log(print_r($mailevaResponse->getResponseAsArray(), true));
                 error_log('*****************************************************************************');
             }
@@ -310,12 +322,20 @@ class Route
             if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
                 return $this->getMailevaApiAdapter()->getHost() . '/mail/v1' . $this->url;
             } else {
-                return $this->getMailevaApiAdapter()->getHost() . '/sendings-api/v1/mail' . $this->url;
+                return $this->getMailevaApiAdapter()->getHost() . '/mail/v1' . $this->url;
             }
 
         } else {
             return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestParameters()
+    {
+        return $this->requestParameters;
     }
 
 }
