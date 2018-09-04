@@ -15,34 +15,36 @@ use MailevaApiAdapter\App\Core\Http\Request\Method;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use MailevaApiAdapter\App\Exception\RoutingException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
+use MailevaApiAdapter\App\MailevaConnection;
 
 /**
  * Class Route
+ *
  * @package MailevaApiAdapter\App\Core
  */
 class Route
 {
 
     const DEBUG = false;
-
-    private $mailevaApiAdapter;
-    private $url;
-    private $method;
-    private $params;
-    private $headers;
+    private $authenticatedRoute;
     private $body;
     private $file;
-    private $authenticatedRoute;
+    private $headers;
+    private $mailevaApiAdapter;
+    private $method;
     private $multipart;
+    private $params;
     private $requestParameters;
-
-
+    private $sink;
+    private $url;
 
     /**
      * Route constructor.
+     *
      * @param MailevaApiAdapter $mailevaApiAdapter
-     * @param array $defaultArgues
-     * @param array $argues
+     * @param array             $defaultArgues
+     * @param array             $argues
+     *
      * @throws RoutingException
      */
     public function __construct(MailevaApiAdapter $mailevaApiAdapter, array $defaultArgues, array $argues)
@@ -76,14 +78,239 @@ class Route
                     continue;
                 }
 
+                if ($key === 'sink') {
+                    $this->sink = $value;
+                    unset($this->params[$key]);
+                    continue;
+                }
             }
         }
+    }
+
+    /**
+     * @return MailevaResponse
+     * @throws MailevaResponseException
+     */
+    public function call(): MailevaResponse
+    {
+        $response                = null;
+        $this->requestParameters = [];
+
+        try {
+
+            if ($this->isAuthenticatedRoute()) {
+                if ($this->mailevaApiAdapter->isAuthenticated() === false) {
+                    $this->mailevaApiAdapter->postAuthentication();
+                }
+
+                if ($this->mailevaApiAdapter->isAuthenticated()) {
+                    $this->headers['Authorization'] = 'Bearer ' . $this->mailevaApiAdapter->getAccessToken();
+                } else {
+                    throw new MailevaResponseException('unable to authenticate');
+                }
+            }
+
+            $this->requestParameters[RequestOptions::HEADERS] = $this->getHeaders();
+
+            switch ($this->getMethod()) {
+                case Method::DELETE:
+                case Method::GET:
+                    $this->requestParameters[RequestOptions::QUERY] = $this->getParams();
+                    if (!is_null($this->getSink())) {
+                        $this->requestParameters[RequestOptions::SINK] = $this->getSink();
+                    }
+                    break;
+                case Method::PATCH:
+                case Method::POST:
+                    if (!is_null($this->getMultipart())) {
+                        $this->requestParameters[RequestOptions::MULTIPART] = $this->getMultipart();
+                    } elseif (!is_null($this->getBody())) {
+                        $this->requestParameters[RequestOptions::JSON] = $this->getBody();
+                    } elseif (!empty($this->getParams())) {
+                        $this->requestParameters [RequestOptions::FORM_PARAMS] = $this->getParams();
+                    }
+                    break;
+                default:
+                    throw new RoutingException(' not implemented ' . $this->getMethod());
+                    break;
+            }
+
+            $client = new Client(['verify' => false]);
+
+            if (self::DEBUG) {
+                error_log('*****************************************************************************');
+                echo '*****************************************************************************' . '<br/>';
+                echo '*****************************************************************************' . '<br/>';
+                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------' . '<br/>';
+                error_log('-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------');
+                echo '*****************************************************************************' . '<br/>';
+            }
+
+            $res = $client->request($this->getMethod(), $this->getUrl(), $this->requestParameters);
+
+            $mailevaResponse = new MailevaResponse($this, $res);
+
+            if (self::DEBUG) {
+                var_dump($mailevaResponse->getResponseAsArray());
+                echo '*****************************************************************************' . '<br/>';
+                error_log(print_r($mailevaResponse->getResponseAsArray(), true));
+                error_log('*****************************************************************************');
+            }
+
+            return $mailevaResponse;
+        } catch (GuzzleException $guzzleException) {
+            throw new MailevaResponseException($guzzleException->getMessage());
+        } catch (RoutingException $exception) {
+            throw new MailevaResponseException($exception->getMessage());
+        } catch (\Throwable $throwable) {
+            throw new MailevaResponseException($throwable->getMessage());
+        }
+    }
+
+    /**
+     * getBody()
+     *
+     * @return mixed
+     */
+    public function getBody()
+    {
+        return $this->body;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @return MailevaApiAdapter
+     */
+    public function getMailevaApiAdapter(): MailevaApiAdapter
+    {
+        return $this->mailevaApiAdapter;
+    }
+
+    /**
+     * @return String
+     */
+    public function getMethod(): String
+    {
+        return $this->method;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMultipart()
+    {
+        return $this->multipart;
+    }
+
+    /**
+     * @param mixed $multipart
+     */
+    public function setMultipart($multipart)
+    {
+        $this->multipart = $multipart;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestParameters()
+    {
+        return $this->requestParameters;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSink()
+    {
+        return $this->sink;
+    }
+
+    /**
+     * @param mixed $sink
+     */
+    public function setSink($sink)
+    {
+        $this->sink = $sink;
+    }
+
+    /**
+     * @return String
+     */
+    public function getUrl(): String
+    {
+        if ($this->isAuthenticatedRoute()) {
+
+            $subDirectory = 'mail';
+            if ($this->getMailevaApiAdapter()->getType() === MailevaConnection::LRE) {
+                $subDirectory = 'registered_mail';
+            }
+
+            if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
+                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
+            } else {
+                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
+            }
+        } else {
+            return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuthenticatedRoute(): bool
+    {
+        return $this->authenticatedRoute;
+    }
+
+    /**
+     * @param array $array1
+     * @param array $array2
+     *
+     * @return array
+     */
+    private function array_merge_recursive_distinct(array &$array1, array &$array2)
+    {
+        $merged = $array1;
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+                $merged[$key] = $this->array_merge_recursive_distinct($merged[$key], $value);
+            } else {
+                $merged[$key] = $value;
+            }
+        }
+        return $merged;
     }
 
     /**
      * Set values and check consistence
      *
      * @param array $array
+     *
      * @throws RoutingException
      */
     private function populate(array $array)
@@ -94,11 +321,21 @@ class Route
                 # an array -> loop
                 switch ($key) {
                     case 'headers':
-                        $this->headers = $value;
-                        continue;
+                        if (!array_search(Routing::REQUIRED, $value)) {
+                            $this->headers = $value;
+                            continue;
+                        } else {
+                            throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
+                        }
+
                     case 'params':
-                        $this->params = $value;
-                        continue;
+                        if (!array_search(Routing::REQUIRED, $value)) {
+                            $this->params = $value;
+                            continue;
+                        } else {
+                            throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
+                        }
+
                     default:
                         $this->populate($value);
                 }
@@ -120,223 +357,9 @@ class Route
                         continue;
                     default:
                         continue;
-
-
                 }
-
             }
         }
-
-
     }
-
-    /**
-     * @param array $array1
-     * @param array $array2
-     * @return array
-     */
-    private function array_merge_recursive_distinct(array &$array1, array &$array2)
-    {
-        $merged = $array1;
-        foreach ($array2 as $key => &$value) {
-            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
-                $merged[$key] = $this->array_merge_recursive_distinct($merged[$key], $value);
-            } else {
-                $merged[$key] = $value;
-            }
-        }
-        return $merged;
-    }
-
-    /**
-     * @return MailevaApiAdapter
-     */
-    public function getMailevaApiAdapter(): MailevaApiAdapter
-    {
-        return $this->mailevaApiAdapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getFile()
-    {
-        return $this->file;
-    }
-
-    /**
-     * @return MailevaResponse
-     * @throws MailevaResponseException
-     * @throws RoutingException
-     */
-    public function call(): MailevaResponse
-    {
-        $response = null;
-        $this->requestParameters = [];
-
-        try {
-
-            if ($this->isAuthenticatedRoute()) {
-                if ($this->mailevaApiAdapter->isAuthenticated() === false) {
-                    $this->mailevaApiAdapter->postAuthentication();
-                }
-
-                if ($this->mailevaApiAdapter->isAuthenticated()) {
-                    $this->headers['Authorization'] = 'Bearer ' . $this->mailevaApiAdapter->getAccessToken();
-                } else {
-                    throw new MailevaResponseException('unable to authenticate');
-                }
-
-            }
-
-            $this->requestParameters[RequestOptions::HEADERS] = $this->getHeaders();
-
-
-            switch ($this->getMethod()) {
-                case Method::DELETE:
-                case Method::GET:
-                $this->requestParameters[RequestOptions::QUERY] = $this->getParams();
-                    break;
-                case Method::PATCH:
-                case Method::POST:
-
-                    if (!is_null($this->getMultipart())) {
-
-                        $this->requestParameters[RequestOptions::MULTIPART] = $this->getMultipart();
-
-                    } elseif (!is_null($this->getBody())) {
-
-                        $this->requestParameters[RequestOptions::JSON] = $this->getBody();
-
-                    } elseif (!empty($this->getParams())) {
-
-                        $this->requestParameters [RequestOptions::FORM_PARAMS] = $this->getParams();
-
-                    }
-                    break;
-
-                default:
-                    throw new RoutingException(' not implemented ' . $this->getMethod());
-                    break;
-            }
-
-            $client = new Client(['verify' => false]);
-
-            if (self::DEBUG) {
-                error_log('*****************************************************************************');
-                echo '*****************************************************************************'.'<br/>';
-                echo '*****************************************************************************'.'<br/>';
-                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------'.'<br/>';
-                error_log('-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------');
-                echo '*****************************************************************************'.'<br/>';
-            }
-
-
-            $res = $client->request($this->getMethod(), $this->getUrl(),  $this->requestParameters);
-
-
-
-            $mailevaResponse = new MailevaResponse($this, $res);
-
-            if (self::DEBUG) {
-                var_dump($mailevaResponse->getResponseAsArray());
-                echo '*****************************************************************************'.'<br/>';
-                error_log(print_r($mailevaResponse->getResponseAsArray(), true));
-                error_log('*****************************************************************************');
-            }
-
-            return $mailevaResponse;
-
-        } catch (GuzzleException $guzzleException) {
-            throw new MailevaResponseException($guzzleException->getMessage());
-        } catch (\Throwable $throwable) {
-            throw new MailevaResponseException($throwable->getMessage());
-        }
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAuthenticatedRoute(): bool
-    {
-        return $this->authenticatedRoute;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
-    /**
-     * @return String
-     */
-    public function getMethod(): String
-    {
-        return $this->method;
-    }
-
-    /**
-     * @return array
-     */
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMultipart()
-    {
-        return $this->multipart;
-    }
-
-    /**
-     * @param mixed $multipart
-     */
-    public function setMultipart($multipart)
-    {
-        $this->multipart = $multipart;
-    }
-
-    /**
-     * getBody()
-     *
-     * @return mixed
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    /**
-     * @return String
-     * @throws RoutingException
-     */
-    public function getUrl(): String
-    {
-        if ($this->isAuthenticatedRoute()) {
-            if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
-                return $this->getMailevaApiAdapter()->getHost() . '/mail/v1' . $this->url;
-            } else {
-                return $this->getMailevaApiAdapter()->getHost() . '/mail/v1' . $this->url;
-            }
-
-        } else {
-            return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequestParameters()
-    {
-        return $this->requestParameters;
-    }
-
 }
 

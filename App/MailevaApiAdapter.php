@@ -17,51 +17,177 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 
 /**
  * Class MailevaApiAdapter
+ *
  * @package MailevaApiAdapter\App
  */
 class MailevaApiAdapter
 {
 
-
     private $access_token = null;
+    private $authenticationHost;
     private $clientId;
     private $clientSecret;
-    private $username;
-    private $password;
-    private $authenticationHost;
     private $host;
-    private $useMemcache = false;
     private $memcacheHost = null;
     private $memcachePort = null;
-
+    private $password;
+    private $type;
+    private $useMemcache = false;
+    private $username;
 
     /**
      * MailevaApiAdapter constructor.
+     *
      * @param MailevaConnection $mailevaConnection
      */
     public function __construct(MailevaConnection $mailevaConnection)
     {
         $this->authenticationHost = $mailevaConnection->getAuthenticationHost();
-        $this->host = $mailevaConnection->getHost();
-        $this->clientId = $mailevaConnection->getClientId();
-        $this->clientSecret = $mailevaConnection->getClientSecret();
-        $this->username = $mailevaConnection->getUsername();
-        $this->password = $mailevaConnection->getPassword();
+        $this->host               = $mailevaConnection->getHost();
+        $this->type               = $mailevaConnection->getType();
+        $this->clientId           = $mailevaConnection->getClientId();
+        $this->clientSecret       = $mailevaConnection->getClientSecret();
+        $this->username           = $mailevaConnection->getUsername();
+        $this->password           = $mailevaConnection->getPassword();
 
         if ($mailevaConnection->useMemcache()) {
-            $this->useMemcache = true;
+            $this->useMemcache  = true;
             $this->memcacheHost = $mailevaConnection->getMemcacheHost();
             $this->memcachePort = $mailevaConnection->getMemcachePort();
         }
+    }
 
+    /**
+     * @param string $sendingId
+     * @param string $documentId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function deleteDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
+    {
+        $route = new Route($this, Routing::DELETE_DOCUMENT_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id'  => $sendingId,
+                    'document_id' => $documentId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $recipientId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function deleteRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
+    {
+        $route = new Route($this, Routing::DELETE_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
+            [
+                'params' => [
+                    'sending_id'   => $sendingId,
+                    'recipient_id' => $recipientId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function deleteRecipientsBySendingId(string $sendingId): MailevaResponse
+    {
+        $route = new Route($this, Routing::DELETE_RECIPIENTS_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function deleteSendingBySendingId(string $sendingId): MailevaResponse
+    {
+        $route = new Route($this, Routing::DELETE_SENDING_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId
+                ]
+            ]
+        );
+        return $route->call();
     }
 
     /**
      * @return string
      */
-    public function getHost(): string
+    public function getAccessToken()
     {
-        return $this->host;
+        if ($this->useMemcache) {
+            if (is_null($this->access_token)) {
+                $key            = 'MT_' . $this->clientId . '_' . $this->username;
+                $memcachedToken = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($key, false);
+                if (false !== $memcachedToken) {
+                    $this->access_token = $memcachedToken;
+                }
+            }
+        }
+
+        return $this->access_token;
+    }
+
+    /**
+     * @param string $token
+     * @param int    $secondsDurationValidity
+     */
+    public function setAccessToken(string $token, int $secondsDurationValidity)
+    {
+        if ($this->useMemcache) {
+            $key = 'MT_' . $this->clientId . '_' . $this->username;
+            #2592000 max memcache value -> http://php.net/manual/fr/memcache.set.php
+            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($key, $token,
+                min(abs($secondsDurationValidity / 2), 2592000));
+        }
+        $this->access_token = $token;
+    }
+
+    /**
+     * @param array $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getAuthentication(array $body): MailevaResponse
+    {
+        #$body : {"client_id": "string","redirect_uri": "string","state": "string","response_type": "token"}
+        $route = new Route($this, Routing::GET_AUTHENTICATION,
+            [
+                'params' => [
+                    'body' => $body
+                ]
+            ]
+        );
+        return $route->call();
     }
 
     /**
@@ -73,43 +199,371 @@ class MailevaApiAdapter
     }
 
     /**
+     * @param string $sendingId
+     * @param string $documentId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
+    {
+
+        $route = new Route($this, Routing::GET_DOCUMENT_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id'  => $sendingId,
+                    'document_id' => $documentId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param int    $startIndex
+     * @param int    $count
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getDocumentsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_DOCUMENTS_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id'  => $sendingId,
+                    'start_index' => $startIndex,
+                    'count'       => $count
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @return string
+     */
+    public function getHost(): string
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $importId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getImportRecipientsBySendingIdAndImportId(string $sendingId, string $importId): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_IMPORT_RECIPIENTS_BY_SENDING_ID_AND_IMPORT_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'import_id'  => $importId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $recipientId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
+            [
+                'params' => [
+                    'sending_id'   => $sendingId,
+                    'recipient_id' => $recipientId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param int    $startIndex
+     * @param int    $count
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getRecipientsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_RECIPIENTS_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id'  => $sendingId,
+                    'start_index' => $startIndex,
+                    'count'       => $count
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getSendingBySendingId(string $sendingId): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_SENDING_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $recipientId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function getSendingStatusBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
+    {
+        if ($this->getType() !== MailevaConnection::LRE) {
+            throw new MailevaException('Only available for LRE');
+        }
+
+        $route = new Route($this, Routing::GET_SENDING_DELIVERY_STATUSES_BY_SENDING_ID_AND_RECIPIENT_ID,
+            [
+                'params' => [
+                    'sending_id'   => $sendingId,
+                    'recipient_id' => $recipientId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $recipientId
+     * @param string $localFilePath
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function downloadAcknowledgementOfReceiptBySendingIdAndRecipientId(
+        string $sendingId,
+        string $recipientId,
+        string $localFilePath
+    ): MailevaResponse {
+        if ($this->getType() !== MailevaConnection::LRE) {
+            throw new MailevaException('Only available for LRE');
+        }
+        $route = new Route($this, Routing::DOWNLOAD_ACKNOWLEDGEMENT_OF_RECEIPT_BY_SENDING_ID_AND_RECIPIENT_ID,
+            [
+                'params' => [
+                    'sending_id'   => $sendingId,
+                    'recipient_id' => $recipientId,
+                    'sink'         => $localFilePath
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $localFilePath
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function downloadDepositProofBySendingId(string $sendingId, string $localFilePath): MailevaResponse
+    {
+        if ($this->getType() !== MailevaConnection::LRE) {
+            throw new MailevaException('Only available for LRE');
+        }
+
+        $route = new Route($this, Routing::DOWNLOAD_DEPOSIT_PROOF_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'sink'       => $localFilePath
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param int $startIndex
+     * @param int $count
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function getSendings(int $startIndex = 1, int $count = 100): MailevaResponse
+    {
+        $route = new Route($this, Routing::GET_SENDINGS,
+            [
+                'params' => [
+                    'start_index' => $startIndex,
+                    'count'       => $count
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuthenticated(): bool
+    {
+        return is_null($this->getAccessToken()) === false;
+    }
+
+    /**
+     * @param string $sendingId
+     * @param array  $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function patchSendingBySendingId(string $sendingId, array $body): MailevaResponse
+    {
+        if ($this->getType() !== MailevaConnection::CLASSIC) {
+            throw new MailevaException('not available for LRE');
+        }
+
+        $route = new Route($this, Routing::PATCH_SENDING_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body'       => $body
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param array  $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function patchLRESendingBySendingId(string $sendingId, array $body): MailevaResponse
+    {
+        if ($this->getType() !== MailevaConnection::LRE) {
+            throw new MailevaException('Only available for LRE');
+        }
+
+        $route = new Route($this, Routing::PATCH_LRE_SENDING_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body'       => $body
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
      * @param MailevaSending $mailevaSending
-     * @param bool $checkSimilarPreviousHasAlreadyBeenSent
+     * @param bool           $checkSimilarPreviousHasAlreadyBeenSent
+     *
      * @return string
      * @throws MailevaException
      * @throws MailevaResponseException
      */
     public function post(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
     {
-        $name = $mailevaSending->getName();
-        $postageType = $mailevaSending->getPostageType();
-        $colorPrinting = $mailevaSending->isColorPrinting();
-        $duplexPrinting = $mailevaSending->isDuplexPrinting();
-        $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
-        $file = $mailevaSending->getFile();
-        $filePriority = $mailevaSending->getFilepriority();
-        $fileName = $mailevaSending->getFilename();
-        $addressLine1 = $mailevaSending->getAddressLine1();
-        $addressLine2 = $mailevaSending->getAddressLine2();
-        $addressLine3 = $mailevaSending->getAddressLine3();
-        $addressLine4 = $mailevaSending->getAddressLine4();
-        $addressLine5 = $mailevaSending->getAddressLine5();
-        $addressLine6 = $mailevaSending->getAddressLine6();
-        $countryCode = $mailevaSending->getCountryCode();
-        $customId = $mailevaSending->getCustomId();
 
         if ($checkSimilarPreviousHasAlreadyBeenSent === true) {
             if ($this->useMemcache === false) {
                 throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
             }
-            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($mailevaSending->getUID(), false);
+            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($mailevaSending->getUID(),
+                false);
             if ($sendingIdSimilarPrevious !== false) {
                 throw new MailevaException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
             }
         }
 
+        if ($this->getType() === MailevaConnection::CLASSIC) {
+            return $this->postSimple($mailevaSending);
+        } else {
+            return $this->postLRE($mailevaSending);
+        }
+    }
 
-        $sending = $this->postSending(['name' => $name]);
+    /**
+     * @param MailevaSending $mailevaSending
+     *
+     * @return string
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    private function postSimple(MailevaSending $mailevaSending): string
+    {
+
+        $name                 = $mailevaSending->getName();
+        $postageType          = $mailevaSending->getPostageType();
+        $colorPrinting        = $mailevaSending->isColorPrinting();
+        $duplexPrinting       = $mailevaSending->isDuplexPrinting();
+        $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
+        $file                 = $mailevaSending->getFile();
+        $filePriority         = $mailevaSending->getFilepriority();
+        $fileName             = $mailevaSending->getFilename();
+        $addressLine1         = $mailevaSending->getAddressLine1();
+        $addressLine2         = $mailevaSending->getAddressLine2();
+        $addressLine3         = $mailevaSending->getAddressLine3();
+        $addressLine4         = $mailevaSending->getAddressLine4();
+        $addressLine5         = $mailevaSending->getAddressLine5();
+        $addressLine6         = $mailevaSending->getAddressLine6();
+        $countryCode          = $mailevaSending->getCountryCode();
+        $customId             = $mailevaSending->getCustomId();
+
+        $sending   = $this->postSending(['name' => $name]);
         $sendingId = $sending->getResponseAsArray()['sendingId'];
 
         if (empty($sendingId)) {
@@ -117,11 +571,11 @@ class MailevaApiAdapter
         }
 
         $this->patchSendingBySendingId($sendingId,
-            ["postage_type" => $postageType,
-                "color_printing" => $colorPrinting,
-                "duplex_printing" => $duplexPrinting,
-                "optional_address_sheet" => $optionalAddressSheet,
-//                "notification_email" => $notificationEmail
+            [
+                "postage_type"           => $postageType,
+                "color_printing"         => $colorPrinting,
+                "duplex_printing"        => $duplexPrinting,
+                "optional_address_sheet" => $optionalAddressSheet
             ]
         );
 
@@ -140,11 +594,10 @@ class MailevaApiAdapter
                 'address_line_4' => $addressLine4,
                 'address_line_5' => $addressLine5,
                 'address_line_6' => $addressLine6,
-                'country_code' => $countryCode,
-                'custom_id' => $customId
+                'country_code'   => $countryCode,
+                'custom_id'      => $customId
             ]
         );
-
 
         $this->postSendingBySendingId($sendingId);
 
@@ -152,15 +605,255 @@ class MailevaApiAdapter
             MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
         }
 
+        return $sendingId;
+    }
+
+    /**
+     * @param MailevaSending $mailevaSending
+     *
+     * @return string
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    private function postLRE(MailevaSending $mailevaSending): string
+    {
+        $name                 = $mailevaSending->getName();
+        $colorPrinting        = $mailevaSending->isColorPrinting();
+        $duplexPrinting       = $mailevaSending->isDuplexPrinting();
+        $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
+        $file                 = $mailevaSending->getFile();
+        $filePriority         = $mailevaSending->getFilepriority();
+        $fileName             = $mailevaSending->getFilename();
+        $addressLine1         = $mailevaSending->getAddressLine1();
+        $addressLine2         = $mailevaSending->getAddressLine2();
+        $addressLine3         = $mailevaSending->getAddressLine3();
+        $addressLine4         = $mailevaSending->getAddressLine4();
+        $addressLine5         = $mailevaSending->getAddressLine5();
+        $addressLine6         = $mailevaSending->getAddressLine6();
+        $countryCode          = $mailevaSending->getCountryCode();
+        $customId             = $mailevaSending->getCustomId();
+
+        $sending   = $this->postSending(['name' => $name]);
+        $sendingId = $sending->getResponseAsArray()['sendingId'];
+
+        if (empty($sendingId)) {
+            throw new MailevaResponseException('Unable to retrieve sendingId');
+        }
+
+        $notification_email = $mailevaSending->getNotificationEmail();
+        $senderAddressLine1 = $mailevaSending->getSenderAddressLine1();
+        $senderAddressLine2 = $mailevaSending->getSenderAddressLine2();
+        $senderAddressLine3 = $mailevaSending->getSenderAddressLine3();
+        $senderAddressLine4 = $mailevaSending->getSenderAddressLine4();
+        $senderAddressLine5 = $mailevaSending->getSenderAddressLine5();
+        $senderAddressLine6 = $mailevaSending->getSenderAddressLine6();
+        $senderCountryCode  = $mailevaSending->getSenderCountryCode();
+
+        $this->patchLRESendingBySendingId($sendingId,
+            [
+                "acknowledgement_of_receipt" => true,
+                "color_printing"             => $colorPrinting,
+                "duplex_printing"            => $duplexPrinting,
+                "optional_address_sheet"     => $optionalAddressSheet,
+                "notification_email"         => $notification_email,
+                "sender_address_line_1"      => $senderAddressLine1,
+                "sender_address_line_2"      => $senderAddressLine2,
+                "sender_address_line_3"      => $senderAddressLine3,
+                "sender_address_line_4"      => $senderAddressLine4,
+                "sender_address_line_5"      => $senderAddressLine5,
+                "sender_address_line_6"      => $senderAddressLine6,
+                "sender_country_code"        => $senderCountryCode,
+            ]
+        );
+
+        $this->postDocumentBySendingId($sendingId,
+            [
+                ['name' => 'document', 'contents' => \GuzzleHttp\Psr7\stream_for(fopen($file, 'rb'))],
+                ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
+            ]
+        );
+
+        $this->postRecipientBySendingId($sendingId,
+            [
+                'address_line_1' => $addressLine1,
+                'address_line_2' => $addressLine2,
+                'address_line_3' => $addressLine3,
+                'address_line_4' => $addressLine4,
+                'address_line_5' => $addressLine5,
+                'address_line_6' => $addressLine6,
+                'country_code'   => $countryCode,
+                'custom_id'      => $customId
+            ]
+        );
+
+        $this->postSendingBySendingId($sendingId);
+
+        if ($this->useMemcache === true) {
+            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
+        }
 
         return $sendingId;
+    }
 
+    /**
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postAuthentication(): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_AUTHENTICATION,
+            [
+                'headers' => [
+                    'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)
+                ],
+                'params'  => [
+                    'username' => $this->username,
+                    'password' => $this->password
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param array  $multipart
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postDocumentBySendingId(string $sendingId, array $multipart): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_DOCUMENT_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'multipart'  => $multipart
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param int    $fileId
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postDocumentFromLibrary(string $sendingId, int $fileId): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_DOCUMENT_FROM_LIBRARY,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'file_id'    => $fileId
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param string $documentId
+     * @param int    $position
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postDocumentPositionBySendingId(string $sendingId, string $documentId, int $position): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_DOCUMENT_POSITION_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id'  => $sendingId,
+                    'document_id' => $documentId,
+                    'position'    => $position
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @deprecated
+     *
+     * @param string $sendingId
+     * @param array  $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postImportRecipientsBySendingId(string $sendingId, array $body): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_IMPORT_RECIPIENTS_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body'       => $body
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param array  $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function postImportRecipientsBySendingIdFromAddressBook(string $sendingId, array $body): MailevaResponse
+    {
+        #$body : [{"id": "string"}]
+        $route = new Route($this, Routing::POST_IMPORT_RECIPIENTS_BY_SENDING_ID_FROM_ADDRESS_BOOK,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body'       => $body
+                ]
+            ]
+        );
+        return $route->call();
+    }
+
+    /**
+     * @param string $sendingId
+     * @param array  $body
+     *
+     * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException*
+     */
+    public function postRecipientBySendingId(string $sendingId, array $body): MailevaResponse
+    {
+        $route = new Route($this, Routing::POST_RECIPIENT_BY_SENDING_ID,
+            [
+                'params' => [
+                    'sending_id' => $sendingId,
+                    'body'       => $body
+                ]
+            ]
+        );
+        return $route->call();
     }
 
     /**
      * @param array $body
-     * @throws MailevaResponseException
+     *
      * @return MailevaResponse
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
      */
     public function postSending(array $body): MailevaResponse
     {
@@ -177,94 +870,10 @@ class MailevaApiAdapter
 
     /**
      * @param string $sendingId
-     * @param array $body
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function patchSendingBySendingId(string $sendingId, array $body): MailevaResponse
-    {
-
-        #$body : {"postage_type": "FAST","color_printing": true,"duplex_printing": true,"optional_address_sheet": true,"undelivered_mails_management": true, "notification_email": "string"}
-        $route = new Route($this, Routing::PATCH_SENDING_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'body' => $body
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param array $multipart
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postDocumentBySendingId(string $sendingId, array $multipart): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_DOCUMENT_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'multipart' => $multipart
-                ]
-            ]
-        );
-        return $route->call();
-
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param array $body
+     *
      * @return MailevaResponse
      * @throws Exception\RoutingException
-     * @throws MailevaResponseException*
-     */
-    public function postRecipientBySendingId(string $sendingId, array $body): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_RECIPIENT_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'body' => $body
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-
-    /**
-     * @deprecated
-     * @param string $sendingId
-     * @param array $body
      * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postImportRecipientsBySendingId(string $sendingId, array $body): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_IMPORT_RECIPIENTS_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'body' => $body
-                ]
-            ]
-        );
-        return $route->call();
-
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
      */
     public function postSendingBySendingId(string $sendingId): MailevaResponse
     {
@@ -277,362 +886,4 @@ class MailevaApiAdapter
         );
         return $route->call();
     }
-
-    /**
-     * @param array $body
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getAuthentication(array $body): MailevaResponse
-    {
-        #$body : {"client_id": "string","redirect_uri": "string","state": "string","response_type": "token"}
-        $route = new Route($this, Routing::GET_AUTHENTICATION,
-            [
-                'params' => [
-                    'body' => $body
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postAuthentication(): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_AUTHENTICATION,
-            [
-                'headers' => [
-                    'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)
-                ],
-                'params' => [
-                    'username' => $this->username,
-                    'password' => $this->password
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @param int $startIndex
-     * @param int $count
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getSendings(int $startIndex = 1, int $count = 100): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_SENDINGS,
-            [
-                'params' => [
-                    'start_index' => $startIndex,
-                    'count' => $count
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @param string $sendingId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getSendingBySendingId(string $sendingId): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_SENDING_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function deleteSendingBySendingId(string $sendingId): MailevaResponse
-    {
-        $route = new Route($this, Routing::DELETE_SENDING_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $startIndex
-     * @param int $count
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getDocumentsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_DOCUMENTS_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'start_index' => $startIndex,
-                    'count' => $count
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param string $documentId
-     * @param int $position
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postDocumentPositionBySendingId(string $sendingId, string $documentId, int $position): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_DOCUMENT_POSITION_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'document_id' => $documentId,
-                    'position' => $position
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $fileId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postDocumentFromLibrary(string $sendingId, int $fileId): MailevaResponse
-    {
-        $route = new Route($this, Routing::POST_DOCUMENT_FROM_LIBRARY,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'file_id' => $fileId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param string $documentId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function deleteDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
-    {
-        $route = new Route($this, Routing::DELETE_DOCUMENT_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'document_id' => $documentId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param string $documentId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
-    {
-
-        $route = new Route($this, Routing::GET_DOCUMENT_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'document_id' => $documentId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $importId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getImportRecipientsBySendingIdAndImportId(string $sendingId, string $importId): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_IMPORT_RECIPIENTS_BY_SENDING_ID_AND_IMPORT_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'import_id' => $importId
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $startIndex
-     * @param int $count
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getRecipientsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_RECIPIENTS_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'start_index' => $startIndex,
-                    'count' => $count
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function deleteRecipientsBySendingId(string $sendingId): MailevaResponse
-    {
-        $route = new Route($this, Routing::DELETE_RECIPIENTS_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param array $body
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function postImportRecipientsBySendingIdFromAddressBook(string $sendingId, array $body): MailevaResponse
-    {
-        #$body : [{"id": "string"}]
-        $route = new Route($this, Routing::POST_IMPORT_RECIPIENTS_BY_SENDING_ID_FROM_ADDRESS_BOOK,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'body' => $body
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $recipientId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function getRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
-    {
-        $route = new Route($this, Routing::GET_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'recipient_id' => $recipientId
-                ]
-            ]
-        );
-        return $route->call();
-
-    }
-
-    /**
-     * @param string $sendingId
-     * @param int $recipientId
-     * @throws MailevaResponseException
-     * @return MailevaResponse
-     */
-    public function deleteRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
-    {
-        $route = new Route($this, Routing::DELETE_RECIPIENT_BY_SENDING_ID_AND_RECIPIENT_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId,
-                    'recipient_id' => $recipientId
-                ]
-            ]
-        );
-        return $route->call();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAuthenticated(): bool
-    {
-        return is_null($this->getAccessToken()) === false;
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getAccessToken()
-    {
-        if ($this->useMemcache) {
-            if (is_null($this->access_token)) {
-                $key = 'MT_' . $this->clientId . '_' . $this->username;
-                $memcachedToken = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($key, false);
-                if (false !== $memcachedToken) {
-                    $this->access_token = $memcachedToken;
-                }
-            }
-        }
-
-        return $this->access_token;
-    }
-
-    /**
-     * @param string $token
-     * @param int $secondsDurationValidity
-     */
-    public function setAccessToken(string $token, int $secondsDurationValidity)
-    {
-        if ($this->useMemcache) {
-            $key = 'MT_' . $this->clientId . '_' . $this->username;
-            #2592000 max memcache value -> http://php.net/manual/fr/memcache.set.php
-            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($key, $token, min(abs($secondsDurationValidity / 2), 2592000));
-        }
-        $this->access_token = $token;
-    }
-
 }

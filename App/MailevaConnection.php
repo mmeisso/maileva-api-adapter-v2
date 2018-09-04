@@ -10,43 +10,39 @@ namespace MailevaApiAdapter\App;
 
 /**
  * Class MailevaConnection
+ *
  * @package MailevaApiAdapter\App
  */
 class MailevaConnection
 {
+
+    const CLASSIC = 'classic';
+    const LRE = 'lre';
     private $authenticationHost;
-    private $host;
     private $clientId = null;
     private $clientSecret = null;
-    private $username = null;
-    private $password = null;
+    private $host;
     private $memcacheHost = null;
     private $memcachePort = null;
+    private $password = null;
+    private $type = self::CLASSIC;
+    private $username = null;
 
     public function __construct()
     {
     }
 
     /**
-     * @param string $host
-     * @return MailevaConnection
-     */
-    public function setHost(string $host): MailevaConnection
-    {
-        $this->host = $host;
-        return $this;
-    }
-
-    /**
      * @return string
      */
-    public function getHost(): string
+    public function getAuthenticationHost(): string
     {
-        return $this->host;
+        return $this->authenticationHost;
     }
 
     /**
      * @param string $authenticationHost
+     *
      * @return MailevaConnection
      */
     public function setAuthenticationHost(string $authenticationHost): MailevaConnection
@@ -58,15 +54,6 @@ class MailevaConnection
     /**
      * @return string
      */
-    public function getAuthenticationHost(): string
-    {
-        return $this->authenticationHost;
-    }
-
-
-    /**
-     * @return string
-     */
     public function getClientId(): string
     {
         return $this->clientId;
@@ -74,6 +61,7 @@ class MailevaConnection
 
     /**
      * @param string $clientId
+     *
      * @return MailevaConnection
      */
     public function setClientId(string $clientId): MailevaConnection
@@ -92,6 +80,7 @@ class MailevaConnection
 
     /**
      * @param string $clientSecret
+     *
      * @return MailevaConnection
      */
     public function setClientSecret(string $clientSecret): MailevaConnection
@@ -103,36 +92,19 @@ class MailevaConnection
     /**
      * @return string
      */
-    public function getUsername(): string
+    public function getHost(): string
     {
-        return $this->username;
+        return $this->host;
     }
 
     /**
-     * @param string $username
+     * @param string $host
+     *
      * @return MailevaConnection
      */
-    public function setUsername(string $username): MailevaConnection
+    public function setHost(string $host): MailevaConnection
     {
-        $this->username = $username;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    /**
-     * @param string $password
-     * @return MailevaConnection
-     */
-    public function setPassword(string $password): MailevaConnection
-    {
-        $this->password = $password;
+        $this->host = $host;
         return $this;
     }
 
@@ -146,20 +118,13 @@ class MailevaConnection
 
     /**
      * @param string $memcacheHost
+     *
      * @return MailevaConnection
      */
     public function setMemcacheHost(string $memcacheHost): MailevaConnection
     {
         $this->memcacheHost = $memcacheHost;
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function useMemcache(): bool
-    {
-        return empty($this->getMemcacheHost()) === false && empty($this->getMemcachePort()) === false;
     }
 
     /**
@@ -172,6 +137,7 @@ class MailevaConnection
 
     /**
      * @param int $memcachePort
+     *
      * @return MailevaConnection
      */
     public function setMemcachePort(int $memcachePort): MailevaConnection
@@ -180,5 +146,68 @@ class MailevaConnection
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
 
+    /**
+     * @param string $password
+     *
+     * @return MailevaConnection
+     */
+    public function setPassword(string $password): MailevaConnection
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return MailevaConnection
+     */
+    public function setType(string $type): MailevaConnection
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param string $username
+     *
+     * @return MailevaConnection
+     */
+    public function setUsername(string $username): MailevaConnection
+    {
+        $this->username = $username;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function useMemcache(): bool
+    {
+        return empty($this->getMemcacheHost()) === false && empty($this->getMemcachePort()) === false;
+    }
 }

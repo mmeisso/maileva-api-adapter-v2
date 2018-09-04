@@ -1,5 +1,6 @@
 <?php
 
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -66,25 +67,36 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
         $mailevaSending = new \MailevaApiAdapter\App\MailevaSending();
         $mailevaSending
             ->setName((new DateTime())->format('Y-m-d H:i:s'))
-            ->setPostageType(\MailevaApiAdapter\App\MailevaSending::POSTAGE_TYPE_FAST)
+            ->setPostageType(\MailevaApiAdapter\App\MailevaSending::POSTAGE_TYPE_LRE)
             ->setColorPrinting(true)
             ->setDuplexPrinting(true)
             ->setOptionalAddressSheet(false)
             ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
             //->setFilepriority()  #optionnal default 1
             ->setFilename('document.pdf')
-            ->setAddressLine1('M. Pettitti Loïc')
+            ->setAddressLine1('Mr. Rousseaux damien')
             ->setAddressLine2('Eukles Solutions')
-            ->setAddressLine3('236 Rue de St Honorat')#optionnal default ''
+            ->setAddressLine3('236 Rue de Saint Honorat')#optionnal default ''
             //->setAddressLine4() #optionnal default ''
             //->setAddressLine5() #optionnal default ''
             ->setAddressLine6('83510 Lorgues')
             //->setCountryCode() #optionnal default FR
+
+            ->setNotificationEmail('lpettiti@eukles.com')
+            ->setSenderAddressLine1('M. Pettiti Loïc')
+            ->setSenderAddressLine2('Eukles Solutions')
+            ->setSenderAddressLine3('236 Rue de Saint Honorat')#optionnal default ''
+            #->setSenderAddressLine4('Batiment')#optionnal default ''
+            #->setSenderAddressLine5('Etage 1')#optionnal default ''
+            ->setSenderAddressLine6('83510 Lorgues')
+            ->setSenderCountryCode('FR')#optionnal default FR
+
             ->setCustomId('1')
             ->validate($mailevaApiAdapter);
 
         $sendingId = $mailevaApiAdapter->post($mailevaSending, true);
         echo "sendingId = " . $sendingId . "<br/>";
+        debugSendingId($mailevaApiAdapter, $sendingId);
     } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
         var_dump($e);
     }
@@ -94,36 +106,72 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
  * @param \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter
  * @param                                          $sendingId
  *
+ * @throws \MailevaApiAdapter\App\Exception\MailevaException
  * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
  * @throws \MailevaApiAdapter\App\Exception\RoutingException
  */
 function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter, $sendingId)
 {
-    $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
-    var_dump($result->getResponseAsArray());
+//    echo "getSendingBySendingId<br/>";
+//    $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+//    var_dump($result->getResponseAsArray());
 
-    $result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId,
-        $mailevaApiAdapter->getRecipientsBySendingId($sendingId)->getResponseAsArray()['recipients'][0]['id']);
+    $recipientId = $mailevaApiAdapter->getRecipientsBySendingId($sendingId)->getResponseAsArray()['recipients'][0]['id'];
+
+//    echo "getRecipientBySendingIdAndRecipientId<br/>";
+//    $result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, $recipientId);
+//    var_dump($result);
+
+    echo "getSendingStatusBySendingIdAndRecipientId<br/>";
+    $result = $mailevaApiAdapter->getSendingStatusBySendingIdAndRecipientId($sendingId, $recipientId);
     var_dump($result);
 
-    $result = $mailevaApiAdapter->getDocumentBySendingId($sendingId,
-        $mailevaApiAdapter->getDocumentsBySendingId($sendingId)->getResponseAsArray()['documents'][0]['id']);
-    var_dump($result->getResponseAsArray());
+    if (array_key_exists(\MailevaApiAdapter\App\Core\MailevaLREStatuses::DELIVERY_STATUSES, $result->getResponseAsArray())){
+        /** @var \MailevaApiAdapter\App\Core\MailevaLREStatuses $mailevaLREStatuses */
+        $mailevaLREStatuses = $result->getResponseAsArray()[\MailevaApiAdapter\App\Core\MailevaLREStatuses::DELIVERY_STATUSES];
+        $lastStatus =$mailevaLREStatuses->getActiveStatus();
+        echo "getActiveStatus<br/>";
+        var_dump($lastStatus);
+
+    }
+
+
+
+//    echo "getDocumentBySendingId<br/>";
+//    $result = $mailevaApiAdapter->getDocumentBySendingId($sendingId,
+//        $mailevaApiAdapter->getDocumentsBySendingId($sendingId)->getResponseAsArray()['documents'][0]['id']);
+//    var_dump($result->getResponseAsArray());
+//
+//    echo "downloadDepositProofBySendingId";
+//    $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
+//    $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
+//    var_dump($result->getResponseAsArray());
+
+   // echo "downloadAcknowledgementOfReceiptBySendingIdAndRecipientId";
+   // $tmpFile = '/tmp/mailevaAcknowledgementOfReceipt' . $sendingId . '.pdf';
+   // $result  = $mailevaApiAdapter->downloadAcknowledgementOfReceiptBySendingIdAndRecipientId($sendingId, $recipientId, $tmpFile);
+    //var_dump($result->getResponseAsArray());
 }
 
-$mailevaApiAdapter = $mailevaApiAdapterSandBoxClassic;
+$mailevaApiAdapter = $mailevaApiAdapterProdLRE;
+#$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 
 try {
-testPost($mailevaApiAdapter);
-die;
+#testPost($mailevaApiAdapter);
+#die;
 
-$sendingId = '85653ecb-453c-407b-81a2-1499b041358d';
-debugSendingId($mailevaApiAdapter, $sendingId);
-//die;
+#PROD !
+    $sendingId = '12dd7f5d-2354-4c8d-86ff-a3cc7bbebc93';
+
+#DEV !
+   # $sendingId = '0a03c038-b101-495f-b20a-3cab88041874';
+    debugSendingId($mailevaApiAdapter, $sendingId);
+#die;
+
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
     var_dump($e);
 }
-
+die;
 try {
     $sendings = $mailevaApiAdapter->getSendings();
     echo "lecture des envois" . PHP_EOL;
@@ -131,11 +179,6 @@ try {
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
     var_dump($e);
 }
-
-
-
-
-
 
 
 
