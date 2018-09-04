@@ -15,7 +15,6 @@ class MailevaSending
     const POSTAGE_TYPE_ECONOMIC = "ECONOMIC";
     const POSTAGE_TYPE_FAST = "FAST";
     const POSTAGE_TYPE_LRE = "LRE";
-
     /**@var String */
     Private $addressLine1 = null;
     /**@var String */
@@ -336,7 +335,7 @@ class MailevaSending
     {
 
         if (!in_array(strtoupper($postageType), [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE])) {
-            throw new MailevaParameterException('Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST. 'or ' . self::POSTAGE_TYPE_LRE);
+            throw new MailevaParameterException('Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE);
         }
 
         $this->postageType = strtoupper($postageType);
@@ -587,6 +586,34 @@ class MailevaSending
             unset($fields['senderAddressLine6']);
         } else {
             unset($fields['postageType']);
+
+            if (is_null($fields['senderAddressLine1']) && !is_null('senderAddressLine2')) {
+                if (strlen($fields['senderAddressLine2']) === 0) {
+                    throw new MailevaParameterException('senderAddressLine1 && senderAddressLine2 not set');
+                }
+                unset($fields['senderAddressLine1']);
+            }
+
+            if (!is_null($fields['senderAddressLine1']) && is_null('senderAddressLine2')) {
+                if (strlen($fields['senderAddressLine1']) === 0) {
+                    throw new MailevaParameterException('senderAddressLine1 && senderAddressLine2 not set');
+                }
+                unset($fields['senderAddressLine2']);
+            }
+        }
+
+        if (is_null($fields['addressLine1']) && !is_null('addressLine2')) {
+            if (strlen($fields['addressLine2']) === 0) {
+                throw new MailevaParameterException('addressLine1 && addressLine2 not set');
+            }
+            unset($fields['addressLine1']);
+        }
+
+        if (!is_null($fields['addressLine1']) && is_null('addressLine2')) {
+            if (strlen($fields['addressLine1']) === 0) {
+                throw new MailevaParameterException('addressLine1 && addressLine2 not set');
+            }
+            unset($fields['addressLine2']);
         }
 
         foreach ($fields as $key => $value) {
