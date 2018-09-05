@@ -18,6 +18,11 @@ class MailevaLREStatuses
     const DATE = 'date';
     const STATUS = 'status';
     const DESCRIPTION = 'description';
+
+    const LIST_SENDING_STATUS_FULL_PROCESSED = [
+        'D01', 'A19'
+    ];
+
     private $statuses = [];
     private $codeDescriptionMapping = [
         'A01' => 'Pris en charge',
@@ -65,6 +70,8 @@ class MailevaLREStatuses
         'N09' => 'Régime international',
         'N10' => 'PND (Pli Non Distribuable) pour un courrier'
     ];
+
+
 
     public function __construct() { }
 
