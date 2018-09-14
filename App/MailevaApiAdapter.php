@@ -652,7 +652,7 @@ class MailevaApiAdapter
 
         $this->patchLRESendingBySendingId($sendingId,
             [
-                "acknowledgement_of_receipt" => true,
+                "acknowledgement_of_receipt" => false,
                 "color_printing"             => $colorPrinting,
                 "duplex_printing"            => $duplexPrinting,
                 "optional_address_sheet"     => $optionalAddressSheet,
