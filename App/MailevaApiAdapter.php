@@ -206,9 +206,8 @@ class MailevaApiAdapter
      * @throws Exception\RoutingException
      * @throws MailevaResponseException
      */
-    public function getDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
+    public function getDocumentBySendingIdAndDocumentId(string $sendingId, string $documentId): MailevaResponse
     {
-
         $route = new Route($this, Routing::GET_DOCUMENT_BY_SENDING_ID,
             [
                 'params' => [
@@ -511,11 +510,15 @@ class MailevaApiAdapter
      * @param bool           $checkSimilarPreviousHasAlreadyBeenSent
      *
      * @return string
+     * @throws Exception\MailevaParameterException
+     * @throws Exception\RoutingException
      * @throws MailevaException
      * @throws MailevaResponseException
      */
     public function post(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
     {
+
+        $mailevaSending->validate($this);
 
         if ($checkSimilarPreviousHasAlreadyBeenSent === true) {
             if ($this->useMemcache === false) {

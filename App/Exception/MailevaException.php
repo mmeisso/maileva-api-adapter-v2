@@ -25,7 +25,7 @@ class MailevaException extends \Exception
     {
         parent::__construct($message, $code, $previous);
         error_log('[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString()));
-        echo '[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString());
+        //echo '[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString());
     }
 
 }

@@ -12,6 +12,7 @@ use MailevaApiAdapter\App\Exception\MailevaParameterException;
 class MailevaSending
 {
 
+    const EMAIL_REGEX = "/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/";
     const POSTAGE_TYPE_ECONOMIC = "ECONOMIC";
     const POSTAGE_TYPE_FAST = "FAST";
     const POSTAGE_TYPE_LRE = "LRE";
@@ -229,14 +230,9 @@ class MailevaSending
      * @param String $file
      *
      * @return MailevaSending
-     * @throws MailevaParameterException
      */
     public function setFile(String $file): MailevaSending
     {
-        if (!file_exists($file)) {
-            throw new MailevaParameterException($file . 'does not exist');
-        }
-
         $this->file = $file;
         return $this;
     }
@@ -576,52 +572,77 @@ class MailevaSending
     {
         $fields = get_object_vars($this);
 
-        if ($mailevaApiAdapter->getType() !== MailevaConnection::LRE) {
-            unset($fields['notificationEmail']);
-            unset($fields['senderAddressLine1']);
-            unset($fields['senderAddressLine2']);
-            unset($fields['senderAddressLine3']);
-            unset($fields['senderAddressLine4']);
-            unset($fields['senderAddressLine5']);
-            unset($fields['senderAddressLine6']);
-        } else {
-            unset($fields['postageType']);
+        if ($mailevaApiAdapter->getType() === MailevaConnection::LRE) {
+            if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
+                throw new MailevaParameterException('senderAddressLine1 || senderAddressLine2 not set');
+            }
 
-            if (is_null($fields['senderAddressLine1']) && !is_null('senderAddressLine2')) {
-                if (strlen($fields['senderAddressLine2']) === 0) {
-                    throw new MailevaParameterException('senderAddressLine1 && senderAddressLine2 not set');
+            if (empty($fields['senderAddressLine6'])) {
+                throw new MailevaParameterException('senderAddressLine6 not set');
+            }
+
+            if (empty($fields['notificationEmail'])) {
+                throw new MailevaParameterException('notificationEmail not set');
+            }
+        }
+
+        if (empty($fields['addressLine1']) && empty($fields['addressLine2'])) {
+            throw new MailevaParameterException('addressLine1 || addressLine2 not set');
+        }
+
+        if (empty($fields['addressLine6'])) {
+            throw new MailevaParameterException('addressLine6 not set');
+        }
+
+        if (!empty($fields['notificationEmail'])) {
+            if (!preg_match(self::EMAIL_REGEX, $fields['notificationEmail'])) {
+                throw new MailevaParameterException('Wrong email syntax on notificationEmail parameter');
+            }
+        }
+
+        foreach ($fields as $key => $value) {
+            if (stripos($key, 'addressLine') !== false) {
+                if (strlen($value) > 37) {
+                    throw new MailevaParameterException('too long address on ' . $key . ' : ' . $value);
                 }
-                unset($fields['senderAddressLine1']);
-            }
-
-            if (!is_null($fields['senderAddressLine1']) && is_null('senderAddressLine2')) {
-                if (strlen($fields['senderAddressLine1']) === 0) {
-                    throw new MailevaParameterException('senderAddressLine1 && senderAddressLine2 not set');
-                }
-                unset($fields['senderAddressLine2']);
             }
         }
 
-        if (is_null($fields['addressLine1']) && !is_null('addressLine2')) {
-            if (strlen($fields['addressLine2']) === 0) {
-                throw new MailevaParameterException('addressLine1 && addressLine2 not set');
-            }
-            unset($fields['addressLine1']);
-        }
-
-        if (!is_null($fields['addressLine1']) && is_null('addressLine2')) {
-            if (strlen($fields['addressLine1']) === 0) {
-                throw new MailevaParameterException('addressLine1 && addressLine2 not set');
-            }
-            unset($fields['addressLine2']);
-        }
+        #already checked
+        unset($fields['addressLine1']);
+        unset($fields['addressLine2']);
+        unset($fields['addressLine6']);
+        unset($fields['senderAddressLine1']);
+        unset($fields['senderAddressLine2']);
+        unset($fields['senderAddressLine6']);
+        unset($fields['notificationEmail']);
 
         foreach ($fields as $key => $value) {
             if (is_null($value)) {
                 throw new MailevaParameterException($key . ' not set');
             }
+
+            if ($key === 'file') {
+                if (!file_exists($value)) {
+                    throw new MailevaParameterException('file ' . $value . ' not found');
+                }
+            }
         }
 
         return $this;
     }
+
+    public function toString(){
+        $var = get_object_vars($this);
+        foreach ($var as $key =>&$value) {
+            if (is_null($value)){
+                unset($var[$key]);
+            }
+            if (is_object($value) && method_exists($value,'getJsonData')) {
+                $value = $value->getJsonData();
+            }
+        }
+        return var_export($var, true);
+    }
+
 }

@@ -117,11 +117,11 @@ class MailevaConnection
     }
 
     /**
-     * @param string $memcacheHost
+     * @param $memcacheHost
      *
      * @return MailevaConnection
      */
-    public function setMemcacheHost(string $memcacheHost): MailevaConnection
+    public function setMemcacheHost($memcacheHost): MailevaConnection
     {
         $this->memcacheHost = $memcacheHost;
         return $this;
@@ -136,11 +136,11 @@ class MailevaConnection
     }
 
     /**
-     * @param int $memcachePort
+     * @param $memcachePort
      *
      * @return MailevaConnection
      */
-    public function setMemcachePort(int $memcachePort): MailevaConnection
+    public function setMemcachePort($memcachePort): MailevaConnection
     {
         $this->memcachePort = $memcachePort;
         return $this;

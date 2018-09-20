@@ -106,20 +106,20 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
         $mailevaApiAdapter->getRecipientsBySendingId($sendingId)->getResponseAsArray()['recipients'][0]['id']);
     var_dump($result);
 
-    $result = $mailevaApiAdapter->getDocumentBySendingId($sendingId,
+    $result = $mailevaApiAdapter->getDocumentBySendingIdAndDocumentId($sendingId,
         $mailevaApiAdapter->getDocumentsBySendingId($sendingId)->getResponseAsArray()['documents'][0]['id']);
     var_dump($result->getResponseAsArray());
 }
 
+$mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 $mailevaApiAdapter = $mailevaApiAdapterSandBoxClassic;
-
 try {
-testPost($mailevaApiAdapter);
-die;
-
-$sendingId = '85653ecb-453c-407b-81a2-1499b041358d';
-debugSendingId($mailevaApiAdapter, $sendingId);
+//testPost($mailevaApiAdapter);
 //die;
+
+$sendingId = '35987f0c-18b7-4524-b163-462416cdfc60';
+debugSendingId($mailevaApiAdapter, $sendingId);
+die;
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
     var_dump($e);
 }

@@ -112,15 +112,15 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
  */
 function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter, $sendingId)
 {
-//    echo "getSendingBySendingId<br/>";
-//    $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
-//    var_dump($result->getResponseAsArray());
+    echo "getSendingBySendingId<br/>";
+    $result = $mailevaApiAdapter->getSendingBySendingId($sendingId);
+    var_dump($result->getResponseAsArray());
 
     $recipientId = $mailevaApiAdapter->getRecipientsBySendingId($sendingId)->getResponseAsArray()['recipients'][0]['id'];
 
-//    echo "getRecipientBySendingIdAndRecipientId<br/>";
-//    $result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, $recipientId);
-//    var_dump($result);
+    echo "getRecipientBySendingIdAndRecipientId<br/>";
+    $result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, $recipientId);
+    var_dump($result);
 
     echo "getSendingStatusBySendingIdAndRecipientId<br/>";
     $result = $mailevaApiAdapter->getSendingStatusBySendingIdAndRecipientId($sendingId, $recipientId);
@@ -141,7 +141,7 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
 //    $result = $mailevaApiAdapter->getDocumentBySendingId($sendingId,
 //        $mailevaApiAdapter->getDocumentsBySendingId($sendingId)->getResponseAsArray()['documents'][0]['id']);
 //    var_dump($result->getResponseAsArray());
-//
+////
 //    echo "downloadDepositProofBySendingId";
 //    $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
 //    $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
@@ -154,17 +154,17 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
 }
 
 $mailevaApiAdapter = $mailevaApiAdapterProdLRE;
-#$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
+$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 
 try {
 #testPost($mailevaApiAdapter);
 #die;
 
 #PROD !
-    $sendingId = '12dd7f5d-2354-4c8d-86ff-a3cc7bbebc93';
+    $sendingId = 'e1fa35ec-ac45-4fc7-9fb4-67732e5367b7';
 
 #DEV !
-   # $sendingId = '0a03c038-b101-495f-b20a-3cab88041874';
+    #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
     debugSendingId($mailevaApiAdapter, $sendingId);
 #die;
 
