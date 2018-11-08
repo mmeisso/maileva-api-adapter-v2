@@ -17,6 +17,6 @@
   },
   "require": {
     "guzzlehttp/guzzle": "~6.0",
-    "fzaninotto/faker" : "~1.8.0"
+    "fzaninotto/faker" : "~1.6.0"
   }
 }

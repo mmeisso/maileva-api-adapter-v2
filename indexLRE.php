@@ -154,14 +154,14 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
 }
 
 $mailevaApiAdapter = $mailevaApiAdapterProdLRE;
-$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
+#$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 
 try {
 #testPost($mailevaApiAdapter);
 #die;
 
 #PROD !
-    $sendingId = 'e1fa35ec-ac45-4fc7-9fb4-67732e5367b7';
+    $sendingId = '1ad289f8-8687-44d9-84fc-22b1682a4f03';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
