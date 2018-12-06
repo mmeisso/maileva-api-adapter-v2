@@ -655,18 +655,19 @@ class MailevaApiAdapter
 
         $this->patchLRESendingBySendingId($sendingId,
             [
-                "acknowledgement_of_receipt" => false,
-                "color_printing"             => $colorPrinting,
-                "duplex_printing"            => $duplexPrinting,
-                "optional_address_sheet"     => $optionalAddressSheet,
-                "notification_email"         => $notification_email,
-                "sender_address_line_1"      => $senderAddressLine1,
-                "sender_address_line_2"      => $senderAddressLine2,
-                "sender_address_line_3"      => $senderAddressLine3,
-                "sender_address_line_4"      => $senderAddressLine4,
-                "sender_address_line_5"      => $senderAddressLine5,
-                "sender_address_line_6"      => $senderAddressLine6,
-                "sender_country_code"        => $senderCountryCode,
+                "acknowledgement_of_receipt"          => true,
+                "acknowledgement_of_receipt_scanning" => false,
+                "color_printing"                      => $colorPrinting,
+                "duplex_printing"                     => $duplexPrinting,
+                "optional_address_sheet"              => $optionalAddressSheet,
+                "notification_email"                  => $notification_email,
+                "sender_address_line_1"               => $senderAddressLine1,
+                "sender_address_line_2"               => $senderAddressLine2,
+                "sender_address_line_3"               => $senderAddressLine3,
+                "sender_address_line_4"               => $senderAddressLine4,
+                "sender_address_line_5"               => $senderAddressLine5,
+                "sender_address_line_6"               => $senderAddressLine6,
+                "sender_country_code"                 => $senderCountryCode,
             ]
         );
 
