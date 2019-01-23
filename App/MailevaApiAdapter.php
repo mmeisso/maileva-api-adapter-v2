@@ -12,6 +12,7 @@ use MailevaApiAdapter\App\Core\MailevaResponse;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\Route;
 use MailevaApiAdapter\App\Core\Routing;
+use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
 use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 
@@ -526,8 +527,14 @@ class MailevaApiAdapter
             }
             $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($mailevaSending->getUID(),
                 false);
+
             if ($sendingIdSimilarPrevious !== false) {
-                throw new MailevaException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+
+                $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
+                $allReadyExistException       = new MailevaAllReadyExistException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+                $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
+
+                throw $allReadyExistException;
             }
         }
 
