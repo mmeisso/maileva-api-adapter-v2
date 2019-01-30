@@ -602,7 +602,7 @@ class MailevaSending
 
         foreach ($fields as $key => $value) {
             if (stripos($key, 'addressLine') !== false) {
-                if (strlen($value) > 37) {
+                if (strlen($value) > 38) {
                     throw new MailevaParameterException('too long address on ' . $key . ' : ' . $value);
                 }
             }
