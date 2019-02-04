@@ -516,7 +516,7 @@ class MailevaApiAdapter
      * @throws MailevaException
      * @throws MailevaResponseException
      */
-    public function post(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
+    public function prepare(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
     {
 
         $mailevaSending->validate($this);
@@ -539,9 +539,9 @@ class MailevaApiAdapter
         }
 
         if ($this->getType() === MailevaConnection::CLASSIC) {
-            return $this->postSimple($mailevaSending);
+            return $this->prepareSimple($mailevaSending);
         } else {
-            return $this->postLRE($mailevaSending);
+            return $this->prepareLRE($mailevaSending);
         }
     }
 
@@ -553,7 +553,7 @@ class MailevaApiAdapter
      * @throws MailevaException
      * @throws MailevaResponseException
      */
-    private function postSimple(MailevaSending $mailevaSending): string
+    private function prepareSimple(MailevaSending $mailevaSending): string
     {
 
         $name                 = $mailevaSending->getName();
@@ -609,8 +609,6 @@ class MailevaApiAdapter
             ]
         );
 
-        $this->postSendingBySendingId($sendingId);
-
         if ($this->useMemcache === true) {
             MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
         }
@@ -626,7 +624,7 @@ class MailevaApiAdapter
      * @throws MailevaException
      * @throws MailevaResponseException
      */
-    private function postLRE(MailevaSending $mailevaSending): string
+    private function prepareLRE(MailevaSending $mailevaSending): string
     {
         $name                 = $mailevaSending->getName();
         $colorPrinting        = $mailevaSending->isColorPrinting();
@@ -698,13 +696,23 @@ class MailevaApiAdapter
             ]
         );
 
-        $this->postSendingBySendingId($sendingId);
-
         if ($this->useMemcache === true) {
             MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
         }
 
         return $sendingId;
+    }
+
+    /**
+     * @param string $sendingId
+     *
+     * @return string
+     * @throws Exception\RoutingException
+     * @throws MailevaResponseException
+     */
+    public function submit(string $sendingId)
+    {
+        $this->postSendingBySendingId($sendingId);
     }
 
     /**

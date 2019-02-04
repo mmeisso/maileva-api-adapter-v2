@@ -26,7 +26,7 @@ class MailevaSendingCest
 
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setFile('');
+        $mailevaSending->setFile('totot');
         $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
             $mailevaSending->validate($mailevaApiAdapter);
         });
@@ -76,7 +76,7 @@ class MailevaSendingCest
         #TOO LONG ADDRESS LINE
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(38, 38));
+        $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(39, 39));
         $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
             $mailevaSending->validate($mailevaApiAdapter);
         });
@@ -118,7 +118,7 @@ class MailevaSendingCest
         #TOO LONG ADDRESS LINE
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(38, 38));
+        $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(39, 39));
         $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
             $mailevaSending->validate($mailevaApiAdapter);
         });
@@ -127,7 +127,7 @@ class MailevaSendingCest
         #TOO LONG SENDER ADDRESS LINE
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setSenderAddressLine1(Factory::create('fr_FR')->password(38, 38));
+        $mailevaSending->setSenderAddressLine1(Factory::create('fr_FR')->password(39, 39));
         $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
             $mailevaSending->validate($mailevaApiAdapter);
         });

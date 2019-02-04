@@ -9,21 +9,33 @@
 class MailevaSendingClassicCest
 {
 
-    public function post(\UnitTester $I)
+    /**
+     * @param UnitTester $I
+     *
+     * @throws \MailevaApiAdapter\App\Exception\MailevaException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
+     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws Exception
+     */
+    public function prepareAndPost(\UnitTester $I)
     {
 
 
         /** @var \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterClassic();
+
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
 
         echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
 
-        $sendingId = $mailevaApiAdapter->post($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
+        $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
         echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
 
         $I->assertNotEmpty($sendingId);
+
+        $mailevaApiAdapter->submit($sendingId);
 
         #SENDING PROPERTIES
         for ($i = 1; $i <= 20; $i++) {
@@ -72,9 +84,10 @@ class MailevaSendingClassicCest
         $I->assertEquals($result['type'], pathinfo($mailevaSending->getFile())['extension']);
 
         #ALREADY SEND EXCEPTION
-        if ($I->getMailevaApiConnection()->useMemcache()){
+        if ($I->getMailevaApiConnection()->useMemcache()) {
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
-                $mailevaApiAdapter->post($mailevaSending);
+                $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
+                $mailevaApiAdapter->submit($sendingId);
             });
         }
     }

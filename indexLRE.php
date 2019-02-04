@@ -94,7 +94,8 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             ->setCustomId('1')
             ->validate($mailevaApiAdapter);
 
-        $sendingId = $mailevaApiAdapter->post($mailevaSending, true);
+        $sendingId = $mailevaApiAdapter->prepare($mailevaSending, true);
+        $mailevaApiAdapter->submit($sendingId);
         echo "sendingId = " . $sendingId . "<br/>";
         debugSendingId($mailevaApiAdapter, $sendingId);
     } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
@@ -161,7 +162,7 @@ try {
 #die;
 
 #PROD !
-    $sendingId = '1ad289f8-8687-44d9-84fc-22b1682a4f03';
+    $sendingId = '99988654-118e-4143-b549-823b89428a00';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';

@@ -233,6 +233,7 @@ class MailevaSending
      */
     public function setFile(String $file): MailevaSending
     {
+        var_dump('SET FIle '.$file);
         $this->file = $file;
         return $this;
     }
@@ -623,11 +624,13 @@ class MailevaSending
             }
 
             if ($key === 'file') {
+                var_dump($value);
                 if (!file_exists($value)) {
                     throw new MailevaParameterException('file ' . $value . ' not found');
                 }
             }
         }
+
 
         return $this;
     }

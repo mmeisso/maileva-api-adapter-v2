@@ -5,6 +5,21 @@ ini_set('display_errors', 1);
 
 require __DIR__ . '/vendor/autoload.php';
 
+?>
+
+<form action="index.php">
+
+    <input type="text"  name="start" value ="660"/>
+	<input type="text"  name="end" value="50"/>
+    <br/>
+    <input type="submit" />
+
+</form>
+
+
+<?php
+
+
 $mailevaConnectionSandBoxClassic = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnectionSandBoxClassic
     ->setAuthenticationHost('https://api.sandbox.aws.maileva.net')
@@ -83,7 +98,8 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             ->setCustomId('1')
             ->validate($mailevaApiAdapter);
 
-        $sendingId = $mailevaApiAdapter->post($mailevaSending, true);
+        $sendingId = $mailevaApiAdapter->prepare($mailevaSending, true);
+        $mailevaApiAdapter->submit($sendingId);
         echo "sendingId = " . $sendingId . "<br/>";
     } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
         var_dump($e);
@@ -112,17 +128,18 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
 }
 
 $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
-$mailevaApiAdapter = $mailevaApiAdapterSandBoxClassic;
-try {
-//testPost($mailevaApiAdapter);
-//die;
-
-$sendingId = '35987f0c-18b7-4524-b163-462416cdfc60';
+//$mailevaApiAdapter = $mailevaApiAdapterSandBoxClassic;
+//try {
+////testPost($mailevaApiAdapter);
+////die;
+//
+$sendingId =  'b77d292a-8fcb-4b5c-9dd9-7d1818248ae2';
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
-} catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
-    var_dump($e);
-}
+//die;
+//} catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
+//    var_dump($e);
+//}
 
 try {
     $sendings = $mailevaApiAdapter->getSendings();
@@ -131,6 +148,7 @@ try {
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
     var_dump($e);
 }
+
 
 
 
