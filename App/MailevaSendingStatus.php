@@ -17,5 +17,6 @@ class MailevaSendingStatus
     const FULL_PROCESSED_LRE = "FULL_PROCESSED_LRE";
     const PROCESSED_WITH_ERRORS = "PROCESSED_WITH_ERRORS";
     const ERROR = "ERROR";
+    const SUBMIT_ERROR = "SUBMIT_ERROR";
 
 }
