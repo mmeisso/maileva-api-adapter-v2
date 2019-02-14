@@ -12,6 +12,7 @@ use MailevaApiAdapter\App\Exception\MailevaParameterException;
 class MailevaSending
 {
 
+    const LINE_ADDRESS_MAX_LENGTH = 38;
     const EMAIL_REGEX = "/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/";
     const POSTAGE_TYPE_ECONOMIC = "ECONOMIC";
     const POSTAGE_TYPE_FAST = "FAST";
@@ -603,7 +604,7 @@ class MailevaSending
 
         foreach ($fields as $key => $value) {
             if (stripos($key, 'addressLine') !== false) {
-                if (strlen($value) > 38) {
+                if (mb_strlen($value) > self::LINE_ADDRESS_MAX_LENGTH) {
                     throw new MailevaParameterException('too long address on ' . $key . ' : ' . $value);
                 }
             }
