@@ -1,0 +1,595 @@
+swagger: '2.0'
+
+################################################################################
+#                              API Information                                 #
+################################################################################
+info:
+  version: "1.1"
+  title: API Maileva / Suivi des plis
+  #termsOfService: http://api.maileva.com/terms/
+  description: |
+    Cette API permet d'obtenir le détail des destinataires des envois de courriers et de recommandés (Lettre recommandée ou Lettre Recommandée En Ligne de La Poste).
+    
+    Il y a 2 types de suivi : 
+      - suivi de production, jusqu'à la remise en poste
+      - suivi de distribution sui commence à la remise en poste jusqu'à la remise au destinataire (ou le retour à l'expéditeur
+
+    NB : le staut de distribution inclut également le cas de la numérisation par nos services de l'Avis de Réception d'un recommandé ou des Plis Non Distriubuables (PND).
+
+    ### Statuts de distribution (`delivery_status`)
+    
+    A : Acheminement, P : Présentation, D : Distribution, N : Numérisé, I : facture (invoice), C : Chorus
+    
+    | Code | Source | Description |
+    |------|--------|-------------|
+    | A01  | La Poste | Pris en charge |
+    | A02  | La Poste | Avisé |
+    | A03  | La Poste | Départ de France |
+    | A04  | La Poste | Arrivée |
+    | A05  | La Poste | Tentative de distribution infructueuse |
+    | A06  | La Poste | Dépôt |
+    | A07  | La Poste | Départ |
+    | A08  | La Poste | Arrivée en France |
+    | A09  | La Poste | Attente douane / dédouanement |
+    | A10  | La Poste | Dédouané, distribution en cours |
+    | A11  | La Poste | Renvoyé vers la bonne destination |
+    | A12  | La Poste | Renvoyé vers la bonne destination suite à correction de l'adresse par La Poste |
+    | A13  | La Poste | Pli manquant au dépôt |
+    | A14  | La Poste | Non distribuable pour cause de dépassement du délai de mise à disposition du recommandé en ligne |
+    | A15  | La Poste | Non distribuable en attente d'un contact client auprès du service Consommateurs |
+    | A16  | La Poste | Non distribuable pour cause de refus par le destinataire |
+    | A17  | La Poste | Non distribuable délai de conservation expiré (CGV) |
+    | A18  | La Poste | Non distribuable - refus |
+    | A19  | La Poste | Non distribuable |
+    | A20  | La Poste | En cours de traitement |
+    | A21  | La Poste | Retourné à l'expéditeur pour cause d'accès à la boîte aux lettres impossible |
+    | A22  | La Poste | Retourné à l'expéditeur pour cause de boîte aux lettres non identifiable |
+    | A23  | La Poste | Retourné à l'expéditeur pour cause d'adresse incorrecte |
+    | A24  | La Poste | Retourné à l'expéditeur suite à des recherches de La Poste |
+    | A25  | La Poste | Retourné à l'expéditeur sur demande de l'expéditeur |
+    | A26  | La Poste | Retourné à l'expéditeur |
+    | A27  | La Poste | Renvoyé vers la bonne destination sur demande de l'expéditeur |
+    | P01  | La Poste | Attend d'être retiré au guichet |
+    | P02  | La Poste | En attente de seconde présentation |
+    | P03  | La Poste | Retourné à l'expéditeur pour cause de dépassement de délai d'instance |
+    | P04  | La Poste | Retour à l'expéditeur - refus |
+    | P05  | La Poste | Retourné à l'expéditeur pour cause de refus à l'adresse |
+    | P06  | La Poste | Retourné à l'expéditeur pour cause de refus de paiement  |
+    | D01  | La Poste | Distribué |
+    | N01  | Maileva | AR Signé : RAR distribué |
+    | N02  | Maileva | PND (Pli Non Distribuable) pour une LR |
+    | N03  | Maileva | Non réclamé |
+    | N04  | Maileva | Décédé |
+    | N05  | Maileva | Refusé |
+    | N06  | Maileva | Impossibilité de signer |
+    | N07  | Maileva | Adresse incomplète |
+    | N08  | Maileva | Refus détérioré |
+    | N09  | Maileva | Régime international |
+    | N10  | Maileva | PND (Pli Non Distribuable) pour un courrier |
+    | I01  | Maileva | Notification de facture envoyée |
+    | I02  | Maileva | Notification de facture distribuée |
+    | I03  | Maileva | Notification de facture ouverte |
+    | I04  | Maileva | Clic sur le lien de téléchargement de la facture |
+    | I05  | Maileva | Notification de facture envoyée |
+    | I06  | Maileva | Notification de facture non distribuée |
+    | I07  | Maileva | Notification de facture non distribuée (domaine inconnu) |
+    | I08  | Maileva | Notification de facture non distribuée (DNS invalide) |
+    | I09  | Maileva | Notification de facture non distribuée (boite pleine) |
+    | I10  | Maileva | Notification de facture non distribuée (bloquée par anti-spam) |
+    | I11  | Maileva | Notification de facture non distribuée (erreur de relais) |
+    | I12  | Maileva | Notification de facture non distribuée (erreur réseau) |
+    | I13  | Maileva | Notification de facture non distribuée (erreur général) |
+    | I14  | Maileva | Notification de facture non distribuée (erreur de syntaxe dans l'adresse) |
+    | C01  | Chorus | Déposée |
+    | C02  | Chorus | En cours d’acheminement vers le destinataire |
+    | C03  | Chorus | Mise à disposition du destinataire |
+    | C04  | Chorus | Rejetée par l’ordonnateur pour erreur dans les données d’acheminement |
+    | C05  | Chorus | Rejetée par l’ordonnateur pour autre motif |
+    | C06  | Chorus | Suspendue |
+    | C07  | Chorus | Service fait |
+    | C08  | Chorus | Mandatée /DP validée |
+    | C09  | Chorus | Mise à disposition du comptable |
+    | C10  | Chorus | Comptabilisée |
+    | C11  | Chorus | Mise en paiement |
+    | C12  | Chorus | Complétée – mise à disposition |
+    | C23  | Chorus | Mise à disposition du premier valideur |
+    | C13  | Chorus | Validée par le premier valideur |
+    | C24  | Chorus | Refusée par le premier valideur pour erreur dans les données d’acheminement |
+    | C15  | Chorus | Validation 1 hors délai |
+    | C14  | Chorus | Refusée par le premier valideur pour autre motif |
+    | C25  | Chorus | Mise à disposition du second valideur |
+    | C16  | Chorus | Validée par le second valideur |
+    | C26  | Chorus | Refusée par le second valideur pour erreur des données d’acheminement |
+    | C18  | Chorus | Validation 2 hors délai |
+    | C17  | Chorus | Refusée par le second valideur pour autre motif |
+    | C19  | Chorus | Refusée par la MOE pour autre motif |
+    | C20  | Chorus | Refusée par le fournisseur pour autre motif |
+    | C21  | Chorus | Associée |
+    | C22  | Chorus | Conforme – non intégrée |
+    | C27  | Chorus | Mise à disposition MOE |
+    | C28  | Chorus | Refusée par la MOE pour erreur dans les données d’acheminement |
+    | C29  | Chorus | Prise en compte MOE |
+    | C30  | Chorus | Mise à disposition MOA |
+    | C31  | Chorus | Refusée par la MOA pour erreur dans les données d’acheminement |
+    | C32  | Chorus | Refusée par la MOA pour autre motif |
+    | C33  | Chorus | Mise à disposition fournisseur |
+    | C34  | Chorus | Demande de complément |
+    | C35  | Chorus | Transmise à la MOA |
+    | C36  | Chorus | Prise en compte par le destinataire |
+    | C37  | Chorus | Non conforme - non intégrée |
+    | C38  | Chorus | Prise en compte par la MOA |
+    | C39  | Chorus | Acheminée MOA |
+    | C40  | Chorus | Acheminée MOE |
+    | C41  | Chorus | Remplacé par le A22 |
+	
+  contact:
+    name: Maileva API team
+    #email: support@maileva.com
+    url: http://www.maileva.com
+
+###############################################################################
+#                  Security Definitions                                       #
+###############################################################################
+
+#securityDefinitions:
+#  basicAuth:
+#    type: basic
+#    description: Toutes les API sont soumises à une authentification de type BASIC HTTP. Un login et un mot de passe sont fournis à l'utilisateur après la signature d'un  contrat avec Maileva.
+
+###############################################################################
+#                  Host, Base Path, Schemes and Content Types                 #
+###############################################################################
+
+host: webservices.maileva.com
+basePath: /api/tracking/v1
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+
+##############################################################################
+#                                   Definitions                              #
+##############################################################################
+definitions:
+
+################### Attribute ###################################################
+
+
+################### Object ###################################################
+
+##################
+# Delivery(ies)
+##################
+
+  Delivery:
+    type: object
+    properties:
+      status:
+        description: Etat de distribution
+        type: string
+      date:
+        description: Date du statut de distribution
+        type: string
+        format: date
+      url:
+        description: URL vers le détail du destinataire
+        type: string
+      transfer_id:
+        description: Identifiant attribué au fichier qui contient la campagne et ses éléments et pourra peut-être donner lieu à un dépôt effectif
+        type: string
+      production_id:
+        description: Identifiant de production du destinataire
+        type: string
+        format: date
+      production_date:
+        description: Date de production. Date de remise en poste.
+        type: string
+        format: date
+      creation_date:
+        description: Date de création
+        type: string
+        format: date-time
+      modification_date:
+        description: Date de modification
+        type: string
+        format: date-time
+
+  Deliveries:
+    type: object
+    properties:
+      deliveries:
+        type: array
+        items:
+          $ref: '#/definitions/Delivery'
+      paging:
+        $ref: '#/definitions/Paging'
+
+##################
+# Error(s)
+##################
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+  Errors:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/Error'
+
+
+##################
+# Paging
+##################
+  Paging:
+    description: Pagination
+    type: object
+    properties:
+      prev:
+        description: Page précédente
+        type: string
+      next:
+        description: Page suivante
+        type: string
+      total_results:
+        description: Nombre d'éléments total
+        type: number
+
+##################
+# Recipients_Mail(s)
+##################
+  Recipients_Mail:
+    description: Destinataire courrier
+    type: object
+    properties:
+      id:
+        description: Identifiant du destinataire
+        type: string
+      custom_id:
+        description: Identifiant du destinataire fourni par l'utilisateur
+        type: string
+      address_line1:
+        description: Ligne d'adresse n°1
+        type: string
+      address_line2:
+        description: Ligne d'adresse n°2
+        type: string
+      address_line3:
+        description: Ligne d'adresse n°3
+        type: string
+      address_line4:
+        description: Ligne d'adresse n°4
+        type: string
+      address_line5:
+        description: Ligne d'adresse n°5
+        type: string
+      address_line6:
+        description: Ligne d'adresse n°6
+        type: string
+      country_code:
+        description: Code du pays
+        type: string
+      country_name:
+        description: Nom du pays
+        type: string
+      status:
+        description: Etat de production du destinataire
+        type: string
+    #    enum: [ "ANALYZING", "INVALID", "BLOCKED", "SCHEDULED", "REJECTED", "PRODUCING", "PRODUCED" ]
+      production_date:
+        description: Date de production. Date de remise en poste.
+        type: string
+        format: date
+      archive_document_url:
+        description: URL vers le document archivé
+        type: string
+      creation_date:
+        description: Date de création
+        type: string
+        format: date-time
+      modification_date:
+        description: Date de modification
+        type: string
+        format: date-time
+
+#####################################################
+# Recipients_RegisteredMail(s)
+#####################################################
+  Recipients_RegisteredMail:
+    description: Destinataire LREL Facteur
+    type: object
+    properties:
+      id:
+        description: Identifiant du destinataire
+        type: string
+      custom_id:
+        description: Identifiant du destinataire fourni par l'utilisateur
+        type: string
+      address_line1:
+        description: Ligne d'adresse n°1
+        type: string
+      address_line2:
+        description: Ligne d'adresse n°2
+        type: string
+      address_line3:
+        description: Ligne d'adresse n°3
+        type: string
+      address_line4:
+        description: Ligne d'adresse n°4
+        type: string
+      address_line5:
+        description: Ligne d'adresse n°5
+        type: string
+      address_line6:
+        description: Ligne d'adresse n°6
+        type: string
+      country_code:
+        description: Code du pays
+        type: string
+      country_name:
+        description: Nom du pays
+        type: string
+      registered_mail_number:
+        description: Numéro de recommandé
+        type: string
+      status:
+        description: Etat de production du destinataire
+        type: string
+    #    enum: [ "ANALYZING", "INVALID", "BLOCKED", "SCHEDULED", "REJECTED", "PRODUCING", "PRODUCED" ]
+      production_date:
+        description: Date de production. Date de remise en poste.
+        type: string
+        format: date
+      archive_document_url:
+        description: URL vers le document archivé
+        type: string
+      acknowledgment_url:
+        description: URL vers l'AR
+        type: string
+      creation_date:
+        description: Date de création
+        type: string
+        format: date-time
+      modification_date:
+        description: Date de modification
+        type: string
+        format: date-time
+
+#####################################################
+# Recipients_DigitalRegisteredMail(s)
+#####################################################
+  Recipients_DigitalRegisteredMail:
+    description: Destinataire LREL Numérique
+    type: object
+    properties:
+      id:
+        description: Identifiant du destinataire
+        type: string
+      custom_id:
+        description: Identifiant du destinataire fourni par l'utilisateur
+        type: string
+      address_line1:
+        description: Ligne d'adresse n°1
+        type: string
+      address_line2:
+        description: Ligne d'adresse n°2
+        type: string
+      address_line3:
+        description: Ligne d'adresse n°3
+        type: string
+      address_line4:
+        description: Ligne d'adresse n°4
+        type: string
+      address_line5:
+        description: Ligne d'adresse n°5
+        type: string
+      address_line6:
+        description: Ligne d'adresse n°6
+        type: string
+      country_code:
+        description: Code du pays
+        type: string
+      country_name:
+        description: Nom du pays
+        type: string
+      registered_mail_number:
+        description: Numéro de recommandé
+        type: string
+      status:
+        description: Etat de production du destinataire
+        type: string
+    #    enum: [ "ANALYZING", "INVALID", "BLOCKED", "SCHEDULED", "REJECTED", "PRODUCING", "PRODUCED" ]
+      production_date:
+        description: Date de production. Date de remise en poste.
+        type: string
+        format: date
+      postage_class:
+        description: Catégorie d'affranchissement
+        type: string
+     #   enum: [ "STANDARD", "SLOW", "LRE", "LRE_AR", "LRE_TE", "LRE_TE_AR", "DESTINEO_EL_MECA_S1", "DESTINEO_EL_MECA_S2", "DESTINEO_EL_STD_S1", "DESTINEO_EL_STD_S2", "SLOW_NB", "LETTRE_GRAND_COMPTE", "ECOPLI_GRAND_COMPTE", "RECOMMANDE", "RECOMMANDE_AR" ]
+      creation_date:
+        description: Date de création
+        type: string
+        format: date-time
+      modification_date:
+        description: Date de modification
+        type: string
+        format: date-time
+
+###############################################################################
+#                                   Parameters                                #
+###############################################################################
+parameters:
+
+  path_recipient_id:
+    name: id
+    in: path
+    description: Identifiant du destinataire
+    required: true
+    type: string
+
+  query_creation_end_date:
+    name: creation_end_date
+    in: query
+    description: Fin de la période de recherche de la date de création du PND ou de l'AR
+    type: string
+    format: date
+    
+  query_creation_start_date:
+    name: creation_start_date
+    in: query
+    description: Début de la période de recherche de la date de création du PND ou de l'AR
+    type: string
+    format: date
+
+  query_paging_count:
+    name: count
+    in: query
+    description: Indique le nombre d'éléments à retourner
+    required: false
+    type: number
+
+  query_paging_start_index:
+    name: start_index
+    in: query
+    description: Indique le premier élément à retourner
+    required: false
+    type: number
+
+  query_production_end_date:
+    name: production_end_date
+    in: query
+    description: Fin de la période de recherche de la date de production du destinataire
+    type: string
+    format: date
+
+  query_production_start_date:
+    name: production_start_date
+    in: query
+    description: Début de la période de recherche de la date de production du destinataire
+    type: string
+    format: date    
+    
+  query_recipient_production_id:
+    name: production_id
+    in: query
+    description: Recherche par l'identifiant de production du destinataire
+    type: string
+
+  query_transfer_id:
+    name: transfer_id
+    in: query
+    description: Recherche par la référence de transmission
+    type: string
+    
+###############################################################################
+#                                   Paths                                     #
+###############################################################################
+paths:
+
+  /recipients/mail/{id}:
+    get:
+      description: Détail des informations de suivi de production d'un destinataire courrier
+      parameters:
+        - $ref: '#/parameters/path_recipient_id'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref : '#/definitions/Recipients_Mail'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Errors'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: ID not found
+
+  /recipients/registered_mail/{id}:
+    get:
+      description: Détail des informations de suivi de production d'un destinataire d'une Lettre Recommandée En Ligne de La Poste (LREL Facteur)
+      parameters:
+        - $ref: '#/parameters/path_recipient_id'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref : '#/definitions/Recipients_RegisteredMail'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Errors'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: ID not found
+
+  /recipients/digital_registered_mail/{id}:
+    get:
+      description: Détail des informations de suivi de production d'un destinataire d'une Lettre Recommandée En Ligne de La Poste (LREL Numérique)
+      parameters:
+        - $ref: '#/parameters/path_recipient_id'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref : '#/definitions/Recipients_DigitalRegisteredMail'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Errors'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: ID not found
+
+#####################################################
+# Deliveries
+#####################################################
+  /deliveries/search:
+    get:
+      description: Liste des statuts de distribution.
+        Les différents statuts sont décrit dans un tableau en annexe.
+      
+      parameters:
+        - $ref: '#/parameters/query_paging_start_index'
+        - $ref: '#/parameters/query_paging_count'
+        - $ref: '#/parameters/query_creation_start_date'
+        - $ref: '#/parameters/query_creation_end_date'
+        - $ref: '#/parameters/query_production_start_date'
+        - $ref: '#/parameters/query_production_end_date'
+        - $ref: '#/parameters/query_transfer_id'
+        - $ref: '#/parameters/query_recipient_production_id'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref : '#/definitions/Deliveries'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/Errors'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'

@@ -234,7 +234,6 @@ class MailevaSending
      */
     public function setFile(String $file): MailevaSending
     {
-        var_dump('SET FIle '.$file);
         $this->file = $file;
         return $this;
     }
@@ -497,7 +496,15 @@ class MailevaSending
         $getSenderAddressLine5 = is_null($this->getSenderAddressLine5()) ? "s5" : $this->getSenderAddressLine5();
         $getSenderAddressLine6 = is_null($this->getSenderAddressLine6()) ? "s6" : $this->getSenderAddressLine6();
 
-        $getFile = is_null($this->getFile()) ? "fe" : file_exists($this->getFile()) ? md5_file($this->getFile()) : "";
+        try {
+            $tmp     = tempnam("/tmp", uniqid("", true));
+            $command = 'pdftotext ' . $this->getFile() . ' ' . $tmp;
+            exec($command);
+            $getFile = is_null($this->getFile()) ? "fe" : file_exists($this->getFile()) ? md5(preg_replace('/\s+/', ' ', file_get_contents($tmp))) : "";
+            @unlink($tmp);
+        } catch (\Throwable $t) {
+            $getFile = is_null($this->getFile()) ? "fe" : file_exists($this->getFile()) ? md5_file($this->getFile()) : "";
+        }
 
         $key = $postageType . $colorPrinting . $isDuplexPrinting . $isOptionalAddressSheet .
             $getFile .
@@ -625,28 +632,26 @@ class MailevaSending
             }
 
             if ($key === 'file') {
-                var_dump($value);
                 if (!file_exists($value)) {
                     throw new MailevaParameterException('file ' . $value . ' not found');
                 }
             }
         }
 
-
         return $this;
     }
 
-    public function toString(){
+    public function toString()
+    {
         $var = get_object_vars($this);
-        foreach ($var as $key =>&$value) {
-            if (is_null($value)){
+        foreach ($var as $key => &$value) {
+            if (is_null($value)) {
                 unset($var[$key]);
             }
-            if (is_object($value) && method_exists($value,'getJsonData')) {
+            if (is_object($value) && method_exists($value, 'getJsonData')) {
                 $value = $value->getJsonData();
             }
         }
         return var_export($var, true);
     }
-
 }

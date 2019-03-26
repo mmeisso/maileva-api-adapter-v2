@@ -26,7 +26,7 @@ class MailevaSendingCest
 
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setFile('totot');
+        $mailevaSending->setFile('toto');
         $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
             $mailevaSending->validate($mailevaApiAdapter);
         });

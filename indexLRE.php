@@ -162,12 +162,12 @@ try {
 #die;
 
 #PROD !
-    $sendingId = '99988654-118e-4143-b549-823b89428a00';
+    $sendingId = '1b290bb5-605e-4d2e-ad1b-bb8c245b3f96';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
     debugSendingId($mailevaApiAdapter, $sendingId);
-#die;
+die;
 
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
     var_dump($e);

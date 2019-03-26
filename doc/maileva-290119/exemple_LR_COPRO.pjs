@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pjs:Campaign Version="1.0" TrackId="C222_3878_1" Name="C222 3878_1" BreakdownCode="doca_immo" Application="REALESTATE" xmlns:com="http://www.maileva.fr/CommonSchema" xmlns:spec="http://www.maileva.fr/MailevaSpecificSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pjs="http://www.maileva.fr/MailevaPJSSchema">
+  <pjs:User AuthType="PLAINTEXT">
+    <pjs:Login>test</pjs:Login>
+    <pjs:Password>test</pjs:Password>
+  </pjs:User>
+  <pjs:Requests>
+    <pjs:Request MediaType="PAPER" TrackId="C222_3878_1">
+      <pjs:Recipients>
+        <pjs:Internal>
+          <pjs:Recipient TrackId="MR ET MME UN" Id="1">
+            <com:PaperAddress>
+              <com:AddressLines>
+                <com:AddressLine1>MR ET MME UN</com:AddressLine1>
+                <com:AddressLine4>10 AVENUE DU GENERAL DE GAULLE</com:AddressLine4>
+                <com:AddressLine6>94000 CHARENTON-LE-PONT</com:AddressLine6>
+              </com:AddressLines>
+              <com:Country>FRANCE</com:Country>
+            </com:PaperAddress>
+          </pjs:Recipient>
+        </pjs:Internal>
+      </pjs:Recipients>
+      <pjs:Options>
+        <pjs:RequestOption>
+          <spec:PaperOption>
+            <spec:FoldOption>
+              <spec:DocumentOption>
+                <spec:PrintDuplex>true</spec:PrintDuplex>
+              </spec:DocumentOption>
+              <spec:EnvelopeType>C4</spec:EnvelopeType>
+              <spec:PostageClass>RECOMMANDE_AR</spec:PostageClass>
+            </spec:FoldOption>
+          </spec:PaperOption>
+        </pjs:RequestOption>
+      </pjs:Options>
+      <pjs:Notifications>
+        <pjs:Notification Type="GENERAL">
+          <spec:Protocols>
+            <spec:Protocol>
+              <spec:Email>marc.joussemet@odcapost.fr</spec:Email>
+            </spec:Protocol>
+            <spec:Protocol>
+              <spec:Ftp/>
+            </spec:Protocol>
+          </spec:Protocols>
+          <spec:Format>XML</spec:Format>
+        </pjs:Notification>
+      </pjs:Notifications>
+      <pjs:DocumentData>
+        <pjs:Documents>
+          <pjs:Document Id="D001">
+            <com:Content>
+              <com:Uri>ConvocAg_3878.001</com:Uri>
+            </com:Content>
+          </pjs:Document>
+          <pjs:Document Id="D002">
+            <com:Content>
+              <com:Uri>ConvocAg_3878.002</com:Uri>
+            </com:Content>
+          </pjs:Document>
+        </pjs:Documents>
+      </pjs:DocumentData>
+      <pjs:Folds>
+        <pjs:Fold Id="1" TrackId="MR ET MME UN">
+          <pjs:RecipientId>1</pjs:RecipientId>
+          <pjs:Documents>
+            <pjs:Document DocumentId="D001"/>
+            <pjs:Document DocumentId="D002"/>
+          </pjs:Documents>
+        </pjs:Fold>
+      </pjs:Folds>
+      <pjs:Senders>
+        <pjs:Sender Id="53">
+          <com:PaperAddress>
+            <com:AddressLines>
+              <com:AddressLine1>DOCA IMMO</com:AddressLine1>
+              <com:AddressLine4>10 AVENUE DU GENERAL DE GAULLE</com:AddressLine4>
+              <com:AddressLine6>94000 CHARENTON-LE-PONT</com:AddressLine6>
+            </com:AddressLines>
+          </com:PaperAddress>
+        </pjs:Sender>
+      </pjs:Senders>
+    </pjs:Request>
+  </pjs:Requests>
+</pjs:Campaign>

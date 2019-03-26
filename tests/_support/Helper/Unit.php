@@ -106,7 +106,7 @@ class Unit extends \Codeception\Module
             ->setColorPrinting($colorPrinting)
             ->setDuplexPrinting($duplexPrinting)
             ->setOptionalAddressSheet($optionalAddressSheet)
-            ->setFile(codecept_root_dir() . 'testFiles/document.pdf')
+            ->setFile(codecept_root_dir() . 'testFiles/pdf_result_23-03-2018_15-34-59.pdf')
             //->setFilepriority()  #optionnal default 1
             ->setFilename($fileName)
             ->setAddressLine1($address['line1'])
