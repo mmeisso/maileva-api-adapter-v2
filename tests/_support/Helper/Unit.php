@@ -20,6 +20,9 @@ class Unit extends \Codeception\Module
     const CLIENT_SECRET = '3151dfc6-fbab-4597-86f9-fa7ecb799137';
     const USERNAME = 'sandbox.1567';
     const PASSWORD = 'o93126';
+    const FTP_HOST = 'ftp.recette.maileva.com';
+    const FTP_USERNAME = 'mlv-s-cdbSJ3F';
+    const FTP_PASSWORD = 'UxSqjsB';
     const MEMCACHE_HOST = 'localhost';
     const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
@@ -41,6 +44,25 @@ class Unit extends \Codeception\Module
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::LRE);
+        return new MailevaApiAdapter($mailevaConnection);
+    }
+
+    /**
+     * @return MailevaApiAdapter
+     */
+    public function getMailevaApiAdapterLRCOPRO(): MailevaApiAdapter
+    {
+        $mailevaConnection = new MailevaConnection();
+        $mailevaConnection->setType(MailevaConnection::LRCOPRO);
+        $mailevaConnection
+            ->setAuthenticationHost("")
+            ->setHost(self::FTP_HOST)
+            ->setClientId("")
+            ->setClientSecret("")
+            ->setUsername(self::FTP_USERNAME)
+            ->setPassword(self::FTP_PASSWORD)
+            ->setMemcacheHost(self::MEMCACHE_HOST)
+            ->setMemcachePort(self::MEMCACHE_PORT);
         return new MailevaApiAdapter($mailevaConnection);
     }
 
@@ -78,6 +100,9 @@ class Unit extends \Codeception\Module
             case MailevaConnection::LRE:
                 $mailevaSending = $this->getMailevaSendingLRE();
                 break;
+            case MailevaConnection::LRCOPRO:
+                $mailevaSending = $this->getMailevaSendingLRCOPRO();
+                break;
             default:
                 throw new MailevaException('Unable to retreive $mailevaApiAdapter->getType() : ' . $mailevaApiAdapter->getType());
         }
@@ -100,13 +125,14 @@ class Unit extends \Codeception\Module
         $duplexPrinting       = (rand(0, 50) < 50) ? true : false;
         $optionalAddressSheet = (rand(0, 50) < 50) ? true : false;
         $fileName             = Factory::create('fr_FR')->word . '.pdf';
+        $file                 = (rand(0, 50) < 50) ? 'testFiles/1pageWithTextLayer.pdf' : 'testFiles/1pageWithoutTextLayer.pdf';
 
         $mailevaSending
             ->setName($sendingName)
             ->setColorPrinting($colorPrinting)
             ->setDuplexPrinting($duplexPrinting)
             ->setOptionalAddressSheet($optionalAddressSheet)
-            ->setFile(codecept_root_dir() . 'testFiles/pdf_result_23-03-2018_15-34-59.pdf')
+            ->setFile(codecept_root_dir() . $file)
             //->setFilepriority()  #optionnal default 1
             ->setFilename($fileName)
             ->setAddressLine1($address['line1'])
@@ -145,6 +171,27 @@ class Unit extends \Codeception\Module
         $senderAddress  = $this->getRandomAddress();
         $mailevaSending
             ->setPostageType(MailevaSending::POSTAGE_TYPE_LRE)
+            ->setNotificationEmail(self::NOTIFICATION_EMAIL)
+            ->setSenderAddressLine1($senderAddress['line1'])
+            ->setSenderAddressLine2($senderAddress['line2'])
+            ->setSenderAddressLine3($senderAddress['line3'])#optionnal default ''
+            ->setSenderAddressLine4($senderAddress['line4'])#optionnal default ''
+            ->setSenderAddressLine5($senderAddress['line5'])#optionnal default ''
+            ->setSenderAddressLine6($senderAddress['line6']);
+
+        return $mailevaSending;
+    }
+
+    /**
+     * @return MailevaSending
+     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     */
+    private function getMailevaSendingLRCOPRO(): MailevaSending
+    {
+        $mailevaSending = $this->getMailevaSendingCommon();
+        $senderAddress  = $this->getRandomAddress();
+        $mailevaSending
+            ->setPostageType(MailevaSending::POSTAGE_TYPE_LRCOPRO)
             ->setNotificationEmail(self::NOTIFICATION_EMAIL)
             ->setSenderAddressLine1($senderAddress['line1'])
             ->setSenderAddressLine2($senderAddress['line2'])

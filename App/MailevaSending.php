@@ -13,10 +13,13 @@ class MailevaSending
 {
 
     const LINE_ADDRESS_MAX_LENGTH = 38;
-    const EMAIL_REGEX = "/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/";
-    const POSTAGE_TYPE_ECONOMIC = "ECONOMIC";
-    const POSTAGE_TYPE_FAST = "FAST";
-    const POSTAGE_TYPE_LRE = "LRE";
+    const EMAIL_REGEX = '/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/';
+    const POSTAGE_TYPE_ECONOMIC = 'ECONOMIC';
+    const POSTAGE_TYPE_FAST = 'FAST';
+    const POSTAGE_TYPE_LRE = 'LRE';
+    const POSTAGE_TYPE_LRCOPRO = 'LRCOPRO';
+    const UID_METHOD_PDFTEXT = 'UID_METHOD_PDFTEXT';
+    const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
     /**@var String */
     Private $addressLine1 = null;
     /**@var String */
@@ -331,7 +334,8 @@ class MailevaSending
     public function setPostageType(String $postageType): MailevaSending
     {
 
-        if (!in_array(strtoupper($postageType), [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE])) {
+        if (!in_array(strtoupper($postageType),
+            [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO])) {
             throw new MailevaParameterException('Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE);
         }
 
@@ -473,10 +477,11 @@ class MailevaSending
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getUID(): String
+    public function getUID(): array
     {
+        $method                 = null;
         $postageType            = is_null($this->getPostageType()) ? "pe" : $this->getPostageType();
         $colorPrinting          = is_null($this->isColorPrinting()) ? "cg" : (String)$this->isColorPrinting();
         $isDuplexPrinting       = is_null($this->isDuplexPrinting()) ? "dg" : (String)$this->isDuplexPrinting();
@@ -496,14 +501,24 @@ class MailevaSending
         $getSenderAddressLine5 = is_null($this->getSenderAddressLine5()) ? "s5" : $this->getSenderAddressLine5();
         $getSenderAddressLine6 = is_null($this->getSenderAddressLine6()) ? "s6" : $this->getSenderAddressLine6();
 
+        $pdfText = '';
+
         try {
             $tmp     = tempnam("/tmp", uniqid("", true));
             $command = 'pdftotext ' . $this->getFile() . ' ' . $tmp;
             exec($command);
-            $getFile = is_null($this->getFile()) ? "fe" : file_exists($this->getFile()) ? md5(preg_replace('/\s+/', ' ', file_get_contents($tmp))) : "";
+            $pdfText = preg_replace('/\s+/', '', file_get_contents($tmp));
             @unlink($tmp);
         } catch (\Throwable $t) {
-            $getFile = is_null($this->getFile()) ? "fe" : file_exists($this->getFile()) ? md5_file($this->getFile()) : "";
+            error_log($t);
+        }
+
+        if (strlen($pdfText) > 30) {
+            $getFile = md5(preg_replace('/\s+/', '', $pdfText));
+            $method  = self::UID_METHOD_PDFTEXT;
+        } else {
+            $getFile = md5_file($this->getFile());
+            $method  = self::UID_METHOD_MD5_FILE;
         }
 
         $key = $postageType . $colorPrinting . $isDuplexPrinting . $isOptionalAddressSheet .
@@ -511,7 +526,7 @@ class MailevaSending
             $getAddressLine1 . $getAddressLine2 . $getAddressLine3 . $getAddressLine4 . $getAddressLine5 . $getAddressLine6 .
             $getSenderAddressLine1 . $getSenderAddressLine2 . $getSenderAddressLine3 . $getSenderAddressLine4 . $getSenderAddressLine5 . $getSenderAddressLine6;
 
-        return md5($key) . substr(base64_encode($key), 0, 30);
+        return [md5($key) . substr(base64_encode($key), 0, 30), $method];
     }
 
     /**
@@ -581,7 +596,7 @@ class MailevaSending
     {
         $fields = get_object_vars($this);
 
-        if ($mailevaApiAdapter->getType() === MailevaConnection::LRE) {
+        if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
             if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
                 throw new MailevaParameterException('senderAddressLine1 || senderAddressLine2 not set');
             }

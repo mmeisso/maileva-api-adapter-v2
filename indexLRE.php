@@ -71,9 +71,9 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             ->setColorPrinting(true)
             ->setDuplexPrinting(true)
             ->setOptionalAddressSheet(false)
-            ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
+            ->setFile('/var/www/maileva/cybble/public/testFiles/1pageWithTextLayer.pdf')
             //->setFilepriority()  #optionnal default 1
-            ->setFilename('document.pdf')
+            ->setFilename('1pageWithTextLayer.pdf')
             ->setAddressLine1('Mr. Rousseaux damien')
             ->setAddressLine2('Eukles Solutions')
             ->setAddressLine3('236 Rue de Saint Honorat')#optionnal default ''

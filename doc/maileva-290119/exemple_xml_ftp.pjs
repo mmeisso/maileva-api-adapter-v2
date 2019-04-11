@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pjs:Campaign xmlns:pjs="http://www.maileva.fr/MailevaPJSSchema" xmlns:com="http://www.maileva.fr/CommonSchema" xmlns:spec="http://www.maileva.fr/MailevaSpecificSchema" Name="nom_campagne" BreakdownCode="BreakdownCode_campagne" Version="1.0" TrackId="campaign.20170529.1" Application="connecteur_Maileva">
+   <pjs:User AuthType="PLAINTEXT">
+      <pjs:Login></pjs:Login>
+      <pjs:Password></pjs:Password>
+   </pjs:User>
+   <pjs:Requests>
+      <pjs:Request MediaType="PAPER" TrackId="request.reference.interne">
+         <pjs:Recipients>
+            <pjs:Internal>
+               <pjs:Recipient TrackId="recipient.1.trackId" Id="recipient.1">
+                  <com:PaperAddress>
+                     <com:AddressLines>
+                        <com:AddressLine1>Marc Joussemet</com:AddressLine1>
+                        <com:AddressLine2>10 avenue Charles de Gaulle</com:AddressLine2>
+                        <com:AddressLine6>94673 Charenton-Le-Pont Cedex</com:AddressLine6>
+                     </com:AddressLines>
+                     <com:Country>FRANCE</com:Country>
+                     <com:CountryCode>FR</com:CountryCode>
+                  </com:PaperAddress>
+               </pjs:Recipient>
+            </pjs:Internal>
+         </pjs:Recipients>
+         <pjs:DocumentData>
+            <pjs:Documents>
+               <pjs:Document Id="document.1">
+                  <com:Content>
+                     <com:Uri>exemple_xml_ftp.001</com:Uri>
+                  </com:Content>
+               </pjs:Document>
+            </pjs:Documents>
+         </pjs:DocumentData>
+         <pjs:Options>
+            <pjs:RequestOption>
+               <spec:PaperOption>
+                  <spec:FoldOption>
+                     <spec:FoldPrintColor>1</spec:FoldPrintColor>
+                     <spec:PostageClass>STANDARD</spec:PostageClass>
+					 <spec:PrintRecipTrackId>1</spec:PrintRecipTrackId>
+                     <spec:UseFlyLeaf>0</spec:UseFlyLeaf>
+                     <spec:DocumentOption>
+                        <spec:PrintDuplex>0</spec:PrintDuplex>
+                     </spec:DocumentOption>
+                  </spec:FoldOption>
+               </spec:PaperOption>
+            </pjs:RequestOption>
+         </pjs:Options>
+		 <pjs:Folds>
+		 <pjs:Fold Id="107" TrackId="testMarc">
+          <pjs:RecipientId>recipient.1</pjs:RecipientId>
+          <pjs:Documents>
+            <pjs:Document DocumentId="document.1"/>
+          </pjs:Documents>
+        </pjs:Fold>
+		</pjs:Folds>
+         <pjs:Notifications>
+            <pjs:Notification Type="GENERAL">
+               <spec:Format>XML</spec:Format>
+               <spec:Protocols>
+                  <spec:Protocol>
+                     <spec:Email>marc.joussemet@docapost.fr</spec:Email>
+                  </spec:Protocol>
+				  <spec:Protocol>
+                     <spec:Ftp/>
+                  </spec:Protocol>
+               </spec:Protocols>
+            </pjs:Notification>
+         </pjs:Notifications>
+      </pjs:Request>
+   </pjs:Requests>
+</pjs:Campaign>

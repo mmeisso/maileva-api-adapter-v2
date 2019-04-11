@@ -11,6 +11,7 @@ class MailevaSendingClassicCest
 
     /**
      * @param UnitTester $I
+     * @group classic
      *
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException

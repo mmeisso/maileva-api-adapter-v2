@@ -24,17 +24,10 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 class MailevaApiAdapter
 {
 
+    const MEMCACHE_SIMILAR_DURATION = 60 * 60 * 8;
+    /** @var MailevaConnection|null */
+    private $mailevaConnection = null;
     private $access_token = null;
-    private $authenticationHost;
-    private $clientId;
-    private $clientSecret;
-    private $host;
-    private $memcacheHost = null;
-    private $memcachePort = null;
-    private $password;
-    private $type;
-    private $useMemcache = false;
-    private $username;
 
     /**
      * MailevaApiAdapter constructor.
@@ -43,19 +36,7 @@ class MailevaApiAdapter
      */
     public function __construct(MailevaConnection $mailevaConnection)
     {
-        $this->authenticationHost = $mailevaConnection->getAuthenticationHost();
-        $this->host               = $mailevaConnection->getHost();
-        $this->type               = $mailevaConnection->getType();
-        $this->clientId           = $mailevaConnection->getClientId();
-        $this->clientSecret       = $mailevaConnection->getClientSecret();
-        $this->username           = $mailevaConnection->getUsername();
-        $this->password           = $mailevaConnection->getPassword();
-
-        if ($mailevaConnection->useMemcache()) {
-            $this->useMemcache  = true;
-            $this->memcacheHost = $mailevaConnection->getMemcacheHost();
-            $this->memcachePort = $mailevaConnection->getMemcachePort();
-        }
+        $this->mailevaConnection = $mailevaConnection;
     }
 
     /**
@@ -143,10 +124,11 @@ class MailevaApiAdapter
      */
     public function getAccessToken()
     {
-        if ($this->useMemcache) {
+        if ($this->mailevaConnection->useMemcache()) {
             if (is_null($this->access_token)) {
-                $key            = 'MT_' . $this->clientId . '_' . $this->username;
-                $memcachedToken = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($key, false);
+                $key            = 'MT_' . $this->mailevaConnection->getClientId() . '_' . $this->mailevaConnection->getUsername();
+                $memcachedToken = MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+                    $this->mailevaConnection->getMemcachePort())->get($key, false);
                 if (false !== $memcachedToken) {
                     $this->access_token = $memcachedToken;
                 }
@@ -162,10 +144,10 @@ class MailevaApiAdapter
      */
     public function setAccessToken(string $token, int $secondsDurationValidity)
     {
-        if ($this->useMemcache) {
-            $key = 'MT_' . $this->clientId . '_' . $this->username;
+        if ($this->mailevaConnection->useMemcache()) {
+            $key = 'MT_' . $this->mailevaConnection->getClientId() . '_' . $this->mailevaConnection->getUsername();
             #2592000 max memcache value -> http://php.net/manual/fr/memcache.set.php
-            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($key, $token,
+            MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(), $this->mailevaConnection->getMemcachePort())->set($key, $token,
                 min(abs($secondsDurationValidity / 2), 2592000));
         }
         $this->access_token = $token;
@@ -196,7 +178,7 @@ class MailevaApiAdapter
      */
     public function getAuthenticationHost(): string
     {
-        return $this->authenticationHost;
+        return $this->mailevaConnection->getAuthenticationHost();
     }
 
     /**
@@ -248,7 +230,7 @@ class MailevaApiAdapter
      */
     public function getHost(): string
     {
-        return $this->host;
+        return $this->mailevaConnection->getHost();
     }
 
     /**
@@ -443,7 +425,7 @@ class MailevaApiAdapter
      */
     public function getType(): string
     {
-        return $this->type;
+        return $this->mailevaConnection->getType();
     }
 
     /**
@@ -522,10 +504,11 @@ class MailevaApiAdapter
         $mailevaSending->validate($this);
 
         if ($checkSimilarPreviousHasAlreadyBeenSent === true) {
-            if ($this->useMemcache === false) {
+            if ($this->mailevaConnection->useMemcache() === false) {
                 throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
             }
-            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->get($mailevaSending->getUID(),
+            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+                $this->mailevaConnection->getMemcachePort())->get($mailevaSending->getUID()[0],
                 false);
 
             if ($sendingIdSimilarPrevious !== false) {
@@ -538,11 +521,74 @@ class MailevaApiAdapter
             }
         }
 
-        if ($this->getType() === MailevaConnection::CLASSIC) {
-            return $this->prepareSimple($mailevaSending);
-        } else {
-            return $this->prepareLRE($mailevaSending);
+        switch ($this->getType()) {
+            case MailevaConnection::CLASSIC:
+                return $this->prepareSimple($mailevaSending);
+                break;
+            case MailevaConnection::LRE:
+                return $this->prepareLRE($mailevaSending);
+                break;
+            case MailevaConnection::LRCOPRO:
+                return $this->prepareLRCOPRO($mailevaSending);
+                break;
+            default:
+                throw new MailevaException('Type not available');
         }
+    }
+
+    /**
+     * @param MailevaSending $mailevaSending
+     *
+     * @return string
+     * @throws MailevaException
+     */
+    private function prepareLRCOPRO(MailevaSending $mailevaSending): string
+    {
+
+        try {
+            $conn = ftp_connect($this->mailevaConnection->getHost());
+            ftp_login($conn, $this->mailevaConnection->getUsername(), $this->mailevaConnection->getPassword());
+            ftp_close($conn);
+            $sendingId = uniqid($this->getType() . '_', 'true');
+
+            $name                 = $mailevaSending->getName();
+            $colorPrinting        = $mailevaSending->isColorPrinting();
+            $duplexPrinting       = $mailevaSending->isDuplexPrinting();
+            $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
+            $file                 = $mailevaSending->getFile();
+            $filePriority         = $mailevaSending->getFilepriority();
+            $fileName             = $mailevaSending->getFilename();
+            $addressLine1         = $mailevaSending->getAddressLine1();
+            $addressLine2         = $mailevaSending->getAddressLine2();
+            $addressLine3         = $mailevaSending->getAddressLine3();
+            $addressLine4         = $mailevaSending->getAddressLine4();
+            $addressLine5         = $mailevaSending->getAddressLine5();
+            $addressLine6         = $mailevaSending->getAddressLine6();
+            $countryCode          = $mailevaSending->getCountryCode();
+            $customId             = $mailevaSending->getCustomId();
+            $notification_email = $mailevaSending->getNotificationEmail();
+            $senderAddressLine1 = $mailevaSending->getSenderAddressLine1();
+            $senderAddressLine2 = $mailevaSending->getSenderAddressLine2();
+            $senderAddressLine3 = $mailevaSending->getSenderAddressLine3();
+            $senderAddressLine4 = $mailevaSending->getSenderAddressLine4();
+            $senderAddressLine5 = $mailevaSending->getSenderAddressLine5();
+            $senderAddressLine6 = $mailevaSending->getSenderAddressLine6();
+            $senderCountryCode  = $mailevaSending->getSenderCountryCode();
+
+
+            //$tpl = file_get_contents('templates/lcrcopro.xml');
+
+
+
+            if ($this->mailevaConnection->useMemcache() === true) {
+                MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+                    $this->mailevaConnection->getMemcachePort())->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
+            }
+        } catch (\Throwable $t) {
+            throw new MailevaException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
+        }
+
+        return $name;
     }
 
     /**
@@ -609,8 +655,9 @@ class MailevaApiAdapter
             ]
         );
 
-        if ($this->useMemcache === true) {
-            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
+        if ($this->mailevaConnection->useMemcache() === true) {
+            MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+                $this->mailevaConnection->getMemcachePort())->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
         }
 
         return $sendingId;
@@ -696,8 +743,9 @@ class MailevaApiAdapter
             ]
         );
 
-        if ($this->useMemcache === true) {
-            MemcachedManager::getInstance($this->memcacheHost, $this->memcachePort)->set($mailevaSending->getUID(), $sendingId, 60 * 60 * 24 * 3);
+        if ($this->mailevaConnection->useMemcache() === true) {
+            MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+                $this->mailevaConnection->getMemcachePort())->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
         }
 
         return $sendingId;
@@ -725,11 +773,11 @@ class MailevaApiAdapter
         $route = new Route($this, Routing::POST_AUTHENTICATION,
             [
                 'headers' => [
-                    'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)
+                    'Authorization' => 'Basic ' . base64_encode($this->mailevaConnection->getClientId() . ':' . $this->mailevaConnection->getClientSecret())
                 ],
                 'params'  => [
-                    'username' => $this->username,
-                    'password' => $this->password
+                    'username' => $this->mailevaConnection->getUsername(),
+                    'password' => $this->mailevaConnection->getPassword()
                 ]
             ]
         );

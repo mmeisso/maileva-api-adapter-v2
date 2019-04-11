@@ -85,9 +85,9 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             ->setColorPrinting(true)
             ->setDuplexPrinting(true)
             ->setOptionalAddressSheet(false)
-            ->setFile('/var/www/maileva/cybble/public/testFiles/document.pdf')
+            ->setFile('/var/www/maileva/cybble/public/testFiles/1pageWithTextLayer.pdf')
             //->setFilepriority()  #optionnal default 1
-            ->setFilename('document.pdf')
+            ->setFilename('1pageWithTextLayer.pdf')
             ->setAddressLine1('M. Pettitti Loïc')
             ->setAddressLine2('Eukles Solutions')
             ->setAddressLine3('236 Rue de St Honorat')#optionnal default ''
@@ -133,7 +133,11 @@ $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 ////testPost($mailevaApiAdapter);
 ////die;
 //
-$sendingId =  '1c13ff7f-1e78-48e4-94a0-b4716f16a284';
+$oups = 'e7db7f6e-e8f6-4e9c-97e2-5682479831cf';
+$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
+$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
+
+$sendingId =  $duxplexOff;
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
 //die;

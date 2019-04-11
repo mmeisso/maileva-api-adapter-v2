@@ -18,6 +18,7 @@ class MailevaConnection
 
     const CLASSIC = 'classic';
     const LRE = 'lre';
+    const LRCOPRO = 'lrcopro';
     private $authenticationHost;
     private $clientId = null;
     private $clientSecret = null;
