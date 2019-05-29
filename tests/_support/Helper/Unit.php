@@ -21,8 +21,10 @@ class Unit extends \Codeception\Module
     const USERNAME = 'sandbox.1567';
     const PASSWORD = 'o93126';
     const FTP_HOST = 'ftp.recette.maileva.com';
-    const FTP_USERNAME = 'mlv-s-cdbSJ3F';
-    const FTP_PASSWORD = 'UxSqjsB';
+    const FTP_USERNAME = 'sandbox.1662';
+    const FTP_PASSWORD = 'lfqcs7';
+    const FTP_CLIENT_ID = 'mlv-s-cdbSJ3F';
+    const FTP_CLIENT_SECRET = 'UxSqjsB';
     const MEMCACHE_HOST = 'localhost';
     const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
@@ -57,8 +59,8 @@ class Unit extends \Codeception\Module
         $mailevaConnection
             ->setAuthenticationHost("")
             ->setHost(self::FTP_HOST)
-            ->setClientId("")
-            ->setClientSecret("")
+            ->setClientId(self::FTP_CLIENT_ID)
+            ->setClientSecret(self::FTP_CLIENT_SECRET)
             ->setUsername(self::FTP_USERNAME)
             ->setPassword(self::FTP_PASSWORD)
             ->setMemcacheHost(self::MEMCACHE_HOST)
@@ -189,6 +191,7 @@ class Unit extends \Codeception\Module
     private function getMailevaSendingLRCOPRO(): MailevaSending
     {
         $mailevaSending = $this->getMailevaSendingCommon();
+        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/147pages.pdf');
         $senderAddress  = $this->getRandomAddress();
         $mailevaSending
             ->setPostageType(MailevaSending::POSTAGE_TYPE_LRCOPRO)

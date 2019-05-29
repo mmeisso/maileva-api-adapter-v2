@@ -162,11 +162,14 @@ try {
 #die;
 
 #PROD !
-    $sendingId = '1b290bb5-605e-4d2e-ad1b-bb8c245b3f96';
+    $sendingId = 'bd8aebee-c35d-4e08-b1f2-37d9e7aaeba5';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
-    debugSendingId($mailevaApiAdapter, $sendingId);
+    //debugSendingId($mailevaApiAdapter, $sendingId);
+    $mailevaApiAdapter->getSendingBySendingId($sendingId);
+    $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
+    $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
 die;
 
 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {

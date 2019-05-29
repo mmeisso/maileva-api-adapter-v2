@@ -27,15 +27,20 @@ class MailevaSendingLRCOPROCest
         /** @var \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
 
-        /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
-        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        for ($i=0; $i<10; $i++){
+            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
 
-        echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
+            echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
+
+            $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
+            echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
+
+            $mailevaApiAdapter->submit($sendingId);
+        }
 
 
 
-        $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
-        echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
 //
 //        die;
 //

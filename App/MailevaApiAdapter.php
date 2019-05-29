@@ -547,38 +547,77 @@ class MailevaApiAdapter
 
         try {
             $conn = ftp_connect($this->mailevaConnection->getHost());
-            ftp_login($conn, $this->mailevaConnection->getUsername(), $this->mailevaConnection->getPassword());
-            ftp_close($conn);
-            $sendingId = uniqid($this->getType() . '_', 'true');
+            ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
 
-            $name                 = $mailevaSending->getName();
-            $colorPrinting        = $mailevaSending->isColorPrinting();
-            $duplexPrinting       = $mailevaSending->isDuplexPrinting();
-            $optionalAddressSheet = $mailevaSending->isOptionalAddressSheet();
-            $file                 = $mailevaSending->getFile();
-            $filePriority         = $mailevaSending->getFilepriority();
-            $fileName             = $mailevaSending->getFilename();
-            $addressLine1         = $mailevaSending->getAddressLine1();
-            $addressLine2         = $mailevaSending->getAddressLine2();
-            $addressLine3         = $mailevaSending->getAddressLine3();
-            $addressLine4         = $mailevaSending->getAddressLine4();
-            $addressLine5         = $mailevaSending->getAddressLine5();
-            $addressLine6         = $mailevaSending->getAddressLine6();
-            $countryCode          = $mailevaSending->getCountryCode();
-            $customId             = $mailevaSending->getCustomId();
+            $sendingId  = str_replace('.', '', uniqid('', 'true'));
+            $tplContent = file_get_contents(__DIR__ . '/templates/lrcopro.xml');
+
+            $file = $mailevaSending->getFile();
+
+            $login    = $this->mailevaConnection->getUsername();
+            $password = $this->mailevaConnection->getPassword();
+
+            $customId = $mailevaSending->getCustomId();
+            //$name               = $mailevaSending->getName();
+            $duplexPrinting     = $mailevaSending->isDuplexPrinting() ? 1 : 0;
             $notification_email = $mailevaSending->getNotificationEmail();
+
+            $tplContent = str_replace('##login##', $login, $tplContent);
+            $tplContent = str_replace('##password##', $password, $tplContent);
+            $tplContent = str_replace('##customId##', $customId, $tplContent);
+            $tplContent = str_replace('##sendingId##', $sendingId, $tplContent);
+
+            $tplContent = str_replace('##name##', 'Envoi LRCOPRO', $tplContent);
+            $tplContent = str_replace('##duplexPrinting##', $duplexPrinting, $tplContent);
+            $tplContent = str_replace('##notification_email##', $notification_email, $tplContent);
+
+            $addressLine1 = $mailevaSending->getAddressLine1();
+            $addressLine2 = $mailevaSending->getAddressLine2();
+            $addressLine3 = $mailevaSending->getAddressLine3();
+            $addressLine4 = $mailevaSending->getAddressLine4();
+            $addressLine5 = $mailevaSending->getAddressLine5();
+            $addressLine6 = $mailevaSending->getAddressLine6();
+
+            $tplContent = str_replace('##addressLine1##', $addressLine1, $tplContent);
+            $tplContent = str_replace('##addressLine2##', $addressLine2, $tplContent);
+            $tplContent = str_replace('##addressLine3##', $addressLine3, $tplContent);
+            $tplContent = str_replace('##addressLine4##', $addressLine4, $tplContent);
+            $tplContent = str_replace('##addressLine5##', $addressLine5, $tplContent);
+            $tplContent = str_replace('##addressLine6##', $addressLine6, $tplContent);
+
             $senderAddressLine1 = $mailevaSending->getSenderAddressLine1();
             $senderAddressLine2 = $mailevaSending->getSenderAddressLine2();
             $senderAddressLine3 = $mailevaSending->getSenderAddressLine3();
             $senderAddressLine4 = $mailevaSending->getSenderAddressLine4();
             $senderAddressLine5 = $mailevaSending->getSenderAddressLine5();
             $senderAddressLine6 = $mailevaSending->getSenderAddressLine6();
-            $senderCountryCode  = $mailevaSending->getSenderCountryCode();
 
+            $tplContent = str_replace('##senderAddressLine1##', $senderAddressLine1, $tplContent);
+            $tplContent = str_replace('##senderAddressLine2##', $senderAddressLine2, $tplContent);
+            $tplContent = str_replace('##senderAddressLine3##', $senderAddressLine3, $tplContent);
+            $tplContent = str_replace('##senderAddressLine4##', $senderAddressLine4, $tplContent);
+            $tplContent = str_replace('##senderAddressLine5##', $senderAddressLine5, $tplContent);
+            $tplContent = str_replace('##senderAddressLine6##', $senderAddressLine6, $tplContent);
 
-            //$tpl = file_get_contents('templates/lcrcopro.xml');
+            $tplFile = tempnam(sys_get_temp_dir(), 'xml');
+            file_put_contents($tplFile, $tplContent);
 
+            $zip     = new \ZipArchive();
+            $tempZip = sys_get_temp_dir() . '/' . $sendingId . '.zip';
 
+            if ($zip->open($tempZip, \ZipArchive::CREATE) !== true) {
+                throw new MailevaException('Unable to open Zip File ' . $tempZip);
+            }
+
+            $zip->addFile($file, $sendingId . '.001');
+            $zip->addFile($tplFile, $sendingId . '.002');
+            $zip->close();
+
+            if (!ftp_put($conn, $sendingId . '.zip', $tempZip, FTP_ASCII)) {
+                throw new MailevaException('Unable to send Zip File ' . $tempZip);
+            }
+
+            ftp_close($conn);
 
             if ($this->mailevaConnection->useMemcache() === true) {
                 MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
@@ -588,7 +627,7 @@ class MailevaApiAdapter
             throw new MailevaException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
         }
 
-        return $name;
+        return $sendingId;
     }
 
     /**
@@ -760,7 +799,25 @@ class MailevaApiAdapter
      */
     public function submit(string $sendingId)
     {
-        $this->postSendingBySendingId($sendingId);
+        switch ($this->getType()) {
+            case MailevaConnection::LRCOPRO:
+                $this->submitLrCopro($sendingId);
+                break;
+            default:
+                $this->postSendingBySendingId($sendingId);
+        }
+    }
+
+    private function submitLrCopro(string $sendingId)
+    {
+        $conn = ftp_connect($this->mailevaConnection->getHost());
+        ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
+
+        if (!ftp_rename($conn, $sendingId . '.zip', $sendingId . '.zcou')) {
+            throw new MailevaException('Unable to rename ' . $sendingId . '.zip submit fail');
+        }
+
+        ftp_close($conn);
     }
 
     /**
