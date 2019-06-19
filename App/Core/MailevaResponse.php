@@ -16,11 +16,11 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
  *
  * @package MailevaApiAdapter\App\Core
  */
-class MailevaResponse
+class MailevaResponse implements MailevaResponseInterface
 {
 
     private $route;
-    private $responseAsArray = null;
+    private $responseAsArray = [];
 
     /**
      * MailevaResponse constructor.
@@ -29,6 +29,7 @@ class MailevaResponse
      * @param Response $response
      *
      * @throws MailevaResponseException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaException
      */
     public function __construct(Route $route, Response $response)
     {
@@ -114,7 +115,7 @@ class MailevaResponse
     /**
      * @return mixed
      */
-    public function getResponseAsArray()
+    public function getResponseAsArray(): array
     {
         return $this->responseAsArray;
     }

@@ -8,7 +8,10 @@
 
 namespace MailevaApiAdapter\App;
 
+use function GuzzleHttp\Psr7\stream_for;
 use MailevaApiAdapter\App\Core\MailevaResponse;
+use MailevaApiAdapter\App\Core\MailevaResponseInterface;
+use MailevaApiAdapter\App\Core\MailevaResponseLRCOPRO;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\Route;
 use MailevaApiAdapter\App\Core\Routing;
@@ -301,20 +304,176 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      *
-     * @return MailevaResponse
+     * @return MailevaResponseInterface
      * @throws Exception\RoutingException
+     * @throws MailevaException
      * @throws MailevaResponseException
      */
-    public function getSendingBySendingId(string $sendingId): MailevaResponse
+    public function getSendingBySendingId(string $sendingId): MailevaResponseInterface
     {
-        $route = new Route($this, Routing::GET_SENDING_BY_SENDING_ID,
-            [
-                'params' => [
-                    'sending_id' => $sendingId
-                ]
-            ]
-        );
-        return $route->call();
+        switch ($this->getType()) {
+            case MailevaConnection::LRCOPRO:
+                return $this->getSendingBySendingIdLRCOPRO($sendingId);
+                break;
+            default:
+                $route = new Route($this, Routing::GET_SENDING_BY_SENDING_ID,
+                    [
+                        'params' => [
+                            'sending_id' => $sendingId
+                        ]
+                    ]
+                );
+                return $route->call();
+        }
+    }
+
+    /**
+     * @param string $sendingId
+     *
+     * @return MailevaResponseLRCOPRO
+     * @throws MailevaException
+     */
+    private function getSendingBySendingIdLRCOPRO(string $sendingId): MailevaResponseLRCOPRO
+    {
+        $mailevaResponseLRCOPRO = new MailevaResponseLRCOPRO();
+        $responseAsArray        = [];
+
+        $conn = null;
+        //Get list notification
+        try {
+            $conn = ftp_connect($this->mailevaConnection->getHost());
+            ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
+            $fileListing = ftp_nlist($conn, $this->mailevaConnection->getDirectoryCallback());
+            // Check if directory
+
+            if (!empty($fileListing)) {
+                foreach ($fileListing as $filePath) {
+
+                    $pathInfo = pathinfo($filePath);
+                    if (false === array_key_exists('extension', $pathInfo)) {
+                        continue;
+                    }
+
+                    if (!is_dir($this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback())) {
+                        mkdir($this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback());
+                    }
+                    $tmpLocalFile = $this->mailevaConnection->getTmpFileDirectory() . $filePath;
+
+                    if (!ftp_get($conn, $tmpLocalFile, $filePath, FTP_ASCII)) {
+                        error_log(__FILE__ . '(' . __LINE__ . '):  Trouble downloading the file : ' . $filePath);
+                        continue;
+                    }
+
+                    if (is_file($tmpLocalFile)) {
+
+                        $handle   = fopen($tmpLocalFile, "r");
+                        $contents = fread($handle, filesize($tmpLocalFile));
+
+                        $xml = preg_replace('/tnsb:/', '', $contents);
+                        $xml = simplexml_load_string($xml);
+                        if (!empty($xml->Request->TrackId[0])) {
+                            $trackId = (string)$xml->Request->TrackId[0]; #1
+                            if ($sendingId . '.Rq' === $trackId) {
+                                $responseAsArray['id'] = $sendingId;
+                                if ((string)$xml->Request->Status[0] === 'ACCEPT') {
+                                    $responseAsArray['status'] = MailevaSendingStatus::ACCEPTED;
+                                }
+                                if ((string)$xml->Request->Status[0] === 'NACCEPT') {
+                                    $responseAsArray['status'] = MailevaSendingStatus::SUBMIT_ERROR;
+                                }
+
+                                $responseAsArray['creation_date']     = (string)$xml->Request->ReceptionDate[0];
+                                $responseAsArray['postage_type']      = (string)$xml->Request->PaperOptions->PostageClass[0];
+                                $responseAsArray['pages_count']       = (string)$xml->Request->PaperOptions->PageCount[0];
+                                $responseAsArray['documents_count']   = (string)$xml->Request->PaperOptions->DocumentCount[0];
+                                $responseAsArray['billed_page_count'] = (string)$xml->Request->PaperOptions->BilledPageCount[0];
+                                $responseAsArray['deposit_id'] = (string)$xml->Request->DepositId[0];
+                                $responseAsArray['expected_production_date'] = (string)$xml->Request->ExpectedProductionDate[0];
+
+                                if ($xml->Request->PaperOptions->PrintDuplex[0]) {
+                                    $responseAsArray['duplex_printing'] = 1;
+                                } else {
+                                    $responseAsArray['duplex_printing'] = 0;
+                                }
+                                if ($xml->Request->PaperOptions->HasColorPage[0]) {
+                                    $responseAsArray['color_printing'] = 1;
+                                } else {
+                                    $responseAsArray['color_printing'] = 0;
+                                }
+
+                                $responseAsArray['filePathTmp'] = $tmpLocalFile;
+                                $responseAsArray['filePathFtp'] = $filePath;
+                                $mailevaResponseLRCOPRO->setResponseAsArray($responseAsArray);
+
+                                if ($this->renameFileAfterReturnStatus($conn, $mailevaResponseLRCOPRO) === false) {
+                                    error_log(__FILE__ . '(' . __LINE__ . '): Rename file not worked : ' . $mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
+                                }
+
+                                break;
+                            }
+                        } else {
+                            error_log(__FILE__ . '(' . __LINE__ . '): The generation of the xml file is empty');
+                            continue;
+                        }
+                        fclose($handle);
+                    }
+                }
+            }
+        } catch (\Throwable $t) {
+            throw new MailevaException('Function : getSendingStatusById : Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(),
+                $t->getCode(), $t);
+        } finally {
+            if (null !== $conn) {
+
+                ftp_close($conn);
+            }
+            return $mailevaResponseLRCOPRO;
+        }
+    }
+
+    /**
+     * @param                        $conn
+     * @param MailevaResponseLRCOPRO $mailevaResponseLRCOPRO
+     *
+     * @return bool
+     */
+    public function renameFileAfterReturnStatus($conn, MailevaResponseLRCOPRO $mailevaResponseLRCOPRO): bool
+    {
+        try {
+            $original_directory = ftp_pwd($conn);
+            if (@ftp_chdir($conn, $this->mailevaConnection->getDirectoryCallback() . $mailevaResponseLRCOPRO->getResponseAsArray()['status'])) {
+                // If it is a directory, then change the directory back to the original directory
+                ftp_chdir($conn, $original_directory);
+
+                $newDirectoryTmp = str_replace('/', '\/',
+                    $this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback());
+                $newFileRename   = preg_replace('/' . $newDirectoryTmp . '/', $mailevaResponseLRCOPRO->getResponseAsArray()['status'] . '/',
+                    $mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
+
+                if (!ftp_rename($conn, $mailevaResponseLRCOPRO->getResponseAsArray()['filePathFtp'],
+                    $this->mailevaConnection->getDirectoryCallback() . $newFileRename)) {
+                    return false;
+                }
+                unlink($mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
+                return true;
+            } else {
+                ftp_mkdir($conn, $this->mailevaConnection->getDirectoryCallback() . $mailevaResponseLRCOPRO->getResponseAsArray()['status']);
+                $newDirectoryTmp = str_replace('/', '\/',
+                    $this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback());
+                $newFileRename   = preg_replace('/' . $newDirectoryTmp . '/', $mailevaResponseLRCOPRO->getResponseAsArray()['status'] . '/',
+                    $mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
+
+                if (!ftp_rename($conn, $mailevaResponseLRCOPRO->getResponseAsArray()['filePathFtp'],
+                    $this->mailevaConnection->getDirectoryCallback() . $newFileRename)) {
+                    return false;
+                }
+                unlink($mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
+                return true;
+            }
+        } catch (\Throwable $t) {
+            error_log($t);
+            return false;
+        }
     }
 
     /**
@@ -512,10 +671,13 @@ class MailevaApiAdapter
                 false);
 
             if ($sendingIdSimilarPrevious !== false) {
-
-                $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
-                $allReadyExistException       = new MailevaAllReadyExistException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
-                $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
+                if ($this->getType() !== MailevaConnection::LRCOPRO) {
+                    $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
+                    $allReadyExistException       = new MailevaAllReadyExistException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+                    $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
+                } else {
+                    $allReadyExistException = new MailevaAllReadyExistException("Same mailevaSending the LRCOPRO has already been sent");
+                }
 
                 throw $allReadyExistException;
             }
@@ -545,6 +707,8 @@ class MailevaApiAdapter
     private function prepareLRCOPRO(MailevaSending $mailevaSending): string
     {
 
+        $conn = null;
+        $sendingId = null;
         try {
             $conn = ftp_connect($this->mailevaConnection->getHost());
             ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
@@ -617,14 +781,16 @@ class MailevaApiAdapter
                 throw new MailevaException('Unable to send Zip File ' . $tempZip);
             }
 
-            ftp_close($conn);
-
             if ($this->mailevaConnection->useMemcache() === true) {
                 MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
                     $this->mailevaConnection->getMemcachePort())->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
             }
         } catch (\Throwable $t) {
             throw new MailevaException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
+        } finally {
+            if (null !== $conn) {
+                ftp_close($conn);
+            }
         }
 
         return $sendingId;
@@ -676,7 +842,7 @@ class MailevaApiAdapter
 
         $this->postDocumentBySendingId($sendingId,
             [
-                ['name' => 'document', 'contents' => \GuzzleHttp\Psr7\stream_for(fopen($file, 'rb'))],
+                ['name' => 'document', 'contents' => stream_for(fopen($file, 'rb'))],
                 ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
             ]
         );
@@ -764,7 +930,7 @@ class MailevaApiAdapter
 
         $this->postDocumentBySendingId($sendingId,
             [
-                ['name' => 'document', 'contents' => \GuzzleHttp\Psr7\stream_for(fopen($file, 'rb'))],
+                ['name' => 'document', 'contents' => stream_for(fopen($file, 'rb'))],
                 ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
             ]
         );
@@ -793,8 +959,8 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      *
-     * @return string
      * @throws Exception\RoutingException
+     * @throws MailevaException
      * @throws MailevaResponseException
      */
     public function submit(string $sendingId)
@@ -808,6 +974,11 @@ class MailevaApiAdapter
         }
     }
 
+    /**
+     * @param string $sendingId
+     *
+     * @throws MailevaException
+     */
     private function submitLrCopro(string $sendingId)
     {
         $conn = ftp_connect($this->mailevaConnection->getHost());
@@ -907,14 +1078,14 @@ class MailevaApiAdapter
     }
 
     /**
-     * @deprecated
-     *
      * @param string $sendingId
      * @param array  $body
      *
      * @return MailevaResponse
      * @throws Exception\RoutingException
      * @throws MailevaResponseException
+     * @deprecated
+     *
      */
     public function postImportRecipientsBySendingId(string $sendingId, array $body): MailevaResponse
     {

@@ -28,6 +28,10 @@ class Unit extends \Codeception\Module
     const MEMCACHE_HOST = 'localhost';
     const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
+    CONST DIRECTORY_CALLBACK = '/retour_sandbox.1662/';
+    CONST TMP_FILE_DIRECTORY = '/tmp/MAILEVA';
+
+
 
     /**
      * @return MailevaApiAdapter
@@ -64,7 +68,10 @@ class Unit extends \Codeception\Module
             ->setUsername(self::FTP_USERNAME)
             ->setPassword(self::FTP_PASSWORD)
             ->setMemcacheHost(self::MEMCACHE_HOST)
-            ->setMemcachePort(self::MEMCACHE_PORT);
+            ->setMemcachePort(self::MEMCACHE_PORT)
+            ->setDirectoryCallback(self::DIRECTORY_CALLBACK)
+            ->setTmpFileDirectory(self::TMP_FILE_DIRECTORY);
+
         return new MailevaApiAdapter($mailevaConnection);
     }
 
@@ -190,8 +197,11 @@ class Unit extends \Codeception\Module
      */
     private function getMailevaSendingLRCOPRO(): MailevaSending
     {
+
+        $faker   = Factory::create('fr_FR');
+
         $mailevaSending = $this->getMailevaSendingCommon();
-        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/147pages.pdf');
+        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/14pages.pdf');
         $senderAddress  = $this->getRandomAddress();
         $mailevaSending
             ->setPostageType(MailevaSending::POSTAGE_TYPE_LRCOPRO)
