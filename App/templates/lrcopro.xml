@@ -69,6 +69,9 @@
 						<spec:Protocol>
 							<spec:Ftp/>
 						</spec:Protocol>
+						<spec:Protocol>
+							<spec:Email>##notification_email##</spec:Email>
+						</spec:Protocol>
 					</spec:Protocols>
 				</pjs:Notification>
 			</pjs:Notifications>
