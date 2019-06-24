@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<pjs:Campaign xmlns:pjs="http://www.maileva.fr/MailevaPJSSchema"
+              xmlns:com="http://www.maileva.fr/CommonSchema"
+              xmlns:spec="http://www.maileva.fr/MailevaSpecificSchema"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              Name="##name##"
+              Version="1.0"
+              TrackId="##sendingId##"
+              Application="REALESTATE"
+              BreakdownCode="LRCOPRO-##customId##-##sendingId##">
+	<pjs:Requests>
+		<pjs:Request TrackId="##sendingId##.Rq" MediaType="PAPER">
+			<pjs:Recipients>
+				<pjs:Internal>
+					<pjs:Recipient Id="1" TrackId="##sendingId##.Rp">
+						<com:PaperAddress>
+							<com:AddressLines>
+								<com:AddressLine1>##addressLine1##</com:AddressLine1>
+								<com:AddressLine2>##addressLine2##</com:AddressLine2>
+								<com:AddressLine3>##addressLine3##</com:AddressLine3>
+								<com:AddressLine4>##addressLine4##</com:AddressLine4>
+								<com:AddressLine5>##addressLine5##</com:AddressLine5>
+								<com:AddressLine6>##addressLine6##</com:AddressLine6>
+							</com:AddressLines>
+							<com:Country>FRANCE</com:Country>
+							<com:CountryCode>FR</com:CountryCode>
+						</com:PaperAddress>
+					</pjs:Recipient>
+				</pjs:Internal>
+			</pjs:Recipients>
+			<pjs:Senders>
+				<pjs:Sender Id="1">
+					<com:PaperAddress>
+						<com:AddressLines>
+							<com:AddressLine1>##senderAddressLine1##</com:AddressLine1>
+							<com:AddressLine2>##senderAddressLine2##</com:AddressLine2>
+							<com:AddressLine3>##senderAddressLine3##</com:AddressLine3>
+							<com:AddressLine4>##senderAddressLine4##</com:AddressLine4>
+							<com:AddressLine5>##senderAddressLine5##</com:AddressLine5>
+							<com:AddressLine6>##senderAddressLine6##</com:AddressLine6>
+						</com:AddressLines>
+						<com:Country>FRANCE</com:Country>
+						<com:CountryCode>FR</com:CountryCode>
+					</com:PaperAddress>
+				</pjs:Sender>
+			</pjs:Senders>
+			<pjs:DocumentData>
+				<pjs:Documents>
+					<pjs:Document Id="1">
+						<com:Content>
+							<com:Uri>##sendingId##.001</com:Uri>
+						</com:Content>
+					</pjs:Document>
+				</pjs:Documents>
+			</pjs:DocumentData>
+			<pjs:Folds>
+				<pjs:Fold Id="1">
+					<pjs:RecipientId>1</pjs:RecipientId>
+					<pjs:SenderId>1</pjs:SenderId>
+					<pjs:Documents>
+						<pjs:Document DocumentId="1"/>
+					</pjs:Documents>
+				</pjs:Fold>
+			</pjs:Folds>
+			<pjs:Notifications>
+				<pjs:Notification Type="GENERAL">
+					<spec:Format>XML</spec:Format>
+					<spec:Protocols>
+						<spec:Protocol>
+							<spec:Ftp/>
+						</spec:Protocol>
+					</spec:Protocols>
+				</pjs:Notification>
+			</pjs:Notifications>
+			<pjs:Options>
+				<pjs:RequestOption>
+					<spec:PaperOption>
+						<spec:FoldOption>
+							<spec:EnvelopeType>C4</spec:EnvelopeType>
+							<spec:PostageClass>RECOMMANDE_AR</spec:PostageClass>
+							<spec:DocumentOption>
+								<spec:PrintDuplex>##duplexPrinting##</spec:PrintDuplex>
+							</spec:DocumentOption>
+						</spec:FoldOption>
+					</spec:PaperOption>
+				</pjs:RequestOption>
+			</pjs:Options>
+		</pjs:Request>
+	</pjs:Requests>
+	<pjs:User AuthType="PLAINTEXT">
+		<pjs:Login>##login##</pjs:Login>
+		<pjs:Password>##password##</pjs:Password>
+	</pjs:User>
+</pjs:Campaign>
