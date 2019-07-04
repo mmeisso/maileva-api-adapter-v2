@@ -27,7 +27,7 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 class MailevaApiAdapter
 {
 
-    const MEMCACHE_SIMILAR_DURATION = 60 * 60 * 8;
+    const MEMCACHE_SIMILAR_DURATION = 60 * 60 * 24 * 7;
     /** @var MailevaConnection|null */
     private $mailevaConnection = null;
     private $access_token = null;
