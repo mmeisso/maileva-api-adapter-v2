@@ -20,6 +20,7 @@ class MailevaSending
     const POSTAGE_TYPE_LRCOPRO = 'LRCOPRO';
     const UID_METHOD_PDFTEXT = 'UID_METHOD_PDFTEXT';
     const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
+    const MAX_MB_FILE_MAILEVA = 10000000; #10MO
     /**@var String */
     Private $addressLine1 = null;
     /**@var String */
@@ -650,6 +651,12 @@ class MailevaSending
                 if (!file_exists($value)) {
                     throw new MailevaParameterException('file ' . $value . ' not found');
                 }
+                if(!in_array($mailevaApiAdapter->getType(),  [MailevaConnection::LRCOPRO])) {
+                    if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
+                        throw new MailevaParameterException('The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB');
+                    }
+                }
+
             }
         }
 

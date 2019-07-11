@@ -25,7 +25,7 @@ class MailevaSendingCest
     {
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #WRONG FILE PATH
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setFile('toto');
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -37,6 +37,35 @@ class MailevaSendingCest
 
     /**
      * @param \UnitTester $I
+     * @group fileMoreTenMb
+     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     */
+    public function FileMoreThanTenMB(\UnitTester $I)
+    {
+        foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE()] as $mailevaApiAdapter) {
+            #File More 10 MB
+            /** @var MailevaSending $mailevaSending */
+            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+                function () use ($mailevaSending, $mailevaApiAdapter) {
+                    $mailevaSending->validate($mailevaApiAdapter);
+                });
+        }
+
+        /** @var MailevaApiAdapter $mailevaApiAdapter */
+        $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
+        /** @var MailevaSending $mailevaSending */
+        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+        $mailevaSending->validate($mailevaApiAdapter);
+
+
+    }
+
+
+    /**
+     * @param \UnitTester $I
      *
      * @group address
      */
@@ -45,7 +74,7 @@ class MailevaSendingCest
 
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #ADDRESS LINE1 && ADDRESS LINE2 EMPTY
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine1('');
             $mailevaSending->setAddressLine2('');
@@ -55,7 +84,7 @@ class MailevaSendingCest
                 });
 
             #ADDRESS LINE6 EMPTY
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -64,7 +93,7 @@ class MailevaSendingCest
                 });
 
             #TOO LONG ADDRESS LINE
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(39, 39));
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -75,7 +104,7 @@ class MailevaSendingCest
 
         foreach ([$I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #SENDER ADDRESSLINE1 && SENDER ADDRESS LINE2 EMPTY
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1('');
             $mailevaSending->setSenderAddressLine2('');
@@ -85,7 +114,7 @@ class MailevaSendingCest
                 });
 
             #SENDER ADDRESS LINE6 EMPTY
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -94,7 +123,7 @@ class MailevaSendingCest
                 });
 
             #TOO LONG SENDER ADDRESS LINE
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1(Factory::create('fr_FR')->password(39, 39));
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -113,7 +142,7 @@ class MailevaSendingCest
     {
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #WRONG NOTIFICATION EMAIL
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
@@ -121,7 +150,7 @@ class MailevaSendingCest
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
 
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+            /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
             $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
