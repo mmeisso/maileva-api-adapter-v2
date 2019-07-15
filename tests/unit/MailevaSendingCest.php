@@ -9,6 +9,7 @@
 namespace MailevaApiAdapter\tests\unit;
 
 use Faker\Factory;
+use MailevaApiAdapter\App\Exception\MailevaParameterException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
 use MailevaApiAdapter\App\MailevaSending;
@@ -28,7 +29,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setFile('toto');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -38,7 +39,7 @@ class MailevaSendingCest
     /**
      * @param \UnitTester $I
      * @group fileMoreTenMb
-     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     * @throws MailevaParameterException
      */
     public function FileMoreThanTenMB(\UnitTester $I)
     {
@@ -47,7 +48,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -63,11 +64,10 @@ class MailevaSendingCest
 
     }
 
-
     /**
      * @param \UnitTester $I
-     *
-     * @group address
+     * @group adresse
+     * @throws MailevaParameterException
      */
     public function addressValidation(\UnitTester $I)
     {
@@ -78,7 +78,7 @@ class MailevaSendingCest
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine1('');
             $mailevaSending->setAddressLine2('');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -87,7 +87,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -96,7 +96,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(39, 39));
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -108,7 +108,7 @@ class MailevaSendingCest
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1('');
             $mailevaSending->setSenderAddressLine2('');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -117,7 +117,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -126,7 +126,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1(Factory::create('fr_FR')->password(39, 39));
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -145,7 +145,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -153,7 +153,7 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaParameterException::class,
+            $I->expectException(MailevaParameterException::class,
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -203,6 +203,7 @@ class MailevaSendingCest
             $I->assertNotEquals($mailevaSendingCopy1->getUid(), $mailevaSendingCopy2->getUID(), 'Check different detected');
         }
     }
+
 
     private function copyMailevaSending(MailevaSending $mailevaSendingSrc, MailevaSending $mailevaSendingDest, MailevaApiAdapter $mailevaApiAdapter)
     {

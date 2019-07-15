@@ -337,7 +337,7 @@ class MailevaSending
 
         if (!in_array(strtoupper($postageType),
             [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO])) {
-            throw new MailevaParameterException('Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE);
+            throw new MailevaParameterException(MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO);
         }
 
         $this->postageType = strtoupper($postageType);
@@ -599,36 +599,40 @@ class MailevaSending
 
         if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
             if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
-                throw new MailevaParameterException('senderAddressLine1 || senderAddressLine2 not set');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADRESS_LINE_1_OR_2_NOT_SET,'senderAddressLine1 || senderAddressLine2 not set');
             }
 
             if (empty($fields['senderAddressLine6'])) {
-                throw new MailevaParameterException('senderAddressLine6 not set');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADRESS_LINE_6_NOT_SET,
+                    'senderAddressLine6 not set');
             }
 
             if (empty($fields['notificationEmail'])) {
-                throw new MailevaParameterException('notificationEmail not set');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_NOTIFICATION_EMAIL_NOT_SET, 'notificationEmail not set');
             }
         }
 
         if (empty($fields['addressLine1']) && empty($fields['addressLine2'])) {
-            throw new MailevaParameterException('addressLine1 || addressLine2 not set');
+            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADRESS_LINE_1_OR_2_NOT_SET,
+                'addressLine1 || addressLine2 not set');
         }
 
         if (empty($fields['addressLine6'])) {
-            throw new MailevaParameterException('addressLine6 not set');
+            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADRESS_LINE_6_NOT_SET, 'addressLine6 not set');
         }
 
         if (!empty($fields['notificationEmail'])) {
             if (!preg_match(self::EMAIL_REGEX, $fields['notificationEmail'])) {
-                throw new MailevaParameterException('Wrong email syntax on notificationEmail parameter');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_WRONG_EMAIL_SYNTAX_NOTIFICATION,
+                    'Wrong email syntax on notificationEmail parameter');
             }
         }
 
         foreach ($fields as $key => $value) {
             if (stripos($key, 'addressLine') !== false) {
                 if (mb_strlen($value) > self::LINE_ADDRESS_MAX_LENGTH) {
-                    throw new MailevaParameterException('too long address on ' . $key . ' : ' . $value);
+                    throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_TOO_LONG_ADRESSE,
+                        'too long address on ' . $key . ' : ' . $value);
                 }
             }
         }
@@ -649,11 +653,13 @@ class MailevaSending
 
             if ($key === 'file') {
                 if (!file_exists($value)) {
-                    throw new MailevaParameterException('file ' . $value . ' not found');
+                    throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND, 'file ' . $value . ' not found');
                 }
-                if(!in_array($mailevaApiAdapter->getType(),  [MailevaConnection::LRCOPRO])) {
+                if (!in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRCOPRO])) {
                     if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
-                        throw new MailevaParameterException('The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB');
+                        throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
+                            'The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB');
+
                     }
                 }
 
