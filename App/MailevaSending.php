@@ -599,11 +599,11 @@ class MailevaSending
 
         if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
             if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADRESS_LINE_1_OR_2_NOT_SET,'senderAddressLine1 || senderAddressLine2 not set');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,'senderAddressLine1 || senderAddressLine2 not set');
             }
 
             if (empty($fields['senderAddressLine6'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADRESS_LINE_6_NOT_SET,
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_6_NOT_SET,
                     'senderAddressLine6 not set');
             }
 
@@ -613,12 +613,12 @@ class MailevaSending
         }
 
         if (empty($fields['addressLine1']) && empty($fields['addressLine2'])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADRESS_LINE_1_OR_2_NOT_SET,
+            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_1_OR_2_NOT_SET,
                 'addressLine1 || addressLine2 not set');
         }
 
         if (empty($fields['addressLine6'])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADRESS_LINE_6_NOT_SET, 'addressLine6 not set');
+            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_6_NOT_SET, 'addressLine6 not set');
         }
 
         if (!empty($fields['notificationEmail'])) {

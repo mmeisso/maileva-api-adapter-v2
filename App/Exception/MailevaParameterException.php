@@ -14,7 +14,7 @@ namespace MailevaApiAdapter\App\Exception;
  */
 class MailevaParameterException extends MailevaException
 {
-    /** POSTAGE TYPE DOES NOT MATCH */
+    /** Postage type does not match */
     CONST ERROR_POSTAGE_TYPE_DOES_NOT_MATCH = -138;
     /** A key in the array is not defined */
     CONST ERROR_MAILEVA_KEY_NOT_SET = -137;
