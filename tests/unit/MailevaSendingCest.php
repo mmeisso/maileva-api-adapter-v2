@@ -29,7 +29,8 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setFile('toto');
-            $I->expectException(MailevaParameterException::class,
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND,
+                'file toto not found'),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -47,8 +48,9 @@ class MailevaSendingCest
             #File More 10 MB
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
-            $I->expectException(MailevaParameterException::class,
+            $mailevaSending->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
+                'The file is too big :' . codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf the maximum is ' . MailevaSending::MAX_MB_FILE_MAILEVA . ' MB'),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -58,10 +60,8 @@ class MailevaSendingCest
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
         /** @var MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+        $mailevaSending->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
         $mailevaSending->validate($mailevaApiAdapter);
-
-
     }
 
     /**
@@ -78,7 +78,8 @@ class MailevaSendingCest
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine1('');
             $mailevaSending->setAddressLine2('');
-            $I->expectException(MailevaParameterException::class,
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_1_OR_2_NOT_SET,
+                "addressLine1 || addressLine2 not set"),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -87,7 +88,8 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
-            $I->expectException(MailevaParameterException::class,
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_6_NOT_SET,
+                "addressLine6 not set"),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -95,8 +97,10 @@ class MailevaSendingCest
             #TOO LONG ADDRESS LINE
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setAddressLine1(Factory::create('fr_FR')->password(39, 39));
-            $I->expectException(MailevaParameterException::class,
+            $addressLine1 = Factory::create('fr_FR')->password(39, 39);
+            $mailevaSending->setAddressLine1($addressLine1);
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_TOO_LONG_ADRESSE,
+                "too long address on addressLine1 : " .$addressLine1),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -108,7 +112,8 @@ class MailevaSendingCest
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1('');
             $mailevaSending->setSenderAddressLine2('');
-            $I->expectException(MailevaParameterException::class,
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,
+                "senderAddressLine1 || senderAddressLine2 not set"),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -116,8 +121,9 @@ class MailevaSendingCest
             #SENDER ADDRESS LINE6 EMPTY
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setAddressLine6('');
-            $I->expectException(MailevaParameterException::class,
+            $mailevaSending->setSenderAddressLine6('');
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_6_NOT_SET,
+                "senderAddressLine6 not set"),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -125,8 +131,10 @@ class MailevaSendingCest
             #TOO LONG SENDER ADDRESS LINE
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setSenderAddressLine1(Factory::create('fr_FR')->password(39, 39));
-            $I->expectException(MailevaParameterException::class,
+            $senderAddressLine1 = Factory::create('fr_FR')->password(39, 39);
+            $mailevaSending->setSenderAddressLine1($senderAddressLine1);
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_TOO_LONG_ADRESSE,
+                "too long address on senderAddressLine1 : " .$senderAddressLine1),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
@@ -145,18 +153,12 @@ class MailevaSendingCest
             /** @var MailevaSending $mailevaSending */
             $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
-            $I->expectException(MailevaParameterException::class,
+            $I->expectThrowable(new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_WRONG_EMAIL_SYNTAX_NOTIFICATION,
+                "Wrong email syntax on notificationEmail parameter"),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter);
                 });
 
-            /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setNotificationEmail('zzz@');
-            $I->expectException(MailevaParameterException::class,
-                function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
-                });
         }
     }
 
@@ -203,7 +205,6 @@ class MailevaSendingCest
             $I->assertNotEquals($mailevaSendingCopy1->getUid(), $mailevaSendingCopy2->getUID(), 'Check different detected');
         }
     }
-
 
     private function copyMailevaSending(MailevaSending $mailevaSendingSrc, MailevaSending $mailevaSendingDest, MailevaApiAdapter $mailevaApiAdapter)
     {

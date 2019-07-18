@@ -50,7 +50,7 @@ class MailevaParameterException extends MailevaException
     public function __construct($errorCode, $message = '', $code = 0, \Throwable $previous = null)
     {
         $this->errorCode = $errorCode;
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $this->errorCode, $previous);
 
     }
 

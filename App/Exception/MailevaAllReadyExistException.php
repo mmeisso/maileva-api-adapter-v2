@@ -16,6 +16,10 @@ namespace MailevaApiAdapter\App\Exception;
 class MailevaAllReadyExistException extends MailevaException
 {
 
+
+    /** Same mailevaSending has already been sent with sendingId  */
+    CONST ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID = -139;
+
     /** @var Integer */
     private $errorCode;
 
@@ -30,14 +34,10 @@ class MailevaAllReadyExistException extends MailevaException
     public function __construct($errorCode, $message = '', $code = 0, \Throwable $previous = null)
     {
         $this->errorCode = $errorCode;
-        parent::__construct($message, $code, $previous);
+
+        parent::__construct($message, $this->errorCode, $previous);
 
     }
-
-    /** Same mailevaSending has already been sent with sendingId  */
-    CONST ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID = -139;
-    /** Same mailevaSending has already been sent with sendingId  */
-    CONST ERROR_SAME_MAILEVASENDING_THE_LRCOPRO_HAS_ALREADY_BEEN_SENT= -140;
 
     /**
      * @var array

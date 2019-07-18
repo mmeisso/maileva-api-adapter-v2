@@ -382,12 +382,12 @@ class MailevaApiAdapter
                                     $responseAsArray['status'] = MailevaSendingStatus::SUBMIT_ERROR;
                                 }
 
-                                $responseAsArray['creation_date']     = (string)$xml->Request->ReceptionDate[0];
-                                $responseAsArray['postage_type']      = (string)$xml->Request->PaperOptions->PostageClass[0];
-                                $responseAsArray['pages_count']       = (string)$xml->Request->PaperOptions->PageCount[0];
-                                $responseAsArray['documents_count']   = (string)$xml->Request->PaperOptions->DocumentCount[0];
-                                $responseAsArray['billed_page_count'] = (string)$xml->Request->PaperOptions->BilledPageCount[0];
-                                $responseAsArray['deposit_id'] = (string)$xml->Request->DepositId[0];
+                                $responseAsArray['creation_date']            = (string)$xml->Request->ReceptionDate[0];
+                                $responseAsArray['postage_type']             = (string)$xml->Request->PaperOptions->PostageClass[0];
+                                $responseAsArray['pages_count']              = (string)$xml->Request->PaperOptions->PageCount[0];
+                                $responseAsArray['documents_count']          = (string)$xml->Request->PaperOptions->DocumentCount[0];
+                                $responseAsArray['billed_page_count']        = (string)$xml->Request->PaperOptions->BilledPageCount[0];
+                                $responseAsArray['deposit_id']               = (string)$xml->Request->DepositId[0];
                                 $responseAsArray['expected_production_date'] = (string)$xml->Request->ExpectedProductionDate[0];
 
                                 if ($xml->Request->PaperOptions->PrintDuplex[0]) {
@@ -673,10 +673,12 @@ class MailevaApiAdapter
             if ($sendingIdSimilarPrevious !== false) {
                 if ($this->getType() !== MailevaConnection::LRCOPRO) {
                     $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
-                    $allReadyExistException       = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+                    $allReadyExistException       = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
+                        "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
                     $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
                 } else {
-                    $allReadyExistException = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_THE_LRCOPRO_HAS_ALREADY_BEEN_SENT, "Same mailevaSending the LRCOPRO has already been sent");
+                    $allReadyExistException = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
+                        "Same mailevaSending the LRCOPRO has already been sent");
                 }
 
                 throw $allReadyExistException;
@@ -707,7 +709,7 @@ class MailevaApiAdapter
     private function prepareLRCOPRO(MailevaSending $mailevaSending): string
     {
 
-        $conn = null;
+        $conn      = null;
         $sendingId = null;
         try {
             $conn = ftp_connect($this->mailevaConnection->getHost());

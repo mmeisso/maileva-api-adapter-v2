@@ -1,4 +1,7 @@
 <?php
+
+use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
+
 /**
  * Created by PhpStorm.
  * User: loic
@@ -90,7 +93,7 @@ class MailevaSendingLRECest
 
         #ALREADY SEND EXCEPTION
         if ($I->getMailevaApiConnection()->useMemcache()) {
-            $I->expectException(\MailevaApiAdapter\App\Exception\MailevaException::class, function () use ($mailevaSending, $mailevaApiAdapter) {
+            $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending has already been sent with sendingId " . $sendingId), function () use ($mailevaSending, $mailevaApiAdapter) {
                 $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
                 $mailevaApiAdapter->submit($sendingId);
             });

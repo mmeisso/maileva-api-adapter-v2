@@ -1,5 +1,6 @@
 <?php
 
+use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
 use MailevaApiAdapter\App\MailevaSendingStatus;
 
 /**
@@ -46,10 +47,6 @@ class MailevaSendingLRCOPROCest
 
 
         foreach ($arraySendingId as $sendingId => $mailevaSending){
-
-            echo PHP_EOL . 'WORK SENDING_ ID : ' . $sendingId . PHP_EOL;
-
-
             $result = [];
 
             #SENDING PROPERTIES
@@ -76,7 +73,7 @@ class MailevaSendingLRCOPROCest
 
             #ALREADY SEND EXCEPTION
             if ($I->getMailevaApiConnection()->useMemcache()) {
-                $I->expectException(\MailevaApiAdapter\App\Exception\MailevaException::class, function () use ($mailevaSending, $mailevaApiAdapter, $I) {
+                $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending the LRCOPRO has already been sent"), function () use ($mailevaSending, $mailevaApiAdapter, $I) {
                     $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
                     $mailevaApiAdapter->submit($sendingId);
                 });
