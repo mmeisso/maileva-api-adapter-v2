@@ -673,10 +673,10 @@ class MailevaApiAdapter
             if ($sendingIdSimilarPrevious !== false) {
                 if ($this->getType() !== MailevaConnection::LRCOPRO) {
                     $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
-                    $allReadyExistException       = new MailevaAllReadyExistException("Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
+                    $allReadyExistException       = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
                     $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
                 } else {
-                    $allReadyExistException = new MailevaAllReadyExistException("Same mailevaSending the LRCOPRO has already been sent");
+                    $allReadyExistException = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_THE_LRCOPRO_HAS_ALREADY_BEEN_SENT, "Same mailevaSending the LRCOPRO has already been sent");
                 }
 
                 throw $allReadyExistException;
