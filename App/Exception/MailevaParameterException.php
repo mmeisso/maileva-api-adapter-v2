@@ -10,10 +10,12 @@ namespace MailevaApiAdapter\App\Exception;
 
 /**
  * Class MailevaParameterException
+ *
  * @package MailevaApiAdapter\App\Exception
  */
 class MailevaParameterException extends MailevaException
 {
+
     /** Postage type does not match */
     CONST ERROR_POSTAGE_TYPE_DOES_NOT_MATCH = -138;
     /** A key in the array is not defined */
@@ -36,30 +38,16 @@ class MailevaParameterException extends MailevaException
     CONST ERROR_MAILEVA_FILE_NOT_FOUND = -129;
     /** This file is too big. */
     CONST ERROR_MAILEVA_FILE_IS_TOO_BIG = -128;
-    /** @var Integer */
-    private $errorCode;
 
     /**
      * MailevaParameterException constructor.
      *
-     * @param                 $errorCode
      * @param string          $message
      * @param int             $code
      * @param \Throwable|null $previous
      */
-    public function __construct($errorCode, $message = '', $code = 0, \Throwable $previous = null)
+    public function __construct($code = 0, $message = '', \Throwable $previous = null)
     {
-        $this->errorCode = $errorCode;
-        parent::__construct($message, $this->errorCode, $previous);
-
+        parent::__construct($message, $code, $previous);
     }
-
-    /**
-     * @return Int
-     */
-    public function getErrorCode(): int
-    {
-        return $this->errorCode;
-    }
-
 }
