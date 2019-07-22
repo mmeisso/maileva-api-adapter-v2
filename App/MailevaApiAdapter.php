@@ -416,6 +416,8 @@ class MailevaApiAdapter
                             continue;
                         }
                         fclose($handle);
+                    } else {
+                        throw new MailevaException('Unable to access file '.$tmpLocalFile);
                     }
                 }
             }
@@ -666,16 +668,13 @@ class MailevaApiAdapter
             if ($this->mailevaConnection->useMemcache() === false) {
                 throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
             }
-            $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
-                $this->mailevaConnection->getMemcachePort())->get($mailevaSending->getUID()[0],
-                false);
+            $sendingIdSimilarPrevious = $this->getSimilarPreviousAlreadyBeenSent($mailevaSending);
 
-            if ($sendingIdSimilarPrevious !== false) {
+            if ($sendingIdSimilarPrevious[0] !== false) {
                 if ($this->getType() !== MailevaConnection::LRCOPRO) {
-                    $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
                     $allReadyExistException       = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
-                        "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious);
-                    $allReadyExistException->setPreviousMailevaSending($previousSimilarMailevaSimple);
+                        "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious[1]['id']);
+                    $allReadyExistException->setPreviousMailevaSending($sendingIdSimilarPrevious[1]);
                 } else {
                     $allReadyExistException = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
                         "Same mailevaSending the LRCOPRO has already been sent");
@@ -697,6 +696,36 @@ class MailevaApiAdapter
                 break;
             default:
                 throw new MailevaException('Type not available');
+        }
+    }
+
+    /**
+     * @param MailevaSending $mailevaSending
+     *
+     * @return array
+     * @throws Exception\RoutingException
+     * @throws MailevaException
+     * @throws MailevaResponseException
+     */
+    public function getSimilarPreviousAlreadyBeenSent(MailevaSending $mailevaSending): array
+    {
+        if ($this->mailevaConnection->useMemcache() === false) {
+            throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
+        }
+
+        $sendingIdSimilarPrevious = MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
+            $this->mailevaConnection->getMemcachePort())->get($mailevaSending->getUID()[0],
+            false);
+
+        if (false === $sendingIdSimilarPrevious) {
+            return [false, null];
+        } else {
+            if ($this->getType() !== MailevaConnection::LRCOPRO) {
+                $previousSimilarMailevaSimple = $this->getSendingBySendingId($sendingIdSimilarPrevious)->getResponseAsArray();
+                return [true, $previousSimilarMailevaSimple];
+            } else {
+                return [true, null];
+            }
         }
     }
 

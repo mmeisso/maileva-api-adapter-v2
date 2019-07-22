@@ -9,7 +9,6 @@ use MailevaApiAdapter\App\MailevaSendingStatus;
  * Date: 18/09/2018
  * Time: 15:19
  */
-
 class MailevaSendingLRCOPROCest
 {
 
@@ -31,22 +30,26 @@ class MailevaSendingLRCOPROCest
         /** @var \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
 
-        for($i = 1; $i <= 5; $i++){
+        //for($i = 1; $i <= 5; $i++){
 
-            /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
 
-            echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
+        echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
 
-            $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
-            echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
-            $I->assertNotEmpty($sendingId);
-            $mailevaApiAdapter->submit($sendingId);
-            $arraySendingId[$sendingId] = $mailevaSending;
-        }
+        $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
+        $I->assertFalse($similarPrevisionSendingResult[0]);
+        $I->assertNull($similarPrevisionSendingResult[1]);
 
+        $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
+        echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
+        $I->assertNotEmpty($sendingId);
 
-        foreach ($arraySendingId as $sendingId => $mailevaSending){
+        $mailevaApiAdapter->submit($sendingId);
+        $arraySendingId[$sendingId] = $mailevaSending;
+        //}
+
+        foreach ($arraySendingId as $sendingId => $mailevaSending) {
             $result = [];
 
             #SENDING PROPERTIES
@@ -63,6 +66,7 @@ class MailevaSendingLRCOPROCest
             }
 
 
+
             $I->assertEquals($result['id'], $sendingId);
             $I->assertEquals($result['postage_type'], 'RECOMMANDE_AR');
             $I->assertEquals($result['color_printing'], $mailevaSending->isColorPrinting());
@@ -73,12 +77,16 @@ class MailevaSendingLRCOPROCest
 
             #ALREADY SEND EXCEPTION
             if ($I->getMailevaApiConnection()->useMemcache()) {
-                $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending the LRCOPRO has already been sent"), function () use ($mailevaSending, $mailevaApiAdapter, $I) {
+                $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
+                $I->assertEquals($similarPrevisionSendingResult[0], true);
+                $I->assertNull($similarPrevisionSendingResult[1]);
+
+                $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
+                    "Same mailevaSending the LRCOPRO has already been sent"), function () use ($mailevaSending, $mailevaApiAdapter, $I) {
                     $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
                     $mailevaApiAdapter->submit($sendingId);
                 });
             }
         }
-
     }
 }

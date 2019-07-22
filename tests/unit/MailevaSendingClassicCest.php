@@ -34,6 +34,12 @@ class MailevaSendingClassicCest
 
         echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
 
+
+        $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
+        $I->assertFalse($similarPrevisionSendingResult[0]);
+        $I->assertNull($similarPrevisionSendingResult[1]);
+
+
         $sendingId = $mailevaApiAdapter->prepare($mailevaSending, $I->getMailevaApiConnection()->useMemcache());
         echo PHP_EOL . 'SENDING_ ID : ' . $sendingId . PHP_EOL;
 
@@ -89,11 +95,20 @@ class MailevaSendingClassicCest
 
         #ALREADY SEND EXCEPTION
         if ($I->getMailevaApiConnection()->useMemcache()) {
+
+            $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
+            $I->assertEquals($similarPrevisionSendingResult[0], true);
+            $similarPrevisionMailevaSending = $similarPrevisionSendingResult[1];
+            $I->assertEquals($similarPrevisionMailevaSending['id'],$sendingId);
+
             $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID, "Same mailevaSending has already been sent with sendingId " . $sendingId) ,function () use ($mailevaSending, $mailevaApiAdapter) {
 
                 $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
                 $mailevaApiAdapter->submit($sendingId);
             });
+
+
+
         }
     }
 }

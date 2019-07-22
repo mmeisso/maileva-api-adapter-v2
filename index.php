@@ -137,7 +137,7 @@ $oups = 'e7db7f6e-e8f6-4e9c-97e2-5682479831cf';
 $duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
 $duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
 
-$sendingId =  $duxplexOff;
+$sendingId =  "ff0808e3-3893-4070-941b-88ac8cf02f9b";
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
 //die;
