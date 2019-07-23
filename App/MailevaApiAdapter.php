@@ -18,6 +18,7 @@ use MailevaApiAdapter\App\Core\Routing;
 use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
 use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
+use Throwable;
 
 /**
  * Class MailevaApiAdapter
@@ -421,7 +422,7 @@ class MailevaApiAdapter
                     }
                 }
             }
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
             throw new MailevaException('Function : getSendingStatusById : Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(),
                 $t->getCode(), $t);
         } finally {
@@ -472,7 +473,7 @@ class MailevaApiAdapter
                 unlink($mailevaResponseLRCOPRO->getResponseAsArray()['filePathTmp']);
                 return true;
             }
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
             error_log($t);
             return false;
         }
@@ -656,6 +657,7 @@ class MailevaApiAdapter
      * @return string
      * @throws Exception\MailevaParameterException
      * @throws Exception\RoutingException
+     * @throws MailevaAllReadyExistException
      * @throws MailevaException
      * @throws MailevaResponseException
      */
@@ -816,7 +818,7 @@ class MailevaApiAdapter
                 MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(),
                     $this->mailevaConnection->getMemcachePort())->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
             }
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
             throw new MailevaException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
         } finally {
             if (null !== $conn) {
