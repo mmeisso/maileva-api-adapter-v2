@@ -2,7 +2,9 @@
 
 namespace MailevaApiAdapter\App;
 
+use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
+use PdfUtil\Exception\PdfReportException;
 
 /**
  * Class MailevaSending
@@ -22,54 +24,56 @@ class MailevaSending
     const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
     const MAX_MB_FILE_MAILEVA = 10485760; #10MO
     /**@var String */
-    Private $addressLine1 = null;
+    private $addressLine1 = null;
     /**@var String */
-    Private $addressLine2 = null;
+    private $addressLine2 = null;
     /**@var String */
-    Private $addressLine3 = '';
+    private $addressLine3 = '';
     /**@var String */
-    Private $addressLine4 = '';
+    private $addressLine4 = '';
     /**@var String */
-    Private $addressLine5 = '';
+    private $addressLine5 = '';
     /**@var String */
-    Private $addressLine6 = null;
+    private $addressLine6 = null;
     /**@var Bool */
-    Private $colorPrinting = null;
+    private $colorPrinting = null;
     /**@var String */
-    Private $countryCode = 'FR';
+    private $countryCode = 'FR';
     /**@var String */
-    Private $customId = null;
+    private $customId = null;
     /**@var Bool */
-    Private $duplexPrinting = null;
+    private $duplexPrinting = null;
     /**@var String */
-    Private $file = null;
+    private $file = null;
     /**@var String */
-    Private $filename = null;
+    private $filename = null;
     /**@var Int */
-    Private $filepriority = 1;
+    private $filepriority = 1;
     /**@var String */
-    Private $name = null;
+    private $name = null;
     /**@var String */
-    Private $notificationEmail = null;
+    private $notificationEmail = null;
     /**@var Bool */
-    Private $optionalAddressSheet = null;
+    private $optionalAddressSheet = null;
     /**@var String */
-    Private $postageType = null;
+    private $postageType = null;
     #LRE
     /**@var String */
-    Private $senderAddressLine1 = null;
+    private $senderAddressLine1 = null;
     /**@var String */
-    Private $senderAddressLine2 = null;
+    private $senderAddressLine2 = null;
     /**@var String */
-    Private $senderAddressLine3 = '';
+    private $senderAddressLine3 = '';
     /**@var String */
-    Private $senderAddressLine4 = '';
+    private $senderAddressLine4 = '';
     /**@var String */
-    Private $senderAddressLine5 = '';
+    private $senderAddressLine5 = '';
     /**@var String */
-    Private $senderAddressLine6 = null;
+    private $senderAddressLine6 = null;
     /**@var String */
-    Private $senderCountryCode = 'FR';
+    private $senderCountryCode = 'FR';
+    /** @var int */
+    private $nbPage = null;
 
     /**
      * @return String
@@ -337,7 +341,8 @@ class MailevaSending
 
         if (!in_array(strtoupper($postageType),
             [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO);
+            throw new MailevaParameterException(MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,
+                'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO);
         }
 
         $this->postageType = strtoupper($postageType);
@@ -505,11 +510,26 @@ class MailevaSending
         $pdfText = '';
 
         try {
-            $tmp     = tempnam("/tmp", uniqid("", true));
-            $command = 'pdftotext ' . $this->getFile() . ' ' . $tmp;
-            exec($command);
-            $pdfText = preg_replace('/\s+/', '', file_get_contents($tmp));
-            @unlink($tmp);
+            for ($pageNumber = 1; $pageNumber <= $this->getNbPage(); $pageNumber++) {
+                $tmp     = tempnam("/tmp", uniqid("", true));
+                $command = 'pdftotext -f ' . $pageNumber . ' -l ' . $pageNumber . ' ' . $this->getFile() . ' ' . $tmp;
+                exec($command);
+                $pdfText = preg_replace('/\s+/', '', file_get_contents($tmp));
+                if (strlen($pdfText) < 30) {
+                    $pdfText = '';
+                    @unlink($tmp);
+                    break;
+                }
+                @unlink($tmp);
+            }
+
+            if ($pdfText !== '') {
+                $tmp     = tempnam("/tmp", uniqid("", true));
+                $command = 'pdftotext ' . $this->getFile() . ' ' . $tmp;
+                exec($command);
+                $pdfText = preg_replace('/\s+/', '', file_get_contents($tmp));
+                @unlink($tmp);
+            }
         } catch (\Throwable $t) {
             error_log($t);
         }
@@ -528,6 +548,38 @@ class MailevaSending
             $getSenderAddressLine1 . $getSenderAddressLine2 . $getSenderAddressLine3 . $getSenderAddressLine4 . $getSenderAddressLine5 . $getSenderAddressLine6;
 
         return [md5($key) . substr(base64_encode($key), 0, 30), $method];
+    }
+
+    /**
+     * @return int
+     * @throws MailevaException
+     */
+    public function getNbPage(): int
+    {
+        if (false === is_null($this->nbPage)) {
+            return $this->nbPage;
+        }
+
+        $this->nbPage = 0;
+        $commandList  = [
+            "pdfinfo " . escapeshellarg($this->getFile()) . " 2>/dev/null | grep Pages | awk '{print $2}'",
+            'pdftk ' . escapeshellarg($this->getFile()) . " dump_data | sed '/NumberOfPages/!d;s/[^0-9]*//'",
+            'echo $(strings < ' . escapeshellarg($this->getFile()) . ' | sed -n \'s|.*/Count -\{0,1\}\([0-9]\{1,\}\).*|\1|p\' | sort -rn | head -n 1)'
+        ];
+
+        foreach ($commandList as $command) {
+            $output = [];
+            exec($command, $output, $result);
+            if (isset($output[0]) && intval($output[0]) > 0) {
+                $this->nbPage = (int)$output[0];
+                break;
+            }
+        }
+        if ($this->nbPage === 0) {
+            throw new MailevaException('Impossible to get page number from ' . $this->getFile());
+        }
+
+        return $this->nbPage;
     }
 
     /**
@@ -599,7 +651,8 @@ class MailevaSending
 
         if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
             if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,'senderAddressLine1 || senderAddressLine2 not set');
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,
+                    'senderAddressLine1 || senderAddressLine2 not set');
             }
 
             if (empty($fields['senderAddressLine6'])) {
@@ -645,6 +698,7 @@ class MailevaSending
         unset($fields['senderAddressLine2']);
         unset($fields['senderAddressLine6']);
         unset($fields['notificationEmail']);
+        unset($fields['nbPage']);
 
         foreach ($fields as $key => $value) {
             if (is_null($value)) {
@@ -659,10 +713,8 @@ class MailevaSending
                     if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
                         throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
                             'The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB');
-
                     }
                 }
-
             }
         }
 
