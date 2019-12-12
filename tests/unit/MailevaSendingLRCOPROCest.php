@@ -55,7 +55,12 @@ class MailevaSendingLRCOPROCest
             #SENDING PROPERTIES
             for ($i = 1; $i <= 20; $i++) {
 
-                $result = $mailevaApiAdapter->getSendingBySendingId($sendingId)->getResponseAsArray();
+                try {
+                    $result = $mailevaApiAdapter->getSendingBySendingId($sendingId)->getResponseAsArray();
+                } catch (\MailevaApiAdapter\App\Exception\MailevaResponseException $e) {
+                } catch (\MailevaApiAdapter\App\Exception\RoutingException $e) {
+                } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
+                }
 
                 if (null === $result || array_key_exists('status', $result) === false || $result['status'] !== MailevaSendingStatus::ACCEPTED) {
                     echo PHP_EOL . 'Waiting  status : ' . MailevaSendingStatus::ACCEPTED . ' loop ' . $i . PHP_EOL;

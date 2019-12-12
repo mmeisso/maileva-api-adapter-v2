@@ -20,6 +20,15 @@ class Unit extends \Codeception\Module
     const CLIENT_SECRET = '3151dfc6-fbab-4597-86f9-fa7ecb799137';
     const USERNAME = 'sandbox.1567';
     const PASSWORD = 'o93126';
+
+    //    const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
+//    const HOST = 'https://api.release.maileva.net';
+//    const CLIENT_ID = '7ea15580beed2a04b1e3290ffa37a11a';
+//    const CLIENT_SECRET = '03ce163ef4946c2ee36d4178e10653f6';
+//    const USERNAME = 'sandbox.48175';
+//    const PASSWORD = 'wshq4e';
+
+
     const FTP_HOST = 'ftp.recette.maileva.com';
     const FTP_USERNAME = 'sandbox.1662';
     const FTP_PASSWORD = 'lfqcs7';

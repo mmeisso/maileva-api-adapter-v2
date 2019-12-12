@@ -333,6 +333,7 @@ class MailevaApiAdapter
      *
      * @return MailevaResponseLRCOPRO
      * @throws MailevaException
+     * @throws MailevaResponseException
      */
     private function getSendingBySendingIdLRCOPRO(string $sendingId): MailevaResponseLRCOPRO
     {
@@ -418,7 +419,7 @@ class MailevaApiAdapter
                         }
                         fclose($handle);
                     } else {
-                        throw new MailevaException('Unable to access file '.$tmpLocalFile);
+                        throw new MailevaException('Unable to access file ' . $tmpLocalFile);
                     }
                 }
             }
@@ -427,9 +428,13 @@ class MailevaApiAdapter
                 $t->getCode(), $t);
         } finally {
             if (null !== $conn) {
-
                 ftp_close($conn);
             }
+
+            if (empty($mailevaResponseLRCOPRO->getResponseAsArray())) {
+                throw new MailevaResponseException('Unable to retrieve by sendingId ' . $sendingId);
+            }
+
             return $mailevaResponseLRCOPRO;
         }
     }
@@ -674,7 +679,7 @@ class MailevaApiAdapter
 
             if ($sendingIdSimilarPrevious[0] !== false) {
                 if ($this->getType() !== MailevaConnection::LRCOPRO) {
-                    $allReadyExistException       = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
+                    $allReadyExistException = new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
                         "Same mailevaSending has already been sent with sendingId " . $sendingIdSimilarPrevious[1]['id']);
                     $allReadyExistException->setPreviousMailevaSending($sendingIdSimilarPrevious[1]);
                 } else {
