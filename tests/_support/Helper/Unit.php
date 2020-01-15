@@ -14,14 +14,14 @@ use MailevaApiAdapter\App\MailevaSending;
 class Unit extends \Codeception\Module
 {
 
-    const AUTHENTICATION_HOST = 'https://api.sandbox.aws.maileva.net';
-    const HOST = 'https://api.sandbox.aws.maileva.net';
+    const AUTHENTICATION_HOST = 'https://api.sandbox.maileva.net';
+    const HOST = 'https://api.sandbox.maileva.net';
     const CLIENT_ID = '2382a479-a4a6-4618-9854-0dbd6bcec849';
     const CLIENT_SECRET = '3151dfc6-fbab-4597-86f9-fa7ecb799137';
     const USERNAME = 'sandbox.1567';
     const PASSWORD = 'o93126';
 
-    //    const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
+//        const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
 //    const HOST = 'https://api.release.maileva.net';
 //    const CLIENT_ID = '7ea15580beed2a04b1e3290ffa37a11a';
 //    const CLIENT_SECRET = '03ce163ef4946c2ee36d4178e10653f6';

@@ -133,11 +133,11 @@ $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 ////testPost($mailevaApiAdapter);
 ////die;
 //
-$oups = 'e7db7f6e-e8f6-4e9c-97e2-5682479831cf';
-$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
-$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
+//$oups = 'e7db7f6e-e8f6-4e9c-97e2-5682479831cf';
+//$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
+//$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
 
-$sendingId =  "ff0808e3-3893-4070-941b-88ac8cf02f9b";
+$sendingId =  "0f90df93-8558-43dc-b2be-5a113802e49c";
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
 //die;

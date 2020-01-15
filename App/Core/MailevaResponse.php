@@ -74,10 +74,9 @@ class MailevaResponse implements MailevaResponseInterface
 
                     $this->responseAsArray = json_decode($body, true);
 
-
                     if (array_key_exists(MailevaLREStatuses::DELIVERY_STATUSES, $this->responseAsArray)) {
-                        if (count($this->responseAsArray[MailevaLREStatuses::DELIVERY_STATUSES]) > 0){
-                            $mailevaLREStatuses    = new MailevaLREStatuses();
+                        if (count($this->responseAsArray[MailevaLREStatuses::DELIVERY_STATUSES]) > 0) {
+                            $mailevaLREStatuses = new MailevaLREStatuses();
                             $mailevaLREStatuses->setStatuses($this->responseAsArray[MailevaLREStatuses::DELIVERY_STATUSES]);
                             $this->responseAsArray[MailevaLREStatuses::DELIVERY_STATUSES] = $mailevaLREStatuses;
                         } else {
@@ -88,11 +87,14 @@ class MailevaResponse implements MailevaResponseInterface
             }
         } else {
             if ($statusCode === 201) {
-                if (array_key_exists('Location', $headers) && count($headers['Location']) > 0) {
-                    $asArray               = explode('/', $headers['Location'][0]);
-                    $this->responseAsArray = [
-                        'sendingId' => $asArray[count($asArray) - 1]
-                    ];
+                foreach (['Location', 'location'] as $headerLocationKey) {
+                    if (array_key_exists($headerLocationKey, $headers) && count($headers[$headerLocationKey]) > 0) {
+                        $asArray               = explode('/', $headers[$headerLocationKey][0]);
+                        $this->responseAsArray = [
+                            'sendingId' => $asArray[count($asArray) - 1]
+                        ];
+                        break;
+                    }
                 }
             }
         }

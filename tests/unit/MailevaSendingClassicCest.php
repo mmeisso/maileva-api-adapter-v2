@@ -9,6 +9,10 @@ use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
  * Time: 15:19
  */
 
+/**
+ * Class MailevaSendingClassicCest
+ * @group MailevaSendingClassicCest
+ */
 class MailevaSendingClassicCest
 {
 
