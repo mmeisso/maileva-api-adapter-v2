@@ -25,7 +25,7 @@ use MailevaApiAdapter\App\MailevaConnection;
 class Route
 {
 
-    const DEBUG = true;
+    const DEBUG = false;
     private $authenticatedRoute;
     private $body;
     private $file;
