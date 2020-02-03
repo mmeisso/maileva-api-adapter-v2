@@ -47,7 +47,7 @@ $mailevaConnectionSandBoxLRE
 $mailevaConnectionProdClassic = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnectionProdClassic
     ->setAuthenticationHost('https://connect.maileva.com')
-    ->setHost('https://api.maileva.com')
+    ->setHost('https://api.maileva.com/mail')
     ->setType(\MailevaApiAdapter\App\MailevaConnection::CLASSIC)
     ->setClientId('6ebf75c54d60440eaf1b07115bff0bc5')
     ->setClientSecret('3148349a1d19467f8c40f4f7dfa49454')
@@ -137,7 +137,7 @@ $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 //$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
 //$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
 
-$sendingId =  "0f90df93-8558-43dc-b2be-5a113802e49c";
+$sendingId =  "2c8785b7-8aa9-400e-90c4-a3b617762014";
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
 //die;

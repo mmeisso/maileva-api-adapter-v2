@@ -95,7 +95,7 @@ class MailevaSendingClassicCest
 
         $I->assertNotEmpty($result['id']);
         $I->assertEquals($result['name'], $mailevaSending->getFilename());
-        $I->assertEquals($result['type'], pathinfo($mailevaSending->getFile())['extension']);
+        //$I->assertEquals($result['type'], pathinfo($mailevaSending->getFile())['extension']);
 
         #ALREADY SEND EXCEPTION
         if ($I->getMailevaApiConnection()->useMemcache()) {

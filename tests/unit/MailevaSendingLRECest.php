@@ -3,10 +3,9 @@
 use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
 
 /**
- * Created by PhpStorm.
- * User: loic
- * Date: 18/09/2018
- * Time: 15:19
+ * Class MailevaSendingLRECest
+ *
+ * @group MailevaSendingLRECest
  */
 class MailevaSendingLRECest
 {

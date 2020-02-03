@@ -25,7 +25,7 @@ use MailevaApiAdapter\App\MailevaConnection;
 class Route
 {
 
-    const DEBUG = false;
+    const DEBUG = true;
     private $authenticatedRoute;
     private $body;
     private $file;
@@ -272,7 +272,7 @@ class Route
             if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
                 return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
             } else {
-                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
+                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v2' . $this->url;
             }
         } else {
             return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;

@@ -20,15 +20,23 @@ $mailevaConnectionSandBoxClassic
 
 $mailevaConnectionSandBoxLRE = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnectionSandBoxLRE
-    ->setAuthenticationHost('https://api.sandbox.aws.maileva.net')
-    ->setHost('https://api.sandbox.aws.maileva.net')
+    ->setAuthenticationHost('https://api.release.maileva.net')
+    ->setHost('https://api.release.maileva.net')
     ->setType(\MailevaApiAdapter\App\MailevaConnection::LRE)
-    ->setClientId('2382a479-a4a6-4618-9854-0dbd6bcec849')
-    ->setClientSecret('3151dfc6-fbab-4597-86f9-fa7ecb799137')
-    ->setUsername('sandbox.1567')
-    ->setPassword('o93126')
+    ->setClientId('7ea15580beed2a04b1e3290ffa37a11a')
+    ->setClientSecret('03ce163ef4946c2ee36d4178e10653f6')
+    ->setUsername('sandbox.48175')
+    ->setPassword('wshq4e')
     ->setMemcacheHost('localhost')
     ->setMemcachePort(11211);
+
+const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
+const HOST = 'https://api.release.maileva.net';
+const CLIENT_ID = '7ea15580beed2a04b1e3290ffa37a11a';
+const CLIENT_SECRET = '03ce163ef4946c2ee36d4178e10653f6';
+const USERNAME = 'sandbox.48175';
+const PASSWORD = 'wshq4e';
+
 
 $mailevaConnectionProdClassic = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnectionProdClassic
@@ -154,7 +162,7 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
     //var_dump($result->getResponseAsArray());
 }
 
-$mailevaApiAdapter = $mailevaApiAdapterProdLRE;
+$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 #$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 
 try {
@@ -162,11 +170,12 @@ try {
 #die;
 
 #PROD !
-    $sendingId = 'bd8aebee-c35d-4e08-b1f2-37d9e7aaeba5';
+    $sendingId = '63e00e0f-7f66-410e-9ced-b7ed4561a059';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
-    //debugSendingId($mailevaApiAdapter, $sendingId);
+    debugSendingId($mailevaApiAdapter, $sendingId);
+    die;
     $mailevaApiAdapter->getSendingBySendingId($sendingId);
     $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
     $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
