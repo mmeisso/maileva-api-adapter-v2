@@ -269,7 +269,7 @@ class Route
                 $subDirectory = 'registered_mail';
             }
 
-            if (strpos('sandbox', $this->getMailevaApiAdapter()->getHost()) > 1) {
+            if (strpos($this->getMailevaApiAdapter()->getHost(), 'sandbox') > 1) {
                 return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
             } else {
                 return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v2' . $this->url;

@@ -47,7 +47,7 @@ $mailevaConnectionSandBoxLRE
 $mailevaConnectionProdClassic = new \MailevaApiAdapter\App\MailevaConnection();
 $mailevaConnectionProdClassic
     ->setAuthenticationHost('https://connect.maileva.com')
-    ->setHost('https://api.maileva.com/mail')
+    ->setHost('https://api.maileva.com')
     ->setType(\MailevaApiAdapter\App\MailevaConnection::CLASSIC)
     ->setClientId('6ebf75c54d60440eaf1b07115bff0bc5')
     ->setClientSecret('3148349a1d19467f8c40f4f7dfa49454')
@@ -99,7 +99,7 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
             ->validate($mailevaApiAdapter);
 
         $sendingId = $mailevaApiAdapter->prepare($mailevaSending, true);
-        $mailevaApiAdapter->submit($sendingId);
+        //$mailevaApiAdapter->submit($sendingId);
         echo "sendingId = " . $sendingId . "<br/>";
     } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
         var_dump($e);
@@ -137,7 +137,13 @@ $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 //$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
 //$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
 
-$sendingId =  "2c8785b7-8aa9-400e-90c4-a3b617762014";
+$sendingId =  "116c3a8d-fd29-4dcb-9621-37a3b23bf13e";
+//testPost($mailevaApiAdapter);
+
+//die;
+
+//$mailevaApiAdapter->submit($sendingId);
+//die;
 debugSendingId($mailevaApiAdapter, $sendingId);
 die;
 //die;
