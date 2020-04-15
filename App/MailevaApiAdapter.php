@@ -815,7 +815,7 @@ class MailevaApiAdapter
             $zip->addFile($tplFile, $sendingId . '.002');
             $zip->close();
 
-            if (!ftp_put($conn, $sendingId . '.zip', $tempZip, FTP_ASCII)) {
+            if (!ftp_put($conn, $sendingId . '.zip', $tempZip, FTP_BINARY)) {
                 throw new MailevaException('Unable to send Zip File ' . $tempZip);
             }
 
