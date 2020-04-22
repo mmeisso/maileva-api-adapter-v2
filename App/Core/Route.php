@@ -52,14 +52,12 @@ class Route
         if (!is_array($defaultArgues)) {
             throw new RoutingException(' not implemented');
         } else {
-
             $this->mailevaApiAdapter = $mailevaApiAdapter;
 
             $this->populate($this->array_merge_recursive_distinct($defaultArgues, $argues));
 
             #migrate parameter to url, body and multipart if necessary
             foreach ($this->params as $key => $value) {
-
                 if (strpos($this->url, '{' . $key . '}')) {
                     $this->url = str_replace('{' . $key . '}', $value, $this->url);
                     unset($this->params[$key]);
@@ -93,11 +91,10 @@ class Route
      */
     public function call(): MailevaResponse
     {
-        $response                = null;
+        $response = null;
         $this->requestParameters = [];
 
         try {
-
             if ($this->isAuthenticatedRoute()) {
                 if ($this->mailevaApiAdapter->isAuthenticated() === false) {
                     $this->mailevaApiAdapter->postAuthentication();
@@ -141,8 +138,12 @@ class Route
                 error_log('*****************************************************************************');
                 echo '*****************************************************************************' . '<br/>';
                 echo '*****************************************************************************' . '<br/>';
-                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------' . '<br/>';
-                error_log('-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------');
+                echo '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode(
+                        $this->requestParameters
+                    ) . '-------------' . '<br/>';
+                error_log(
+                    '-------------' . $this->getMethod() . ' ' . $this->getUrl() . ' ' . json_encode($this->requestParameters) . '-------------'
+                );
                 echo '*****************************************************************************' . '<br/>';
             }
 
@@ -204,7 +205,7 @@ class Route
     /**
      * @return String
      */
-    public function getMethod(): String
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -260,20 +261,15 @@ class Route
     /**
      * @return String
      */
-    public function getUrl(): String
+    public function getUrl(): string
     {
         if ($this->isAuthenticatedRoute()) {
-
             $subDirectory = 'mail';
             if ($this->getMailevaApiAdapter()->getType() === MailevaConnection::LRE) {
                 $subDirectory = 'registered_mail';
             }
 
-            if (strpos($this->getMailevaApiAdapter()->getHost(), 'sandbox') > 1) {
-                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v1' . $this->url;
-            } else {
-                return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v2' . $this->url;
-            }
+            return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v2' . $this->url;
         } else {
             return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
         }
@@ -316,7 +312,6 @@ class Route
     private function populate(array $array)
     {
         foreach ($array as $key => $value) {
-
             if (is_array($value)) {
                 # an array -> loop
                 switch ($key) {

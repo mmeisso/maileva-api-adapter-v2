@@ -345,6 +345,7 @@ class MailevaApiAdapter
         try {
             $conn = ftp_connect($this->mailevaConnection->getHost());
             ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
+            ftp_pasv($conn, true);
             $fileListing = ftp_nlist($conn, $this->mailevaConnection->getDirectoryCallback());
             // Check if directory
 
@@ -750,6 +751,7 @@ class MailevaApiAdapter
         try {
             $conn = ftp_connect($this->mailevaConnection->getHost());
             ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
+            ftp_pasv($conn, true);
 
             $sendingId  = str_replace('.', '', uniqid('', 'true'));
             $tplContent = file_get_contents(__DIR__ . '/templates/lrcopro.xml');
@@ -1021,6 +1023,7 @@ class MailevaApiAdapter
     {
         $conn = ftp_connect($this->mailevaConnection->getHost());
         ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret());
+        ftp_pasv($conn, true);
 
         if (!ftp_rename($conn, $sendingId . '.zip', $sendingId . '.zcou')) {
             throw new MailevaException('Unable to rename ' . $sendingId . '.zip submit fail');
