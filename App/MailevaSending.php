@@ -22,7 +22,7 @@ class MailevaSending
     const POSTAGE_TYPE_LRCOPRO = 'LRCOPRO';
     const UID_METHOD_PDFTEXT = 'UID_METHOD_PDFTEXT';
     const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
-    const MAX_MB_FILE_MAILEVA = 10485760; #10MO
+    const MAX_MB_FILE_MAILEVA = 20971520; #20MO
     /**@var String */
     private $addressLine1 = null;
     /**@var String */
