@@ -362,7 +362,7 @@ class MailevaApiAdapter
                     }
                     $tmpLocalFile = $this->mailevaConnection->getTmpFileDirectory() . $filePath;
 
-                    if (!ftp_get($conn, $tmpLocalFile, $filePath, FTP_ASCII)) {
+                    if (!ftp_get($conn, $tmpLocalFile, $filePath, FTP_BINARY)) {
                         error_log(__FILE__ . '(' . __LINE__ . '):  Trouble downloading the file : ' . $filePath);
                         continue;
                     }
