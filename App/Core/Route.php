@@ -318,7 +318,7 @@ class Route
                     case 'headers':
                         if (!array_search(Routing::REQUIRED, $value)) {
                             $this->headers = $value;
-                            continue;
+                            break;
                         } else {
                             throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
                         }
@@ -326,7 +326,7 @@ class Route
                     case 'params':
                         if (!array_search(Routing::REQUIRED, $value)) {
                             $this->params = $value;
-                            continue;
+                            break;
                         } else {
                             throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
                         }
@@ -343,15 +343,15 @@ class Route
                 switch ($key) {
                     case 'method':
                         $this->method = $value;
-                        continue;
+                        break;
                     case 'url':
                         $this->url = $value;
-                        continue;
+                        break;
                     case 'authenticated_route':
                         $this->authenticatedRoute = $value;
-                        continue;
+                        break;
                     default:
-                        continue;
+                        break;
                 }
             }
         }
