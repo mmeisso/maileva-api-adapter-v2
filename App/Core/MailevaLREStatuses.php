@@ -9,6 +9,7 @@
 namespace MailevaApiAdapter\App\Core;
 
 use MailevaApiAdapter\App\Exception\MailevaException;
+use Throwable;
 
 class MailevaLREStatuses
 {
@@ -18,12 +19,10 @@ class MailevaLREStatuses
     const DATE = 'date';
     const STATUS = 'status';
     const DESCRIPTION = 'description';
-
     const LIST_SENDING_STATUS_FULL_PROCESSED = [
-        'D01', 'A19'
+        'D01',
+        'A19'
     ];
-
-    private $statuses = [];
     private $codeDescriptionMapping = [
         'A01' => 'Pris en charge',
         'A02' => 'Avisé',
@@ -70,44 +69,9 @@ class MailevaLREStatuses
         'N09' => 'Régime international',
         'N10' => 'PND (Pli Non Distribuable) pour un courrier'
     ];
-
-
+    private $statuses = [];
 
     public function __construct() { }
-
-    /**
-     * @return array
-     */
-    public function getStatuses(): array
-    {
-        return $this->statuses;
-    }
-
-    /**
-     * @param array $statuses
-     *
-     * @throws MailevaException
-     */
-    public function setStatuses(array $statuses)
-    {
-        foreach ($statuses as $item) {
-            try {
-                $id   = $item[self::ID];
-                $date = $item[self::DATE];
-
-                $status = $item[self::STATUS];
-
-                if (array_key_exists($status, $this->codeDescriptionMapping)) {
-                    $item[self::DESCRIPTION] = $this->codeDescriptionMapping[$status];
-                    $this->statuses[]        = $item;
-                } else {
-                    throw new MailevaException('unknow status ' . $status);
-                }
-            } catch (\Throwable $t) {
-                throw new MailevaException($t->getMessage());
-            }
-        }
-    }
 
     /**
      * @return array
@@ -126,9 +90,19 @@ class MailevaLREStatuses
      * @return string
      * @throws MailevaException
      */
-    public function getStatusCodeForActiveStatus(): string
+    public function getActiveStatusToString(): string
     {
-        return $this->getActiveStatus()[self::STATUS];
+        return $this->getIdForActiveStatus() . ' ' . $this->getStatusCodeForActiveStatus() . ' ' . $this->getDescriptionForActiveStatus(
+            ) . ' ' . $this->getDateForActiveStatus();
+    }
+
+    /**
+     * @return string
+     * @throws MailevaException
+     */
+    public function getDateForActiveStatus(): string
+    {
+        return $this->getActiveStatus()[self::DATE];
     }
 
     /**
@@ -153,18 +127,40 @@ class MailevaLREStatuses
      * @return string
      * @throws MailevaException
      */
-    public function getDateForActiveStatus(): string
+    public function getStatusCodeForActiveStatus(): string
     {
-        return $this->getActiveStatus()[self::DATE];
+        return $this->getActiveStatus()[self::STATUS];
     }
 
     /**
-     * @return string
+     * @return array
+     */
+    public function getStatuses(): array
+    {
+        return $this->statuses;
+    }
+
+    /**
+     * @param array $statuses
+     *
      * @throws MailevaException
      */
-    public function getActiveStatusToString(): string
+    public function setStatuses(array $statuses)
     {
-        return $this->getIdForActiveStatus() . ' ' . $this->getStatusCodeForActiveStatus() . ' ' . $this->getDescriptionForActiveStatus() . ' ' . $this->getDateForActiveStatus();
+        foreach ($statuses as $item) {
+            try {
+                $status = $item[self::STATUS];
+
+                if (array_key_exists($status, $this->codeDescriptionMapping)) {
+                    $item[self::DESCRIPTION] = $this->codeDescriptionMapping[$status];
+                    $this->statuses[]        = $item;
+                } else {
+                    throw new MailevaException('unknow status ' . $status);
+                }
+            } catch (Throwable $t) {
+                throw new MailevaException($t->getMessage());
+            }
+        }
     }
 
     /**

@@ -10,12 +10,10 @@ namespace MailevaApiAdapter\App\Exception;
 
 /**
  * Class MailevaResponseException
+ *
  * @package MailevaApiAdapter\App\Exception
  */
 class MailevaResponseException extends MailevaException
 {
-
-
-
 
 }

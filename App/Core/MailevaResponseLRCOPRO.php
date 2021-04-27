@@ -16,7 +16,7 @@ namespace MailevaApiAdapter\App\Core;
 class MailevaResponseLRCOPRO implements MailevaResponseInterface
 {
 
-    private $responseAsArray =  [];
+    private $responseAsArray = [];
 
     /**
      * @return array

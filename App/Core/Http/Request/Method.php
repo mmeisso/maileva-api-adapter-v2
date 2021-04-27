@@ -4,6 +4,7 @@ namespace MailevaApiAdapter\App\Core\Http\Request;
 
 class Method
 {
+
     /**
      * The GET method means retrieve whatever information (in the form of an entity)
      * is identified by the Request-URI. If the Request-URI refers to a
@@ -12,7 +13,6 @@ class Method
      * unless that text happens to be the output of the process.
      */
     const GET = 'GET';
-
     /**
      * The POST method is used to request that the origin server accept
      * the entity enclosed in the request as a new subordinate of the resource identified
@@ -26,7 +26,6 @@ class Method
      *    - Extending a database through an append operation.
      */
     const POST = 'POST';
-
     /**
      * The PUT method requests that the enclosed entity be stored under
      * the supplied Request-URI. If the Request-URI refers to an already existing resource,
@@ -44,7 +43,6 @@ class Method
      * response in such cases.
      */
     const PUT = 'PUT';
-
     /**
      * The PATCH method requests that a set of changes described in the request entity
      * be applied to the resource identified by the Request-URI.
@@ -54,7 +52,6 @@ class Method
      * (whether it can logically modify a null resource) and permissions, etc.
      */
     const PATCH = 'PATCH';
-
     /**
      * The DELETE method requests that the origin server delete the resource
      * identified by the Request-URI. This method MAY be overridden by human intervention
@@ -66,7 +63,6 @@ class Method
      * inaccessible location.
      */
     const DELETE = 'DELETE';
-
     /**
      * The HEAD method is identical to GET except that the server MUST NOT return
      * a message-body in the response. The meta information contained in the HTTP headers
@@ -77,7 +73,6 @@ class Method
      * and recent modification.
      */
     const HEAD = 'HEAD';
-
     /**
      * The OPTIONS method represents a request for information about the communication
      * options available on the request/response chain identified by the Request-URI.
@@ -86,7 +81,6 @@ class Method
      * or initiating a resource retrieval.
      */
     const OPTIONS = 'OPTIONS';
-
     /**
      * The TRACE method is used to invoke a remote, application-layer loop- back
      * of the request message. The final recipient of the request SHOULD reflect the message
@@ -96,7 +90,6 @@ class Method
      * A TRACE request MUST NOT include an entity.
      */
     const TRACE = 'TRACE';
-
     /**
      * This specification reserves the method name CONNECT for use with a proxy
      * that can dynamically switch to being a tunnel

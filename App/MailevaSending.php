@@ -5,6 +5,7 @@ namespace MailevaApiAdapter\App;
 use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
 use PdfUtil\Exception\PdfReportException;
+use Throwable;
 
 /**
  * Class MailevaSending
@@ -51,13 +52,17 @@ class MailevaSending
     private $filepriority = 1;
     /**@var String */
     private $name = null;
+    /** @var int */
+    private $nbPage = null;
     /**@var String */
     private $notificationEmail = null;
+    /**@var String */
+    private $notificationTreatUndeliveredMail = null;
     /**@var Bool */
     private $optionalAddressSheet = null;
+    #LRE
     /**@var String */
     private $postageType = null;
-    #LRE
     /**@var String */
     private $senderAddressLine1 = null;
     /**@var String */
@@ -72,13 +77,13 @@ class MailevaSending
     private $senderAddressLine6 = null;
     /**@var String */
     private $senderCountryCode = 'FR';
-    /** @var int */
-    private $nbPage = null;
+    /**@var bool */
+    private $treatUndeliveredMail = null;
 
     /**
      * @return String
      */
-    public function getAddressLine1(): String
+    public function getAddressLine1(): string
     {
         return $this->addressLine1;
     }
@@ -88,7 +93,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine1(String $addressLine1): MailevaSending
+    public function setAddressLine1(string $addressLine1): MailevaSending
     {
         $this->addressLine1 = $addressLine1;
         return $this;
@@ -97,7 +102,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getAddressLine2(): String
+    public function getAddressLine2(): string
     {
         return $this->addressLine2;
     }
@@ -107,7 +112,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine2(String $addressLine2): MailevaSending
+    public function setAddressLine2(string $addressLine2): MailevaSending
     {
         $this->addressLine2 = $addressLine2;
         return $this;
@@ -116,7 +121,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getAddressLine3(): String
+    public function getAddressLine3(): string
     {
         return $this->addressLine3;
     }
@@ -126,7 +131,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine3(String $addressLine3): MailevaSending
+    public function setAddressLine3(string $addressLine3): MailevaSending
     {
         $this->addressLine3 = $addressLine3;
         return $this;
@@ -135,7 +140,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getAddressLine4(): String
+    public function getAddressLine4(): string
     {
         return $this->addressLine4;
     }
@@ -145,7 +150,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine4(String $addressLine4): MailevaSending
+    public function setAddressLine4(string $addressLine4): MailevaSending
     {
         $this->addressLine4 = $addressLine4;
         return $this;
@@ -154,7 +159,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getAddressLine5(): String
+    public function getAddressLine5(): string
     {
         return $this->addressLine5;
     }
@@ -164,7 +169,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine5(String $addressLine5): MailevaSending
+    public function setAddressLine5(string $addressLine5): MailevaSending
     {
         $this->addressLine5 = $addressLine5;
         return $this;
@@ -173,7 +178,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getAddressLine6(): String
+    public function getAddressLine6(): string
     {
         return $this->addressLine6;
     }
@@ -183,7 +188,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setAddressLine6(String $addressLine6): MailevaSending
+    public function setAddressLine6(string $addressLine6): MailevaSending
     {
         $this->addressLine6 = $addressLine6;
         return $this;
@@ -192,7 +197,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getCountryCode(): String
+    public function getCountryCode(): string
     {
         return $this->countryCode;
     }
@@ -202,7 +207,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setCountryCode(String $countryCode): MailevaSending
+    public function setCountryCode(string $countryCode): MailevaSending
     {
         $this->countryCode = $countryCode;
         return $this;
@@ -211,7 +216,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getCustomId(): String
+    public function getCustomId(): string
     {
         return $this->customId;
     }
@@ -221,7 +226,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setCustomId(String $customId): MailevaSending
+    public function setCustomId(string $customId): MailevaSending
     {
         $this->customId = $customId;
         return $this;
@@ -230,7 +235,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getFile(): String
+    public function getFile(): string
     {
         return $this->file;
     }
@@ -240,7 +245,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setFile(String $file): MailevaSending
+    public function setFile(string $file): MailevaSending
     {
         $this->file = $file;
         return $this;
@@ -249,7 +254,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getFilename(): String
+    public function getFilename(): string
     {
         return $this->filename;
     }
@@ -259,7 +264,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setFilename(String $filename): MailevaSending
+    public function setFilename(string $filename): MailevaSending
     {
         $this->filename = $filename;
         return $this;
@@ -268,7 +273,7 @@ class MailevaSending
     /**
      * @return Int
      */
-    public function getFilepriority(): Int
+    public function getFilepriority(): int
     {
         return $this->filepriority;
     }
@@ -278,7 +283,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setFilepriority(Int $filepriority): MailevaSending
+    public function setFilepriority(int $filepriority): MailevaSending
     {
         $this->filepriority = $filepriority;
         return $this;
@@ -287,7 +292,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getName(): String
+    public function getName(): string
     {
         return $this->name;
     }
@@ -297,16 +302,48 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setName(String $name): MailevaSending
+    public function setName(string $name): MailevaSending
     {
         $this->name = $name;
         return $this;
     }
 
     /**
+     * @return int
+     * @throws MailevaException
+     */
+    public function getNbPage(): int
+    {
+        if (false === is_null($this->nbPage)) {
+            return $this->nbPage;
+        }
+
+        $this->nbPage = 0;
+        $commandList  = [
+            "pdfinfo " . escapeshellarg($this->getFile()) . " 2>/dev/null | grep Pages | awk '{print $2}'",
+            'pdftk ' . escapeshellarg($this->getFile()) . " dump_data | sed '/NumberOfPages/!d;s/[^0-9]*//'",
+            'echo $(strings < ' . escapeshellarg($this->getFile()) . ' | sed -n \'s|.*/Count -\{0,1\}\([0-9]\{1,\}\).*|\1|p\' | sort -rn | head -n 1)'
+        ];
+
+        foreach ($commandList as $command) {
+            $output = [];
+            exec($command, $output, $result);
+            if (isset($output[0]) && intval($output[0]) > 0) {
+                $this->nbPage = (int)$output[0];
+                break;
+            }
+        }
+        if ($this->nbPage === 0) {
+            throw new MailevaException('Impossible to get page number from ' . $this->getFile());
+        }
+
+        return $this->nbPage;
+    }
+
+    /**
      * @return String
      */
-    public function getNotificationEmail(): String
+    public function getNotificationEmail(): string
     {
         return $this->notificationEmail;
     }
@@ -316,9 +353,28 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setNotificationEmail(String $notificationEmail): MailevaSending
+    public function setNotificationEmail(string $notificationEmail): MailevaSending
     {
         $this->notificationEmail = $notificationEmail;
+        return $this;
+    }
+
+    /**
+     * @return String
+     */
+    public function getNotificationTreatUndeliveredMail()
+    {
+        return $this->notificationTreatUndeliveredMail;
+    }
+
+    /**
+     * @param String $notificationTreatUndeliveredMail
+     *
+     * @return MailevaSending
+     */
+    public function setNotificationTreatUndeliveredMail(string $notificationTreatUndeliveredMail): MailevaSending
+    {
+        $this->notificationTreatUndeliveredMail = $notificationTreatUndeliveredMail;
         return $this;
     }
 
@@ -336,13 +392,16 @@ class MailevaSending
      * @return MailevaSending
      * @throws MailevaParameterException
      */
-    public function setPostageType(String $postageType): MailevaSending
+    public function setPostageType(string $postageType): MailevaSending
     {
-
-        if (!in_array(strtoupper($postageType),
-            [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,
-                'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO);
+        if (!in_array(
+            strtoupper($postageType),
+            [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO]
+        )) {
+            throw new MailevaParameterException(
+                MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,
+                'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO
+            );
         }
 
         $this->postageType = strtoupper($postageType);
@@ -362,7 +421,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine1(String $senderAddressLine1): MailevaSending
+    public function setSenderAddressLine1(string $senderAddressLine1): MailevaSending
     {
         $this->senderAddressLine1 = $senderAddressLine1;
         return $this;
@@ -381,7 +440,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine2(String $senderAddressLine2): MailevaSending
+    public function setSenderAddressLine2(string $senderAddressLine2): MailevaSending
     {
         $this->senderAddressLine2 = $senderAddressLine2;
         return $this;
@@ -400,7 +459,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine3(String $senderAddressLine3): MailevaSending
+    public function setSenderAddressLine3(string $senderAddressLine3): MailevaSending
     {
         $this->senderAddressLine3 = $senderAddressLine3;
         return $this;
@@ -419,7 +478,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine4(String $senderAddressLine4): MailevaSending
+    public function setSenderAddressLine4(string $senderAddressLine4): MailevaSending
     {
         $this->senderAddressLine4 = $senderAddressLine4;
         return $this;
@@ -438,7 +497,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine5(String $senderAddressLine5): MailevaSending
+    public function setSenderAddressLine5(string $senderAddressLine5): MailevaSending
     {
         $this->senderAddressLine5 = $senderAddressLine5;
         return $this;
@@ -457,7 +516,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderAddressLine6(String $senderAddressLine6): MailevaSending
+    public function setSenderAddressLine6(string $senderAddressLine6): MailevaSending
     {
         $this->senderAddressLine6 = $senderAddressLine6;
         return $this;
@@ -466,7 +525,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getSenderCountryCode(): String
+    public function getSenderCountryCode(): string
     {
         return $this->senderCountryCode;
     }
@@ -476,7 +535,7 @@ class MailevaSending
      *
      * @return MailevaSending
      */
-    public function setSenderCountryCode(String $senderCountryCode): MailevaSending
+    public function setSenderCountryCode(string $senderCountryCode): MailevaSending
     {
         $this->senderCountryCode = $senderCountryCode;
         return $this;
@@ -489,9 +548,10 @@ class MailevaSending
     {
         $method                 = null;
         $postageType            = is_null($this->getPostageType()) ? "pe" : $this->getPostageType();
-        $colorPrinting          = is_null($this->isColorPrinting()) ? "cg" : (String)$this->isColorPrinting();
-        $isDuplexPrinting       = is_null($this->isDuplexPrinting()) ? "dg" : (String)$this->isDuplexPrinting();
-        $isOptionalAddressSheet = is_null($this->isOptionalAddressSheet()) ? "ot" : (String)$this->isOptionalAddressSheet();
+        $colorPrinting          = is_null($this->isColorPrinting()) ? "cg" : (string)$this->isColorPrinting();
+        $isDuplexPrinting       = is_null($this->isDuplexPrinting()) ? "dg" : (string)$this->isDuplexPrinting();
+        $isOptionalAddressSheet = is_null($this->isOptionalAddressSheet()) ? "ot" : (string)$this->isOptionalAddressSheet();
+        $isTreatUndeliveredMail = is_null($this->isTreatUndeliveredMail()) ? "tu" : (string)$this->isTreatUndeliveredMail();
 
         $getAddressLine1 = is_null($this->getAddressLine1()) ? "a1" : $this->getAddressLine1();
         $getAddressLine2 = is_null($this->getAddressLine2()) ? "a2" : $this->getAddressLine2();
@@ -530,7 +590,7 @@ class MailevaSending
                 $pdfText = preg_replace('/\s+/', '', file_get_contents($tmp));
                 @unlink($tmp);
             }
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
             error_log($t);
         }
 
@@ -542,44 +602,12 @@ class MailevaSending
             $method  = self::UID_METHOD_MD5_FILE;
         }
 
-        $key = $postageType . $colorPrinting . $isDuplexPrinting . $isOptionalAddressSheet .
+        $key = $postageType . $colorPrinting . $isDuplexPrinting . $isOptionalAddressSheet . $isTreatUndeliveredMail .
             $getFile .
             $getAddressLine1 . $getAddressLine2 . $getAddressLine3 . $getAddressLine4 . $getAddressLine5 . $getAddressLine6 .
             $getSenderAddressLine1 . $getSenderAddressLine2 . $getSenderAddressLine3 . $getSenderAddressLine4 . $getSenderAddressLine5 . $getSenderAddressLine6;
 
         return [md5($key) . substr(base64_encode($key), 0, 30), $method];
-    }
-
-    /**
-     * @return int
-     * @throws MailevaException
-     */
-    public function getNbPage(): int
-    {
-        if (false === is_null($this->nbPage)) {
-            return $this->nbPage;
-        }
-
-        $this->nbPage = 0;
-        $commandList  = [
-            "pdfinfo " . escapeshellarg($this->getFile()) . " 2>/dev/null | grep Pages | awk '{print $2}'",
-            'pdftk ' . escapeshellarg($this->getFile()) . " dump_data | sed '/NumberOfPages/!d;s/[^0-9]*//'",
-            'echo $(strings < ' . escapeshellarg($this->getFile()) . ' | sed -n \'s|.*/Count -\{0,1\}\([0-9]\{1,\}\).*|\1|p\' | sort -rn | head -n 1)'
-        ];
-
-        foreach ($commandList as $command) {
-            $output = [];
-            exec($command, $output, $result);
-            if (isset($output[0]) && intval($output[0]) > 0) {
-                $this->nbPage = (int)$output[0];
-                break;
-            }
-        }
-        if ($this->nbPage === 0) {
-            throw new MailevaException('Impossible to get page number from ' . $this->getFile());
-        }
-
-        return $this->nbPage;
     }
 
     /**
@@ -640,84 +668,21 @@ class MailevaSending
     }
 
     /**
-     * @param MailevaApiAdapter $mailevaApiAdapter
-     *
-     * @return $this
-     * @throws MailevaParameterException
+     * @return bool
      */
-    public function validate(MailevaApiAdapter $mailevaApiAdapter)
+    public function isTreatUndeliveredMail(): bool
     {
-        $fields = get_object_vars($this);
+        return $this->treatUndeliveredMail;
+    }
 
-        if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
-            if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,
-                    'senderAddressLine1 || senderAddressLine2 not set');
-            }
-
-            if (empty($fields['senderAddressLine6'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_6_NOT_SET,
-                    'senderAddressLine6 not set');
-            }
-
-            if (empty($fields['notificationEmail'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_NOTIFICATION_EMAIL_NOT_SET, 'notificationEmail not set');
-            }
-        }
-
-        if (empty($fields['addressLine1']) && empty($fields['addressLine2'])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_1_OR_2_NOT_SET,
-                'addressLine1 || addressLine2 not set');
-        }
-
-        if (empty($fields['addressLine6'])) {
-            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_6_NOT_SET, 'addressLine6 not set');
-        }
-
-        if (!empty($fields['notificationEmail'])) {
-            if (!preg_match(self::EMAIL_REGEX, $fields['notificationEmail'])) {
-                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_WRONG_EMAIL_SYNTAX_NOTIFICATION,
-                    'Wrong email syntax on notificationEmail parameter');
-            }
-        }
-
-        foreach ($fields as $key => $value) {
-            if (stripos($key, 'addressLine') !== false) {
-                if (mb_strlen($value) > self::LINE_ADDRESS_MAX_LENGTH) {
-                    throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_TOO_LONG_ADRESSE,
-                        'too long address on ' . $key . ' : ' . $value);
-                }
-            }
-        }
-
-        #already checked
-        unset($fields['addressLine1']);
-        unset($fields['addressLine2']);
-        unset($fields['addressLine6']);
-        unset($fields['senderAddressLine1']);
-        unset($fields['senderAddressLine2']);
-        unset($fields['senderAddressLine6']);
-        unset($fields['notificationEmail']);
-        unset($fields['nbPage']);
-
-        foreach ($fields as $key => $value) {
-            if (is_null($value)) {
-                throw new MailevaParameterException($key . ' not set');
-            }
-
-            if ($key === 'file') {
-                if (!file_exists($value)) {
-                    throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND, 'file ' . $value . ' not found');
-                }
-                if (!in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRCOPRO])) {
-                    if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
-                        throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
-                            'The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB');
-                    }
-                }
-            }
-        }
-
+    /**
+     * @param bool $treatUndeliveredMail
+     *
+     * @return MailevaSending
+     */
+    public function setTreatUndeliveredMail(bool $treatUndeliveredMail): MailevaSending
+    {
+        $this->treatUndeliveredMail = $treatUndeliveredMail;
         return $this;
     }
 
@@ -733,5 +698,117 @@ class MailevaSending
             }
         }
         return var_export($var, true);
+    }
+
+    /**
+     * @param MailevaApiAdapter $mailevaApiAdapter
+     *
+     * @return $this
+     * @throws MailevaParameterException
+     */
+    public function validate(MailevaApiAdapter $mailevaApiAdapter)
+    {
+        $fields = get_object_vars($this);
+
+        if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
+            if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
+                throw new MailevaParameterException(
+                    MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,
+                    'senderAddressLine1 || senderAddressLine2 not set'
+                );
+            }
+
+            if (empty($fields['senderAddressLine6'])) {
+                throw new MailevaParameterException(
+                    MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_6_NOT_SET,
+                    'senderAddressLine6 not set'
+                );
+            }
+
+            if (empty($fields['notificationEmail'])) {
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_NOTIFICATION_EMAIL_NOT_SET, 'notificationEmail not set');
+            }
+        }
+
+        if (empty($fields['addressLine1']) && empty($fields['addressLine2'])) {
+            throw new MailevaParameterException(
+                MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_1_OR_2_NOT_SET,
+                'addressLine1 || addressLine2 not set'
+            );
+        }
+
+        if (empty($fields['addressLine6'])) {
+            throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_ADDRESS_LINE_6_NOT_SET, 'addressLine6 not set');
+        }
+
+        foreach ($fields as $key => $value) {
+            if (stripos($key, 'addressLine') !== false) {
+                if (mb_strlen($value) > self::LINE_ADDRESS_MAX_LENGTH) {
+                    throw new MailevaParameterException(
+                        MailevaParameterException::ERROR_MAILEVA_TOO_LONG_ADRESSE,
+                        'too long address on ' . $key . ' : ' . $value
+                    );
+                }
+            }
+        }
+
+        if (!empty($fields['notificationEmail'])) {
+            if (!preg_match(self::EMAIL_REGEX, $fields['notificationEmail'])) {
+                throw new MailevaParameterException(
+                    MailevaParameterException::ERROR_MAILEVA_WRONG_EMAIL_SYNTAX_NOTIFICATION,
+                    'Wrong email syntax on notificationEmail parameter'
+                );
+            }
+        }
+
+        if ($fields['treatUndeliveredMail'] === true) {
+            if (empty($fields['notificationTreatUndeliveredMail'])) {
+                throw new MailevaParameterException(
+                    MailevaParameterException::ERROR_MAILEVA_NOTIFICATION_TREAT_UNDELIVERED_MAIL_NOT_SET,
+                    'notificationTreatUndeliveredMail not set'
+                );
+            }
+
+            if (!preg_match(self::EMAIL_REGEX, $fields['notificationTreatUndeliveredMail'])) {
+                throw new MailevaParameterException(
+                    MailevaParameterException::ERROR_MAILEVA_WRONG_EMAIL_SYNTAX_NOTIFICATION,
+                    'Wrong email syntax on notificationTreatUndeliveredMail parameter'
+                );
+            }
+        } else {
+            unset($fields['notificationTreatUndeliveredMail']);
+        }
+
+        #already checked
+        unset($fields['addressLine1']);
+        unset($fields['addressLine2']);
+        unset($fields['addressLine6']);
+        unset($fields['senderAddressLine1']);
+        unset($fields['senderAddressLine2']);
+        unset($fields['senderAddressLine6']);
+        unset($fields['notificationEmail']);
+        unset($fields['nbPage']);
+
+        foreach ($fields as $key => $value) {
+            if (is_null($value)) {
+                throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_KEY_NOT_SET, $key . ' not set');
+            }
+
+            if ($key === 'file') {
+                if (!file_exists($value)) {
+                    throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND, 'file ' . $value . ' not found');
+                }
+                if (!in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRCOPRO])) {
+                    if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
+                        throw new MailevaParameterException(
+                            MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
+                            'The file is too big :' . $value . ' the maximum is ' . self::MAX_MB_FILE_MAILEVA . ' MB'
+                        );
+                    }
+                }
+            }
+        }
+
+        return $this;
     }
 }

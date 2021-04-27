@@ -27,8 +27,6 @@ class Unit extends \Codeception\Module
     const CLIENT_SECRET = '03ce163ef4946c2ee36d4178e10653f6';
     const USERNAME = 'sandbox.48175';
     const PASSWORD = 'wshq4e';
-
-
     const FTP_HOST = 'ftp.recette.maileva.com';
     const FTP_USERNAME = 'sandbox.1662';
     const FTP_PASSWORD = 'lfqcs7';
@@ -37,10 +35,8 @@ class Unit extends \Codeception\Module
     const MEMCACHE_HOST = 'localhost';
     const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
-    CONST DIRECTORY_CALLBACK = '/retour_sandbox.1662/';
-    CONST TMP_FILE_DIRECTORY = '/tmp/MAILEVA';
-
-
+    const DIRECTORY_CALLBACK = '/retour_sandbox.1662/';
+    const TMP_FILE_DIRECTORY = '/tmp/MAILEVA';
 
     /**
      * @return MailevaApiAdapter
@@ -49,16 +45,6 @@ class Unit extends \Codeception\Module
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::CLASSIC);
-        return new MailevaApiAdapter($mailevaConnection);
-    }
-
-    /**
-     * @return MailevaApiAdapter
-     */
-    public function getMailevaApiAdapterLRE(): MailevaApiAdapter
-    {
-        $mailevaConnection = $this->getMailevaApiConnection();
-        $mailevaConnection->setType(MailevaConnection::LRE);
         return new MailevaApiAdapter($mailevaConnection);
     }
 
@@ -81,6 +67,16 @@ class Unit extends \Codeception\Module
             ->setDirectoryCallback(self::DIRECTORY_CALLBACK)
             ->setTmpFileDirectory(self::TMP_FILE_DIRECTORY);
 
+        return new MailevaApiAdapter($mailevaConnection);
+    }
+
+    /**
+     * @return MailevaApiAdapter
+     */
+    public function getMailevaApiAdapterLRE(): MailevaApiAdapter
+    {
+        $mailevaConnection = $this->getMailevaApiConnection();
+        $mailevaConnection->setType(MailevaConnection::LRE);
         return new MailevaApiAdapter($mailevaConnection);
     }
 
@@ -133,6 +129,26 @@ class Unit extends \Codeception\Module
      * @return MailevaSending
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      */
+    private function getMailevaSendingClassic(): MailevaSending
+    {
+        $mailevaSending       = $this->getMailevaSendingCommon();
+        $postagetType         = (rand(0, 50) < 50) ? MailevaSending::POSTAGE_TYPE_FAST : MailevaSending::POSTAGE_TYPE_ECONOMIC;
+        $treatUndeliveredMail = (rand(0, 50) < 50) ? true : false;
+
+        $mailevaSending->setPostageType($postagetType)
+                       ->setTreatUndeliveredMail($treatUndeliveredMail);
+
+        if (true === $treatUndeliveredMail) {
+            $mailevaSending->setNotificationTreatUndeliveredMail(self::NOTIFICATION_EMAIL);
+        }
+
+        return $mailevaSending;
+    }
+
+    /**
+     * @return MailevaSending
+     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     */
     private function getMailevaSendingCommon(): MailevaSending
     {
         $address        = $this->getRandomAddress();
@@ -169,26 +185,16 @@ class Unit extends \Codeception\Module
      * @return MailevaSending
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      */
-    private function getMailevaSendingClassic(): MailevaSending
+    private function getMailevaSendingLRCOPRO(): MailevaSending
     {
+        $faker = Factory::create('fr_FR');
+
         $mailevaSending = $this->getMailevaSendingCommon();
-        $postagetType   = (rand(0, 50) < 50) ? MailevaSending::POSTAGE_TYPE_FAST : MailevaSending::POSTAGE_TYPE_ECONOMIC;
-
-        $mailevaSending->setPostageType($postagetType);
-
-        return $mailevaSending;
-    }
-
-    /**
-     * @return MailevaSending
-     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
-     */
-    private function getMailevaSendingLRE(): MailevaSending
-    {
-        $mailevaSending = $this->getMailevaSendingCommon();
-        $senderAddress  = $this->getRandomAddress();
+        $mailevaSending->setFile(codecept_root_dir() . 'testFiles/14pages.pdf');
+        $senderAddress = $this->getRandomAddress();
         $mailevaSending
-            ->setPostageType(MailevaSending::POSTAGE_TYPE_LRE)
+            ->setPostageType(MailevaSending::POSTAGE_TYPE_LRCOPRO)
+            ->setTreatUndeliveredMail(false)
             ->setNotificationEmail(self::NOTIFICATION_EMAIL)
             ->setSenderAddressLine1($senderAddress['line1'])
             ->setSenderAddressLine2($senderAddress['line2'])
@@ -204,16 +210,13 @@ class Unit extends \Codeception\Module
      * @return MailevaSending
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      */
-    private function getMailevaSendingLRCOPRO(): MailevaSending
+    private function getMailevaSendingLRE(): MailevaSending
     {
-
-        $faker   = Factory::create('fr_FR');
-
         $mailevaSending = $this->getMailevaSendingCommon();
-        $mailevaSending ->setFile(codecept_root_dir() . 'testFiles/14pages.pdf');
         $senderAddress  = $this->getRandomAddress();
         $mailevaSending
-            ->setPostageType(MailevaSending::POSTAGE_TYPE_LRCOPRO)
+            ->setPostageType(MailevaSending::POSTAGE_TYPE_LRE)
+            ->setTreatUndeliveredMail(false)
             ->setNotificationEmail(self::NOTIFICATION_EMAIL)
             ->setSenderAddressLine1($senderAddress['line1'])
             ->setSenderAddressLine2($senderAddress['line2'])

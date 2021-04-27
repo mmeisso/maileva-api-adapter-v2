@@ -8,8 +8,13 @@
 
 namespace MailevaApiAdapter\App\Core;
 
+use Exception;
+use Memcached;
+use MemcachedException;
+
 /**
  * Class MemcachedManager
+ *
  * @package MailevaApiAdapter\App\Core
  */
 class MemcachedManager
@@ -17,25 +22,26 @@ class MemcachedManager
 
     private static $instance = null;
     /**
-     * @var \Memcached
-     * @throws \MemcachedException
+     * @throws MemcachedException
+     * @var Memcached
      */
     private $memcached;
 
     /**
      * MemcachedManager constructor.
+     *
      * @param string $host
-     * @param int $port
+     * @param int    $port
      */
     private function __construct(string $host, int $port)
     {
         try {
-            $this->memcached = new \Memcached();
+            $this->memcached = new Memcached();
             $this->memcached->addServer($host, $port);
-        } catch (\MemcachedException $e) {
+        } catch (MemcachedException $e) {
             throw $e;
-        } catch (\Exception $e) {
-            throw new \MemcachedException('ERROR_UNABLE_TO_CONNECT');
+        } catch (Exception $e) {
+            throw new MemcachedException('ERROR_UNABLE_TO_CONNECT');
         }
     }
 
@@ -51,7 +57,7 @@ class MemcachedManager
      * Delete a given memcache key
      *
      * @param string $key
-     * @param int $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
+     * @param int    $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
      *                     (set will work)
      *
      * @return bool
@@ -65,24 +71,23 @@ class MemcachedManager
      * Return a memcache value
      *
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
      *
      * @return mixed Return false if memcache is not available or $default if there is no value on memcache for that key
      */
     public function get($key, $default = null)
     {
-
         $mmcValue = $this->memcached->get($key);
 
         # No value on memcache for that key, so return the default value if given
         if ($mmcValue === false && is_null($default) === false) {
             # Result code said that there is really a key that equals false, so returns false properly
-            if ($this->memcached->getResultCode() === \Memcached::RES_SUCCESS) {
+            if ($this->memcached->getResultCode() === Memcached::RES_SUCCESS) {
                 return false;
             }
 
             # They key does not exists, returns the default given value if set
-            if ($this->memcached->getResultCode() === \Memcached::RES_NOTFOUND && $default != null) {
+            if ($this->memcached->getResultCode() === Memcached::RES_NOTFOUND && $default != null) {
                 return $default;
             }
         }
@@ -104,18 +109,18 @@ class MemcachedManager
      * Store a value into memcached in a specific key
      *
      * @param string $key
-     * @param mixed $value
-     * @param int $duration cache duration in seconds (0 = always)
+     * @param mixed  $value
+     * @param int    $duration cache duration in seconds (0 = always)
      *
      * @return bool
-     * @throws \MemcachedException
+     * @throws MemcachedException
      */
     public function set($key, $value, $duration = 0)
     {
         $result = $this->memcached->set($key, $value, ($duration > 0) ? $duration : 0);
 
         if ($result === false) {
-            throw new \MemcachedException('ERROR_CANNOT_STORE_KEY_'. $key);
+            throw new MemcachedException('ERROR_CANNOT_STORE_KEY_' . $key);
         }
 
         return true;
@@ -123,8 +128,5 @@ class MemcachedManager
 
     private function __clone()
     {
-
     }
-
-
 }

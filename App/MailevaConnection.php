@@ -22,15 +22,14 @@ class MailevaConnection
     private $authenticationHost;
     private $clientId = null;
     private $clientSecret = null;
+    private $directoryCallback = null;
     private $host;
     private $memcacheHost = null;
     private $memcachePort = null;
     private $password = null;
+    private $tmpFileDirectory = null;
     private $type = self::CLASSIC;
     private $username = null;
-    private $directoryCallback = null;
-    private $tmpFileDirectory = null;
-
 
     public function __construct()
     {
@@ -90,6 +89,25 @@ class MailevaConnection
     public function setClientSecret(string $clientSecret): MailevaConnection
     {
         $this->clientSecret = $clientSecret;
+        return $this;
+    }
+
+    /**
+     * @return null
+     */
+    public function getDirectoryCallback()
+    {
+        return $this->directoryCallback;
+    }
+
+    /**
+     * @param null $directoryRetour
+     *
+     * @return MailevaConnection
+     */
+    public function setDirectoryCallback($directoryRetour)
+    {
+        $this->directoryCallback = $directoryRetour;
         return $this;
     }
 
@@ -170,6 +188,25 @@ class MailevaConnection
     }
 
     /**
+     * @return null
+     */
+    public function getTmpFileDirectory()
+    {
+        return $this->tmpFileDirectory;
+    }
+
+    /**
+     * @param null $tmpFileDirectory
+     *
+     * @return MailevaConnection
+     */
+    public function setTmpFileDirectory($tmpFileDirectory)
+    {
+        $this->tmpFileDirectory = $tmpFileDirectory;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getType(): string
@@ -214,44 +251,4 @@ class MailevaConnection
     {
         return empty($this->getMemcacheHost()) === false && empty($this->getMemcachePort()) === false;
     }
-
-    /**
-     * @return null
-     */
-    public function getDirectoryCallback()
-    {
-        return $this->directoryCallback;
-    }
-
-    /**
-     * @param null $directoryRetour
-     *
-     * @return MailevaConnection
-     */
-    public function setDirectoryCallback($directoryRetour)
-    {
-        $this->directoryCallback = $directoryRetour;
-        return $this;
-    }
-
-    /**
-     * @return null
-     */
-    public function getTmpFileDirectory()
-    {
-        return $this->tmpFileDirectory;
-    }
-
-    /**
-     * @param null $tmpFileDirectory
-     *
-     * @return MailevaConnection
-     */
-    public function setTmpFileDirectory($tmpFileDirectory)
-    {
-        $this->tmpFileDirectory = $tmpFileDirectory;
-        return $this;
-    }
-
-
 }

@@ -1,6 +1,7 @@
 <?php
 
 use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
+use MailevaApiAdapter\App\MailevaSendingStatus;
 
 /**
  * Class MailevaSendingLRECest
@@ -42,8 +43,8 @@ class MailevaSendingLRECest
         #SENDING PROPERTIES
         for ($i = 1; $i <= 20; $i++) {
             $result = $mailevaApiAdapter->getSendingBySendingId($sendingId)->getResponseAsArray();
-            if ($result['status'] !== \MailevaApiAdapter\App\MailevaSendingStatus::PENDING) {
-                echo PHP_EOL . 'Waiting  status : ' . \MailevaApiAdapter\App\MailevaSendingStatus::PENDING . ' loop ' . $i . PHP_EOL;
+            if ($result['status'] !== MailevaSendingStatus::PENDING) {
+                echo PHP_EOL . 'Waiting  status : ' . MailevaSendingStatus::PENDING . ' loop ' . $i . PHP_EOL;
                 sleep(1);
             } else {
                 break;
@@ -52,7 +53,7 @@ class MailevaSendingLRECest
 
         $I->assertEquals($result['id'], $sendingId);
         $I->assertEquals($result['name'], $mailevaSending->getName());
-        $I->assertEquals($result['status'], \MailevaApiAdapter\App\MailevaSendingStatus::PENDING);
+        $I->assertEquals($result['status'], MailevaSendingStatus::PENDING);
         $I->assertTrue(array_key_exists('postage_type', $result) === false);
         $I->assertNotNull($result['creation_date']);
         $I->assertEquals($result['color_printing'], $mailevaSending->isColorPrinting());
@@ -73,8 +74,10 @@ class MailevaSendingLRECest
         $I->assertNotEmpty($result['id']);
         $I->assertEquals($result['id'], $recipientId);
         $I->assertEquals($result['country_code'], $mailevaSending->getCountryCode());
-        $I->assertTrue(array_key_exists('status', $result)
-            && ($result['status'] === \MailevaApiAdapter\App\MailevaSendingStatus::PENDING || $result['status'] === \MailevaApiAdapter\App\MailevaSendingStatus::DRAFT));
+        $I->assertTrue(
+            array_key_exists('status', $result)
+            && ($result['status'] === MailevaSendingStatus::PENDING || $result['status'] === MailevaSendingStatus::DRAFT)
+        );
         #No work fine on LRE
         #$I->assertEquals($result['contact_id'], $mailevaSending->getCustomId());
         $I->assertEquals($result['address_line_1'], $mailevaSending->getAddressLine1());
@@ -97,17 +100,21 @@ class MailevaSendingLRECest
 
         #ALREADY SEND EXCEPTION
         if ($I->getMailevaApiConnection()->useMemcache()) {
-
             $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
             $I->assertEquals($similarPrevisionSendingResult[0], true);
             $similarPrevisionMailevaSending = $similarPrevisionSendingResult[1];
             $I->assertEquals($similarPrevisionMailevaSending['id'], $sendingId);
 
-            $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
-                "Same mailevaSending has already been sent with sendingId " . $sendingId), function () use ($mailevaSending, $mailevaApiAdapter) {
-                $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
-                $mailevaApiAdapter->submit($sendingId);
-            });
+            $I->expectThrowable(
+                new MailevaAllReadyExistException(
+                    MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,
+                    "Same mailevaSending has already been sent with sendingId " . $sendingId
+                ),
+                function () use ($mailevaSending, $mailevaApiAdapter) {
+                    $sendingId = $mailevaApiAdapter->prepare($mailevaSending);
+                    $mailevaApiAdapter->submit($sendingId);
+                }
+            );
         }
     }
 }

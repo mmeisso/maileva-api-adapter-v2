@@ -9,7 +9,9 @@
 namespace MailevaApiAdapter\App\Core;
 
 use GuzzleHttp\Psr7\Response;
+use MailevaApiAdapter\App\Exception\MailevaException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
+use Throwable;
 
 /**
  * Class MailevaResponse
@@ -19,8 +21,8 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 class MailevaResponse implements MailevaResponseInterface
 {
 
-    private $route;
     private $responseAsArray = [];
+    private $route;
 
     /**
      * MailevaResponse constructor.
@@ -29,7 +31,7 @@ class MailevaResponse implements MailevaResponseInterface
      * @param Response $response
      *
      * @throws MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaException
+     * @throws MailevaException
      */
     public function __construct(Route $route, Response $response)
     {
@@ -40,27 +42,34 @@ class MailevaResponse implements MailevaResponseInterface
     }
 
     /**
+     * @return mixed
+     */
+    public function getResponseAsArray(): array
+    {
+        return $this->responseAsArray;
+    }
+
+    /**
      * @param Route    $route
      * @param Response $response
      *
      * @throws MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaException
+     * @throws MailevaException
      */
     private function checkValidityResponse(Route $route, Response $response)
     {
-
-
         $statusCode = $response->getStatusCode();
         $body       = $response->getBody()->getContents();
         $headers    = $response->getHeaders();
 
         if ($statusCode > 300) {
-            throw new MailevaResponseException('Wrong statusCode ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod() . ' body ' . $body);
+            throw new MailevaResponseException(
+                'Wrong statusCode ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod() . ' body ' . $body
+            );
         }
 
         #201, 204 no data...
         if ($statusCode !== 201 && $statusCode !== 204) {
-
             if (strlen(trim($body)) > 0) {
                 if (is_null($route->getSink()) === false) {
                     $this->responseAsArray = [
@@ -69,7 +78,10 @@ class MailevaResponse implements MailevaResponseInterface
                 } else {
                     $json = json_decode($body, true);
                     if (is_null($json)) {
-                        throw new MailevaResponseException('Response is not Json compliant ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod() . ' body ' . $body);
+                        throw new MailevaResponseException(
+                            'Response is not Json compliant ' . $statusCode . ' on ' . $this->route->getUrl() . ' method ' . $this->route->getMethod(
+                            ) . ' body ' . $body
+                        );
                     }
 
                     $this->responseAsArray = json_decode($body, true);
@@ -103,7 +115,7 @@ class MailevaResponse implements MailevaResponseInterface
             $this->responseAsArray['method']            = $this->route->getMethod();
             $this->responseAsArray['url']               = $this->route->getUrl();
             $this->responseAsArray['requestParameters'] = $this->route->getRequestParameters();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
     }
 
@@ -112,13 +124,5 @@ class MailevaResponse implements MailevaResponseInterface
         if (isset($this->responseAsArray['access_token']) && isset($this->responseAsArray['expires_in'])) {
             $this->route->getMailevaApiAdapter()->setAccessToken($this->responseAsArray['access_token'], $this->responseAsArray['expires_in']);
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResponseAsArray(): array
-    {
-        return $this->responseAsArray;
     }
 }

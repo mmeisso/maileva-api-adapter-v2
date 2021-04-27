@@ -151,10 +151,10 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
 //        $mailevaApiAdapter->getDocumentsBySendingId($sendingId)->getResponseAsArray()['documents'][0]['id']);
 //    var_dump($result->getResponseAsArray());
 ////
-//    echo "downloadDepositProofBySendingId";
-//    $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
-//    $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
-//    var_dump($result->getResponseAsArray());
+    echo "downloadDepositProofBySendingId";
+    $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
+    $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);
+    var_dump($result->getResponseAsArray());
 
    // echo "downloadAcknowledgementOfReceiptBySendingIdAndRecipientId";
    // $tmpFile = '/tmp/mailevaAcknowledgementOfReceipt' . $sendingId . '.pdf';
@@ -162,7 +162,7 @@ function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdap
     //var_dump($result->getResponseAsArray());
 }
 
-$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
+$mailevaApiAdapter = $mailevaApiAdapterProdLRE;
 #$mailevaApiAdapter = $mailevaApiAdapterSandBoxLRE;
 
 try {
@@ -170,12 +170,12 @@ try {
 #die;
 
 #PROD !
-    $sendingId = '63e00e0f-7f66-410e-9ced-b7ed4561a059';
+    $sendingId = '63aa6068-8644-4ac9-9d75-e0d95e241df2';
 
 #DEV !
     #$sendingId = '663fb844-1bf9-4f87-a1a1-6b958673736a';
     debugSendingId($mailevaApiAdapter, $sendingId);
-    die;
+
     $mailevaApiAdapter->getSendingBySendingId($sendingId);
     $tmpFile = '/tmp/mailevaDepositProof'.$sendingId.'.zip';
     $result = $mailevaApiAdapter->downloadDepositProofBySendingId($sendingId, $tmpFile);

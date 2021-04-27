@@ -10,12 +10,10 @@ namespace MailevaApiAdapter\App\Exception;
 
 /**
  * Class RoutingException
+ *
  * @package MailevaApiAdapter\App\Exception
  */
 class RoutingException extends MailevaException
 {
-
-
-
 
 }

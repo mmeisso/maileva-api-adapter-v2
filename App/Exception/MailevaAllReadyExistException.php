@@ -8,6 +8,8 @@
 
 namespace MailevaApiAdapter\App\Exception;
 
+use Throwable;
+
 /**
  * Class MailevaParameterException
  *
@@ -17,20 +19,19 @@ class MailevaAllReadyExistException extends MailevaException
 {
 
     /** Same mailevaSending has already been sent with sendingId  */
-    CONST ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID = -139;
+    const ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID = -139;
     /** @var array */
     private $previousMailevaSending;
 
     /**
      * MailevaAllReadyExistException constructor.
      *
-     * @param string          $message
-     * @param int             $code
-     * @param \Throwable|null $previous
+     * @param string         $message
+     * @param int            $code
+     * @param Throwable|null $previous
      */
-    public function __construct($code = 0, $message = '', \Throwable $previous = null)
+    public function __construct($code = 0, $message = '', Throwable $previous = null)
     {
-
         parent::__construct($message, $code, $previous);
     }
 

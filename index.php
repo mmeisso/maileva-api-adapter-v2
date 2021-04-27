@@ -137,7 +137,7 @@ $mailevaApiAdapter = $mailevaApiAdapterProdClassic;
 //$duxplexOn = '8c526ac2-bcc8-4710-b995-76dd9dc8c4b8';
 //$duxplexOff = '0b7b705c-72ee-4a34-9832-7723cc5044b2';
 
-$sendingId =  "116c3a8d-fd29-4dcb-9621-37a3b23bf13e";
+$sendingId =  "c0288884-57bf-4326-8556-11d4240580cd";
 //testPost($mailevaApiAdapter);
 
 //die;

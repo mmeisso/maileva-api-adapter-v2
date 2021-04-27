@@ -16,6 +16,7 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use MailevaApiAdapter\App\Exception\RoutingException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
+use Throwable;
 
 /**
  * Class Route
@@ -91,7 +92,7 @@ class Route
      */
     public function call(): MailevaResponse
     {
-        $response = null;
+        $response                = null;
         $this->requestParameters = [];
 
         try {
@@ -163,7 +164,7 @@ class Route
             throw new MailevaResponseException($guzzleException->getMessage());
         } catch (RoutingException $exception) {
             throw new MailevaResponseException($exception->getMessage());
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new MailevaResponseException($throwable->getMessage());
         }
     }

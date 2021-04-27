@@ -4,10 +4,12 @@ namespace MailevaApiAdapter\App;
 
 /**
  * Class MailevaSendingStatus
+ *
  * @package MailevaApiAdapter\App
  */
 class MailevaSendingStatus
 {
+
     const ACCEPTED = "ACCEPTED";
     const CANCELED = "CANCELED";
     const DRAFT = "DRAFT";

@@ -8,24 +8,28 @@
 
 namespace MailevaApiAdapter\App\Exception;
 
+use Exception;
+use Throwable;
+
 /**
  * Class MailevaException
+ *
  * @package MailevaApiAdapter\App\Exception
  */
-class MailevaException extends \Exception
+class MailevaException extends Exception
 {
 
     /**
      * MailevaException constructor.
-     * @param string $message
-     * @param int $code
-     * @param \Throwable|null $previous
+     *
+     * @param string         $message
+     * @param int            $code
+     * @param Throwable|null $previous
      */
-    public function __construct($message = '', $code = 0, \Throwable $previous = null)
+    public function __construct($message = '', $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
         error_log('[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString()));
         //echo '[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString());
     }
-
 }

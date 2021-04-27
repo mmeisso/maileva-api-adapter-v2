@@ -15,6 +15,4 @@ interface MailevaResponseInterface
      * @return array
      */
     public function getResponseAsArray(): array;
-
-
 }
