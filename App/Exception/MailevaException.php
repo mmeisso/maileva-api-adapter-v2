@@ -16,7 +16,7 @@ use Throwable;
  *
  * @package MailevaApiAdapter\App\Exception
  */
-class MailevaException extends Exception
+abstract class MailevaException extends Exception
 {
 
     /**
@@ -29,7 +29,15 @@ class MailevaException extends Exception
     public function __construct($message = '', $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-        error_log('[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString()));
+        if ($this->isLogEnable()){
+            error_log('[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString()));
+        }
+
         //echo '[' . date('d-M-Y H:m:s') . '] ' . str_replace('\n', ', ', $this->getMessage() . ' ' . $this->getTraceAsString());
     }
+
+    /**
+     * @return bool
+     */
+    abstract protected function isLogEnable():bool;
 }

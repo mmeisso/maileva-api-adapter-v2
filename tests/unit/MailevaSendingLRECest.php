@@ -18,7 +18,7 @@ class MailevaSendingLRECest
      *
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
      */
     public function prepareAndPost(\UnitTester $I)
     {

@@ -6,7 +6,7 @@ namespace Helper;
 // all public methods declared in helper class will be available in $I
 
 use Faker\Factory;
-use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
 use MailevaApiAdapter\App\MailevaSending;
@@ -102,7 +102,7 @@ class Unit extends \Codeception\Module
      * @param MailevaApiAdapter $mailevaApiAdapter
      *
      * @return MailevaSending
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getMailevaSending(MailevaApiAdapter $mailevaApiAdapter): MailevaSending
     {
@@ -118,7 +118,7 @@ class Unit extends \Codeception\Module
                 $mailevaSending = $this->getMailevaSendingLRCOPRO();
                 break;
             default:
-                throw new MailevaException('Unable to retreive $mailevaApiAdapter->getType() : ' . $mailevaApiAdapter->getType());
+                throw new MailevaCoreException('Unable to retreive $mailevaApiAdapter->getType() : ' . $mailevaApiAdapter->getType());
         }
 
         $mailevaSending->validate($mailevaApiAdapter);

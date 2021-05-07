@@ -50,4 +50,9 @@ class MailevaAllReadyExistException extends MailevaException
     {
         $this->previousMailevaSending = $previousMailevaSendingAsArray;
     }
+
+    protected function isLogEnable(): bool
+    {
+        return false;
+    }
 }

@@ -8,7 +8,7 @@
 
 namespace MailevaApiAdapter\App\Core;
 
-use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use Throwable;
 
 class MailevaLREStatuses
@@ -75,20 +75,20 @@ class MailevaLREStatuses
 
     /**
      * @return array
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getActiveStatus(): array
     {
         if ($this->hasStatuses()) {
             return $this->statuses[count($this->statuses) - 1];
         } else {
-            throw new MailevaException('No valid status set');
+            throw new MailevaCoreException('No valid status set');
         }
     }
 
     /**
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getActiveStatusToString(): string
     {
@@ -98,7 +98,7 @@ class MailevaLREStatuses
 
     /**
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getDateForActiveStatus(): string
     {
@@ -107,7 +107,7 @@ class MailevaLREStatuses
 
     /**
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getDescriptionForActiveStatus(): string
     {
@@ -116,7 +116,7 @@ class MailevaLREStatuses
 
     /**
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getIdForActiveStatus(): string
     {
@@ -125,7 +125,7 @@ class MailevaLREStatuses
 
     /**
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getStatusCodeForActiveStatus(): string
     {
@@ -143,7 +143,7 @@ class MailevaLREStatuses
     /**
      * @param array $statuses
      *
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function setStatuses(array $statuses)
     {
@@ -155,10 +155,10 @@ class MailevaLREStatuses
                     $item[self::DESCRIPTION] = $this->codeDescriptionMapping[$status];
                     $this->statuses[]        = $item;
                 } else {
-                    throw new MailevaException('unknow status ' . $status);
+                    throw new MailevaCoreException('unknow status ' . $status);
                 }
             } catch (Throwable $t) {
-                throw new MailevaException($t->getMessage());
+                throw new MailevaCoreException($t->getMessage());
             }
         }
     }

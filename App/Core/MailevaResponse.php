@@ -9,7 +9,7 @@
 namespace MailevaApiAdapter\App\Core;
 
 use GuzzleHttp\Psr7\Response;
-use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use Throwable;
 
@@ -31,7 +31,6 @@ class MailevaResponse implements MailevaResponseInterface
      * @param Response $response
      *
      * @throws MailevaResponseException
-     * @throws MailevaException
      */
     public function __construct(Route $route, Response $response)
     {
@@ -54,7 +53,7 @@ class MailevaResponse implements MailevaResponseInterface
      * @param Response $response
      *
      * @throws MailevaResponseException
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     private function checkValidityResponse(Route $route, Response $response)
     {

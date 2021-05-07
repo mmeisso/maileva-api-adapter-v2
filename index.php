@@ -111,7 +111,7 @@ function testPost(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter)
  * @param                                          $sendingId
  *
  * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
- * @throws \MailevaApiAdapter\App\Exception\RoutingException
+ * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
  */
 function debugSendingId(\MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter, $sendingId)
 {

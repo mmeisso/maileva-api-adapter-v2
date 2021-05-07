@@ -2,7 +2,7 @@
 
 namespace MailevaApiAdapter\App;
 
-use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
 use PdfUtil\Exception\PdfReportException;
 use Throwable;
@@ -310,7 +310,7 @@ class MailevaSending
 
     /**
      * @return int
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     public function getNbPage(): int
     {
@@ -328,13 +328,13 @@ class MailevaSending
         foreach ($commandList as $command) {
             $output = [];
             exec($command, $output, $result);
-            if (isset($output[0]) && intval($output[0]) > 0) {
+            if (isset($output[0]) && (int)$output[0] > 0) {
                 $this->nbPage = (int)$output[0];
                 break;
             }
         }
         if ($this->nbPage === 0) {
-            throw new MailevaException('Impossible to get page number from ' . $this->getFile());
+            throw new MailevaCoreException('Impossible to get page number from ' . $this->getFile());
         }
 
         return $this->nbPage;

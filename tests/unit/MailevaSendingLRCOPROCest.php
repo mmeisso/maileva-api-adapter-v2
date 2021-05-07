@@ -15,12 +15,12 @@ class MailevaSendingLRCOPROCest
     /**
      * @param UnitTester $I
      *
-     * @group lrcopro
+     * @group MailevaSendingLRCOPROCest
      *
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
      * @throws Exception
      */
     public function prepareAndPost(\UnitTester $I)
@@ -58,7 +58,7 @@ class MailevaSendingLRCOPROCest
                 try {
                     $result = $mailevaApiAdapter->getSendingBySendingId($sendingId)->getResponseAsArray();
                 } catch (\MailevaApiAdapter\App\Exception\MailevaResponseException $e) {
-                } catch (\MailevaApiAdapter\App\Exception\RoutingException $e) {
+                } catch (\MailevaApiAdapter\App\Exception\MailevaRoutingException $e) {
                 } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
                 }
 

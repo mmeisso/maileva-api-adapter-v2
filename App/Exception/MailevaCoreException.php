@@ -9,11 +9,11 @@
 namespace MailevaApiAdapter\App\Exception;
 
 /**
- * Class MailevaResponseException
+ * Class MailevaCoreException
  *
  * @package MailevaApiAdapter\App\Exception
  */
-class MailevaResponseException extends MailevaException
+class MailevaCoreException extends MailevaException
 {
 
     /**

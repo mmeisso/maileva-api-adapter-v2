@@ -15,7 +15,7 @@ use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\Route;
 use MailevaApiAdapter\App\Core\Routing;
 use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
-use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use Throwable;
 use ZipArchive;
@@ -50,7 +50,7 @@ class MailevaApiAdapter
      * @param string $documentId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function deleteDocumentBySendingId(string $sendingId, string $documentId): MailevaResponse
@@ -72,7 +72,7 @@ class MailevaApiAdapter
      * @param string $recipientId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function deleteRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
@@ -93,7 +93,7 @@ class MailevaApiAdapter
      * @param string $sendingId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function deleteRecipientsBySendingId(string $sendingId): MailevaResponse
@@ -113,7 +113,7 @@ class MailevaApiAdapter
      * @param string $sendingId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function deleteSendingBySendingId(string $sendingId): MailevaResponse
@@ -135,8 +135,8 @@ class MailevaApiAdapter
      * @param string $localFilePath
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function downloadAcknowledgementOfReceiptBySendingIdAndRecipientId(
@@ -145,7 +145,7 @@ class MailevaApiAdapter
         string $localFilePath
     ): MailevaResponse {
         if ($this->getType() !== MailevaConnection::LRE) {
-            throw new MailevaException('Only available for LRE');
+            throw new MailevaCoreException('Only available for LRE');
         }
         $route = new Route(
             $this, Routing::DOWNLOAD_ACKNOWLEDGEMENT_OF_RECEIPT_BY_SENDING_ID_AND_RECIPIENT_ID,
@@ -165,14 +165,14 @@ class MailevaApiAdapter
      * @param string $localFilePath
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function downloadDepositProofBySendingId(string $sendingId, string $localFilePath): MailevaResponse
     {
         if ($this->getType() !== MailevaConnection::LRE) {
-            throw new MailevaException('Only available for LRE');
+            throw new MailevaCoreException('Only available for LRE');
         }
 
         $route = new Route(
@@ -230,7 +230,7 @@ class MailevaApiAdapter
      * @param array $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getAuthentication(array $body): MailevaResponse
@@ -260,7 +260,7 @@ class MailevaApiAdapter
      * @param string $documentId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getDocumentBySendingIdAndDocumentId(string $sendingId, string $documentId): MailevaResponse
@@ -283,7 +283,7 @@ class MailevaApiAdapter
      * @param int    $count
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getDocumentsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
@@ -314,7 +314,7 @@ class MailevaApiAdapter
      * @param string $importId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getImportRecipientsBySendingIdAndImportId(string $sendingId, string $importId): MailevaResponse
@@ -336,7 +336,7 @@ class MailevaApiAdapter
      * @param string $recipientId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
@@ -359,7 +359,7 @@ class MailevaApiAdapter
      * @param int    $count
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getRecipientsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
@@ -381,8 +381,8 @@ class MailevaApiAdapter
      * @param string $sendingId
      *
      * @return MailevaResponseInterface
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function getSendingBySendingId(string $sendingId): MailevaResponseInterface
@@ -390,7 +390,6 @@ class MailevaApiAdapter
         switch ($this->getType()) {
             case MailevaConnection::LRCOPRO:
                 return $this->getSendingBySendingIdLRCOPRO($sendingId);
-                break;
             default:
                 $route = new Route(
                     $this, Routing::GET_SENDING_BY_SENDING_ID,
@@ -409,14 +408,14 @@ class MailevaApiAdapter
      * @param string $recipientId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function getSendingStatusBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
         if (false === in_array($this->getType(), [MailevaConnection::LRE, MailevaConnection::CLASSIC], true)) {
-            throw new MailevaException('Not available for type ' . $this->getType());
+            throw new MailevaCoreException('Not available for type ' . $this->getType());
         }
 
         $route = new Route(
@@ -436,7 +435,7 @@ class MailevaApiAdapter
      * @param int $count
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function getSendings(int $startIndex = 1, int $count = 100): MailevaResponse
@@ -457,14 +456,14 @@ class MailevaApiAdapter
      * @param MailevaSending $mailevaSending
      *
      * @return array
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function getSimilarPreviousAlreadyBeenSent(MailevaSending $mailevaSending): array
     {
         if ($this->mailevaConnection->useMemcache() === false) {
-            throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
+            throw new MailevaCoreException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
         }
 
         $sendingIdSimilarPrevious = MemcachedManager::getInstance(
@@ -508,14 +507,14 @@ class MailevaApiAdapter
      * @param array  $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function patchLRESendingBySendingId(string $sendingId, array $body): MailevaResponse
     {
         if ($this->getType() !== MailevaConnection::LRE) {
-            throw new MailevaException('Only available for LRE');
+            throw new MailevaCoreException('Only available for LRE');
         }
 
         $route = new Route(
@@ -535,14 +534,14 @@ class MailevaApiAdapter
      * @param array  $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function patchSendingBySendingId(string $sendingId, array $body): MailevaResponse
     {
         if ($this->getType() !== MailevaConnection::CLASSIC) {
-            throw new MailevaException('not available for LRE');
+            throw new MailevaCoreException('not available for LRE');
         }
 
         $route = new Route(
@@ -559,7 +558,7 @@ class MailevaApiAdapter
 
     /**
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postAuthentication(): MailevaResponse
@@ -586,7 +585,7 @@ class MailevaApiAdapter
      * @param array  $multipart
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postDocumentBySendingId(string $sendingId, array $multipart): MailevaResponse
@@ -608,7 +607,7 @@ class MailevaApiAdapter
      * @param int    $fileId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postDocumentFromLibrary(string $sendingId, int $fileId): MailevaResponse
@@ -631,7 +630,7 @@ class MailevaApiAdapter
      * @param int    $position
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postDocumentPositionBySendingId(string $sendingId, string $documentId, int $position): MailevaResponse
@@ -654,7 +653,7 @@ class MailevaApiAdapter
      * @param array  $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      * @deprecated
      *
@@ -678,7 +677,7 @@ class MailevaApiAdapter
      * @param array  $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postImportRecipientsBySendingIdFromAddressBook(string $sendingId, array $body): MailevaResponse
@@ -701,7 +700,7 @@ class MailevaApiAdapter
      * @param array  $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException*
      */
     public function postRecipientBySendingId(string $sendingId, array $body): MailevaResponse
@@ -722,7 +721,7 @@ class MailevaApiAdapter
      * @param array $body
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postSending(array $body): MailevaResponse
@@ -743,7 +742,7 @@ class MailevaApiAdapter
      * @param string $sendingId
      *
      * @return MailevaResponse
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaResponseException
      */
     public function postSendingBySendingId(string $sendingId): MailevaResponse
@@ -765,9 +764,9 @@ class MailevaApiAdapter
      *
      * @return string
      * @throws Exception\MailevaParameterException
-     * @throws Exception\RoutingException
+     * @throws Exception\MailevaRoutingException
      * @throws MailevaAllReadyExistException
-     * @throws MailevaException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function prepare(MailevaSending $mailevaSending, bool $checkSimilarPreviousHasAlreadyBeenSent = true): string
@@ -776,7 +775,7 @@ class MailevaApiAdapter
 
         if ($checkSimilarPreviousHasAlreadyBeenSent === true) {
             if ($this->mailevaConnection->useMemcache() === false) {
-                throw new MailevaException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
+                throw new MailevaCoreException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
             }
             $sendingIdSimilarPrevious = $this->getSimilarPreviousAlreadyBeenSent($mailevaSending);
 
@@ -801,15 +800,12 @@ class MailevaApiAdapter
         switch ($this->getType()) {
             case MailevaConnection::CLASSIC:
                 return $this->prepareSimple($mailevaSending);
-                break;
             case MailevaConnection::LRE:
                 return $this->prepareLRE($mailevaSending);
-                break;
             case MailevaConnection::LRCOPRO:
                 return $this->prepareLRCOPRO($mailevaSending);
-                break;
             default:
-                throw new MailevaException('Type not available');
+                throw new MailevaCoreException('Type not available');
         }
     }
 
@@ -879,8 +875,8 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      *
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     public function submit(string $sendingId)
@@ -898,7 +894,7 @@ class MailevaApiAdapter
      * @param string $sendingId
      *
      * @return MailevaResponseLRCOPRO
-     * @throws MailevaException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     private function getSendingBySendingIdLRCOPRO(string $sendingId): MailevaResponseLRCOPRO
@@ -912,15 +908,15 @@ class MailevaApiAdapter
             $conn = ftp_connect($this->mailevaConnection->getHost());
 
             if (false === $conn) {
-                throw new MailevaException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             if (!ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret())) {
-                throw new MailevaException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             if (!ftp_pasv($conn, true)) {
-                throw new MailevaException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             $fileListing = ftp_nlist($conn, $this->mailevaConnection->getDirectoryCallback());
@@ -998,12 +994,12 @@ class MailevaApiAdapter
                         }
                         fclose($handle);
                     } else {
-                        throw new MailevaException('Unable to access file ' . $tmpLocalFile);
+                        throw new MailevaCoreException('Unable to access file ' . $tmpLocalFile);
                     }
                 }
             }
         } catch (Throwable $t) {
-            throw new MailevaException(
+            throw new MailevaCoreException(
                 'Function : getSendingStatusById : Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(),
                 $t->getCode(), $t
             );
@@ -1024,7 +1020,7 @@ class MailevaApiAdapter
      * @param MailevaSending $mailevaSending
      *
      * @return string
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     private function prepareLRCOPRO(MailevaSending $mailevaSending): string
     {
@@ -1034,15 +1030,15 @@ class MailevaApiAdapter
             $conn = ftp_connect($this->mailevaConnection->getHost());
 
             if (false === $conn) {
-                throw new MailevaException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             if (!ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret())) {
-                throw new MailevaException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             if (!ftp_pasv($conn, true)) {
-                throw new MailevaException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
+                throw new MailevaCoreException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
             }
 
             $sendingId  = str_replace('.', '', uniqid('', 'true'));
@@ -1058,14 +1054,11 @@ class MailevaApiAdapter
             $duplexPrinting     = $mailevaSending->isDuplexPrinting() ? 1 : 0;
             $notification_email = $mailevaSending->getNotificationEmail();
 
-            $tplContent = str_replace('##login##', $login, $tplContent);
-            $tplContent = str_replace('##password##', $password, $tplContent);
-            $tplContent = str_replace('##customId##', $customId, $tplContent);
-            $tplContent = str_replace('##sendingId##', $sendingId, $tplContent);
-
-            $tplContent = str_replace('##name##', 'Envoi LRCOPRO', $tplContent);
-            $tplContent = str_replace('##duplexPrinting##', $duplexPrinting, $tplContent);
-            $tplContent = str_replace('##notification_email##', $notification_email, $tplContent);
+            $tplContent = str_replace(
+                array('##login##', '##password##', '##customId##', '##sendingId##', '##name##', '##duplexPrinting##', '##notification_email##'),
+                array($login, $password, $customId, $sendingId, 'Envoi LRCOPRO', $duplexPrinting, $notification_email),
+                $tplContent
+            );
 
             $addressLine1 = $mailevaSending->getAddressLine1();
             $addressLine2 = $mailevaSending->getAddressLine2();
@@ -1074,12 +1067,11 @@ class MailevaApiAdapter
             $addressLine5 = $mailevaSending->getAddressLine5();
             $addressLine6 = $mailevaSending->getAddressLine6();
 
-            $tplContent = str_replace('##addressLine1##', $addressLine1, $tplContent);
-            $tplContent = str_replace('##addressLine2##', $addressLine2, $tplContent);
-            $tplContent = str_replace('##addressLine3##', $addressLine3, $tplContent);
-            $tplContent = str_replace('##addressLine4##', $addressLine4, $tplContent);
-            $tplContent = str_replace('##addressLine5##', $addressLine5, $tplContent);
-            $tplContent = str_replace('##addressLine6##', $addressLine6, $tplContent);
+            $tplContent = str_replace(
+                array('##addressLine1##', '##addressLine2##', '##addressLine3##', '##addressLine4##', '##addressLine5##', '##addressLine6##'),
+                array($addressLine1, $addressLine2, $addressLine3, $addressLine4, $addressLine5, $addressLine6),
+                $tplContent
+            );
 
             $senderAddressLine1 = $mailevaSending->getSenderAddressLine1();
             $senderAddressLine2 = $mailevaSending->getSenderAddressLine2();
@@ -1088,12 +1080,18 @@ class MailevaApiAdapter
             $senderAddressLine5 = $mailevaSending->getSenderAddressLine5();
             $senderAddressLine6 = $mailevaSending->getSenderAddressLine6();
 
-            $tplContent = str_replace('##senderAddressLine1##', $senderAddressLine1, $tplContent);
-            $tplContent = str_replace('##senderAddressLine2##', $senderAddressLine2, $tplContent);
-            $tplContent = str_replace('##senderAddressLine3##', $senderAddressLine3, $tplContent);
-            $tplContent = str_replace('##senderAddressLine4##', $senderAddressLine4, $tplContent);
-            $tplContent = str_replace('##senderAddressLine5##', $senderAddressLine5, $tplContent);
-            $tplContent = str_replace('##senderAddressLine6##', $senderAddressLine6, $tplContent);
+            $tplContent = str_replace(
+                array(
+                    '##senderAddressLine1##',
+                    '##senderAddressLine2##',
+                    '##senderAddressLine3##',
+                    '##senderAddressLine4##',
+                    '##senderAddressLine5##',
+                    '##senderAddressLine6##'
+                ),
+                array($senderAddressLine1, $senderAddressLine2, $senderAddressLine3, $senderAddressLine4, $senderAddressLine5, $senderAddressLine6),
+                $tplContent
+            );
 
             $tplFile = tempnam(sys_get_temp_dir(), 'xml');
             file_put_contents($tplFile, $tplContent);
@@ -1102,7 +1100,7 @@ class MailevaApiAdapter
             $tempZip = sys_get_temp_dir() . '/' . $sendingId . '.zip';
 
             if ($zip->open($tempZip, ZipArchive::CREATE) !== true) {
-                throw new MailevaException('Unable to open Zip File ' . $tempZip);
+                throw new MailevaCoreException('Unable to open Zip File ' . $tempZip);
             }
 
             $zip->addFile($file, $sendingId . '.001');
@@ -1110,7 +1108,7 @@ class MailevaApiAdapter
             $zip->close();
 
             if (!ftp_put($conn, $sendingId . '.zip', $tempZip, FTP_BINARY)) {
-                throw new MailevaException('Unable to send Zip File ' . $tempZip);
+                throw new MailevaCoreException('Unable to send Zip File ' . $tempZip);
             }
 
             if ($this->mailevaConnection->useMemcache() === true) {
@@ -1120,7 +1118,7 @@ class MailevaApiAdapter
                 )->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
             }
         } catch (Throwable $t) {
-            throw new MailevaException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
+            throw new MailevaCoreException('Unable to connect to ' . $this->mailevaConnection->getHost() . ' ' . $t->getMessage(), $t->getCode(), $t);
         } finally {
             if (null !== $conn) {
                 ftp_close($conn);
@@ -1134,8 +1132,8 @@ class MailevaApiAdapter
      * @param MailevaSending $mailevaSending
      *
      * @return string
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     private function prepareLRE(MailevaSending $mailevaSending): string
@@ -1227,8 +1225,8 @@ class MailevaApiAdapter
      * @param MailevaSending $mailevaSending
      *
      * @return string
-     * @throws Exception\RoutingException
-     * @throws MailevaException
+     * @throws Exception\MailevaRoutingException
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
     private function prepareSimple(MailevaSending $mailevaSending): string
@@ -1306,26 +1304,26 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      *
-     * @throws MailevaException
+     * @throws MailevaCoreException
      */
     private function submitLrCopro(string $sendingId)
     {
         $conn = ftp_connect($this->mailevaConnection->getHost());
 
         if (false === $conn) {
-            throw new MailevaException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
+            throw new MailevaCoreException('Unable to connect ' . $this->mailevaConnection->getHost() . ' fail');
         }
 
         if (!ftp_login($conn, $this->mailevaConnection->getClientId(), $this->mailevaConnection->getClientSecret())) {
-            throw new MailevaException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
+            throw new MailevaCoreException('Unable to login ' . $this->mailevaConnection->getHost() . ' fail');
         }
 
         if (!ftp_pasv($conn, true)) {
-            throw new MailevaException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
+            throw new MailevaCoreException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
         }
 
         if (!ftp_rename($conn, $sendingId . '.zip', $sendingId . '.zcou')) {
-            throw new MailevaException('Unable to rename ' . $sendingId . '.zip submit fail');
+            throw new MailevaCoreException('Unable to rename ' . $sendingId . '.zip submit fail');
         }
 
         ftp_close($conn);

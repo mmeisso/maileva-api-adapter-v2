@@ -31,7 +31,7 @@ class MailevaSendingClassicCest
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
      * @throws Exception
      */
     public function prepareAndPost(\UnitTester $I)
@@ -86,7 +86,7 @@ class MailevaSendingClassicCest
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
      * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
      */
     public function prepareAndPostWithTreatUndeliveredMail(\UnitTester $I)
     {
@@ -117,7 +117,7 @@ class MailevaSendingClassicCest
      *
      * @throws \MailevaApiAdapter\App\Exception\MailevaException
      * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\RoutingException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
      */
     private function testSubmit(\UnitTester $I, MailevaApiAdapter $mailevaApiAdapter, MailevaSending $mailevaSending, string $sendingId)
     {

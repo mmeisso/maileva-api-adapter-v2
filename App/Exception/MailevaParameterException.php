@@ -54,4 +54,12 @@ class MailevaParameterException extends MailevaException
     {
         parent::__construct($message, $code, $previous);
     }
+
+    /**
+     * @return bool
+     */
+    protected function isLogEnable(): bool
+    {
+        return true;
+    }
 }

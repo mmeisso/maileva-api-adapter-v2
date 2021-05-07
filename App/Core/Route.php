@@ -13,7 +13,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use MailevaApiAdapter\App\Core\Http\Request\Method;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
-use MailevaApiAdapter\App\Exception\RoutingException;
+use MailevaApiAdapter\App\Exception\MailevaRoutingException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
 use Throwable;
@@ -46,12 +46,12 @@ class Route
      * @param array             $defaultArgues
      * @param array             $argues
      *
-     * @throws RoutingException
+     * @throws MailevaRoutingException
      */
     public function __construct(MailevaApiAdapter $mailevaApiAdapter, array $defaultArgues, array $argues)
     {
         if (!is_array($defaultArgues)) {
-            throw new RoutingException(' not implemented');
+            throw new MailevaRoutingException(' not implemented');
         } else {
             $this->mailevaApiAdapter = $mailevaApiAdapter;
 
@@ -129,8 +129,7 @@ class Route
                     }
                     break;
                 default:
-                    throw new RoutingException(' not implemented ' . $this->getMethod());
-                    break;
+                    throw new MailevaRoutingException(' not implemented ' . $this->getMethod());
             }
 
             $client = new Client(['verify' => false]);
@@ -162,7 +161,7 @@ class Route
             return $mailevaResponse;
         } catch (GuzzleException $guzzleException) {
             throw new MailevaResponseException($guzzleException->getMessage());
-        } catch (RoutingException $exception) {
+        } catch (MailevaRoutingException $exception) {
             throw new MailevaResponseException($exception->getMessage());
         } catch (Throwable $throwable) {
             throw new MailevaResponseException($throwable->getMessage());
@@ -308,7 +307,7 @@ class Route
      *
      * @param array $array
      *
-     * @throws RoutingException
+     * @throws MailevaRoutingException
      */
     private function populate(array $array)
     {
@@ -321,7 +320,7 @@ class Route
                             $this->headers = $value;
                             break;
                         } else {
-                            throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
+                            throw new MailevaRoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
                         }
 
                     case 'params':
@@ -329,7 +328,7 @@ class Route
                             $this->params = $value;
                             break;
                         } else {
-                            throw new RoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
+                            throw new MailevaRoutingException(array_search(Routing::REQUIRED, $value) . ' not set');
                         }
 
                     default:
@@ -338,7 +337,7 @@ class Route
             } else {
                 # a value -> set
                 if ($value === Routing::REQUIRED) {
-                    throw new RoutingException($key . ' not set');
+                    throw new MailevaRoutingException($key . ' not set');
                 }
 
                 switch ($key) {
