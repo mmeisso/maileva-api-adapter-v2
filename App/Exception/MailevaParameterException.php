@@ -18,6 +18,8 @@ use Throwable;
 class MailevaParameterException extends MailevaException
 {
 
+    /** Status NPD detected */
+    const ERROR_MAILEVA_NPD_DETECTED = -147;
     /** email notification not set */
     const ERROR_MAILEVA_NOTIFICATION_TREAT_UNDELIVERED_MAIL_NOT_SET = -146;
     /** Postage type does not match */
