@@ -930,13 +930,17 @@ class MailevaApiAdapter
                     }
 
                     if (!is_dir($this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback())) {
-                        mkdir($this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback());
+                        if (!mkdir($concurrentDirectory = $this->mailevaConnection->getTmpFileDirectory() . $this->mailevaConnection->getDirectoryCallback()) && !is_dir($concurrentDirectory)) {
+                            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+                        }
                     }
                     $tmpLocalFile = $this->mailevaConnection->getTmpFileDirectory() . $filePath;
 
-                    if (!ftp_get($conn, $tmpLocalFile, $filePath, FTP_BINARY)) {
-                        error_log(__FILE__ . '(' . __LINE__ . '):  Trouble downloading the file : ' . $filePath);
-                        continue;
+                    if(false === file_exists($tmpLocalFile)){
+                        if (false === ftp_get($conn, $tmpLocalFile, $filePath, FTP_BINARY)) {
+                            error_log(__FILE__ . '(' . __LINE__ . '):  Trouble downloading the file : ' . $filePath);
+                            continue;
+                        }
                     }
 
                     if (is_file($tmpLocalFile)) {
