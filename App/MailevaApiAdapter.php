@@ -953,7 +953,8 @@ class MailevaApiAdapter
                             $trackId = (string)$xml->Request->TrackId[0]; #1
                             if ($sendingId . '.Rq' === $trackId) {
                                 $responseAsArray['id'] = $sendingId;
-                                if ((string)$xml->Request->Status[0] === 'ACCEPT') {
+                                # Todo pansement pas joli, mieux gérer les différents status LRCOPRO
+                                if (in_array((string)$xml->Request->Status[0],['ACCEPT','OK'])) {
                                     $responseAsArray['status'] = MailevaSendingStatus::ACCEPTED;
                                 }
                                 if ((string)$xml->Request->Status[0] === 'NACCEPT') {
