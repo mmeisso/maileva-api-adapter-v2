@@ -271,7 +271,12 @@ class Route
 
             return $this->getMailevaApiAdapter()->getHost() . '/' . $subDirectory . '/v2' . $this->url;
         } else {
-            return $this->getMailevaApiAdapter()->getAuthenticationHost() . '/authentication' . $this->url;
+            $authenticationHost = $this->getMailevaApiAdapter()->getAuthenticationHost();
+            if (strpos('sandbox', $authenticationHost) > 1) {
+                return $authenticationHost . '/auth/realms/services/protocol' . $this->url;
+            } else {
+                return $authenticationHost . '/authentication' . $this->url;
+            }
         }
     }
 
