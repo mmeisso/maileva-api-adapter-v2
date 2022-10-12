@@ -46,7 +46,7 @@ class Routing
         [
             'authenticated_route' => false,
             'method'              => Method::POST,
-            'url'                 => '/openid-connect/token',
+            'url'                 => '/token',
             'headers'             => [
                 'accept'        => 'application/json',
                 'Authorization' => Routing::REQUIRED,

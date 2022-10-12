@@ -273,9 +273,9 @@ class Route
         } else {
             $authenticationHost = $this->getMailevaApiAdapter()->getAuthenticationHost();
             if (strpos('sandbox', $authenticationHost) > 1) {
-                return $authenticationHost . '/auth/realms/services/protocol' . $this->url;
+                return $authenticationHost . '/auth/realms/services/protocol/openid-connect' . $this->url;
             } else {
-                return $authenticationHost . '/authentication' . $this->url;
+                return $authenticationHost . '/authentication/oauth2' . $this->url;
             }
         }
     }
