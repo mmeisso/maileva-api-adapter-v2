@@ -12,7 +12,7 @@
 		<pjs:Request TrackId="##sendingId##.Rq" MediaType="PAPER">
 			<pjs:Recipients>
 				<pjs:Internal>
-					<pjs:Recipient Id="1" TrackId="##sendingId##.Rp">
+					<pjs:Recipient Id="1" TrackId="##customId##.Rp">
 						<com:PaperAddress>
 							<com:AddressLines>
 								<com:AddressLine1>##addressLine1##</com:AddressLine1>
