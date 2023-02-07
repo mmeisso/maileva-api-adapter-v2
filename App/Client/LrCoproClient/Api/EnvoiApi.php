@@ -153,6 +153,7 @@ class EnvoiApi
      *
      * Vérification de l&#39;envoi avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['checkSending'] to see the possible values for this operation
      *
@@ -160,9 +161,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function checkSending($sendingId, string $contentType = self::contentTypes['checkSending'][0])
+    public function checkSending($authorization, $sendingId, string $contentType = self::contentTypes['checkSending'][0])
     {
-        $this->checkSendingWithHttpInfo($sendingId, $contentType);
+        $this->checkSendingWithHttpInfo($authorization, $sendingId, $contentType);
     }
 
     /**
@@ -170,6 +171,7 @@ class EnvoiApi
      *
      * Vérification de l&#39;envoi avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['checkSending'] to see the possible values for this operation
      *
@@ -177,9 +179,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function checkSendingWithHttpInfo($sendingId, string $contentType = self::contentTypes['checkSending'][0])
+    public function checkSendingWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['checkSending'][0])
     {
-        $request = $this->checkSendingRequest($sendingId, $contentType);
+        $request = $this->checkSendingRequest($authorization, $sendingId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -238,15 +240,16 @@ class EnvoiApi
      *
      * Vérification de l&#39;envoi avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['checkSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function checkSendingAsync($sendingId, string $contentType = self::contentTypes['checkSending'][0])
+    public function checkSendingAsync($authorization, $sendingId, string $contentType = self::contentTypes['checkSending'][0])
     {
-        return $this->checkSendingAsyncWithHttpInfo($sendingId, $contentType)
+        return $this->checkSendingAsyncWithHttpInfo($authorization, $sendingId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -259,16 +262,17 @@ class EnvoiApi
      *
      * Vérification de l&#39;envoi avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['checkSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function checkSendingAsyncWithHttpInfo($sendingId, string $contentType = self::contentTypes['checkSending'][0])
+    public function checkSendingAsyncWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['checkSending'][0])
     {
         $returnType = '';
-        $request = $this->checkSendingRequest($sendingId, $contentType);
+        $request = $this->checkSendingRequest($authorization, $sendingId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -296,14 +300,22 @@ class EnvoiApi
     /**
      * Create request for operation 'checkSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['checkSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function checkSendingRequest($sendingId, string $contentType = self::contentTypes['checkSending'][0])
+    public function checkSendingRequest($authorization, $sendingId, string $contentType = self::contentTypes['checkSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling checkSending'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -321,6 +333,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -390,6 +406,7 @@ class EnvoiApi
      *
      * Création d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation $sendingCreation Nouvel envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createSending'] to see the possible values for this operation
      *
@@ -397,9 +414,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function createSending($sendingCreation, string $contentType = self::contentTypes['createSending'][0])
+    public function createSending($authorization, $sendingCreation, string $contentType = self::contentTypes['createSending'][0])
     {
-        list($response) = $this->createSendingWithHttpInfo($sendingCreation, $contentType);
+        list($response) = $this->createSendingWithHttpInfo($authorization, $sendingCreation, $contentType);
         return $response;
     }
 
@@ -408,6 +425,7 @@ class EnvoiApi
      *
      * Création d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation $sendingCreation Nouvel envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createSending'] to see the possible values for this operation
      *
@@ -415,9 +433,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function createSendingWithHttpInfo($sendingCreation, string $contentType = self::contentTypes['createSending'][0])
+    public function createSendingWithHttpInfo($authorization, $sendingCreation, string $contentType = self::contentTypes['createSending'][0])
     {
-        $request = $this->createSendingRequest($sendingCreation, $contentType);
+        $request = $this->createSendingRequest($authorization, $sendingCreation, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -531,15 +549,16 @@ class EnvoiApi
      *
      * Création d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation $sendingCreation Nouvel envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createSendingAsync($sendingCreation, string $contentType = self::contentTypes['createSending'][0])
+    public function createSendingAsync($authorization, $sendingCreation, string $contentType = self::contentTypes['createSending'][0])
     {
-        return $this->createSendingAsyncWithHttpInfo($sendingCreation, $contentType)
+        return $this->createSendingAsyncWithHttpInfo($authorization, $sendingCreation, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -552,16 +571,17 @@ class EnvoiApi
      *
      * Création d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation $sendingCreation Nouvel envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createSendingAsyncWithHttpInfo($sendingCreation, string $contentType = self::contentTypes['createSending'][0])
+    public function createSendingAsyncWithHttpInfo($authorization, $sendingCreation, string $contentType = self::contentTypes['createSending'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse';
-        $request = $this->createSendingRequest($sendingCreation, $contentType);
+        $request = $this->createSendingRequest($authorization, $sendingCreation, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -602,14 +622,22 @@ class EnvoiApi
     /**
      * Create request for operation 'createSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation $sendingCreation Nouvel envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function createSendingRequest($sendingCreation, string $contentType = self::contentTypes['createSending'][0])
+    public function createSendingRequest($authorization, $sendingCreation, string $contentType = self::contentTypes['createSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling createSending'
+            );
+        }
 
         // verify the required parameter 'sendingCreation' is set
         if ($sendingCreation === null || (is_array($sendingCreation) && count($sendingCreation) === 0)) {
@@ -627,6 +655,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
 
 
@@ -940,6 +972,7 @@ class EnvoiApi
      *
      * Liste des envois
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
      * @param  string $sort sort (optional)
@@ -950,9 +983,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function findSendings($startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
+    public function findSendings($authorization, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
     {
-        list($response) = $this->findSendingsWithHttpInfo($startIndex, $count, $sort, $desc, $contentType);
+        list($response) = $this->findSendingsWithHttpInfo($authorization, $startIndex, $count, $sort, $desc, $contentType);
         return $response;
     }
 
@@ -961,6 +994,7 @@ class EnvoiApi
      *
      * Liste des envois
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
      * @param  string $sort (optional)
@@ -971,9 +1005,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function findSendingsWithHttpInfo($startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
+    public function findSendingsWithHttpInfo($authorization, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
     {
-        $request = $this->findSendingsRequest($startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->findSendingsRequest($authorization, $startIndex, $count, $sort, $desc, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1087,6 +1121,7 @@ class EnvoiApi
      *
      * Liste des envois
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
      * @param  string $sort (optional)
@@ -1096,9 +1131,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function findSendingsAsync($startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
+    public function findSendingsAsync($authorization, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
     {
-        return $this->findSendingsAsyncWithHttpInfo($startIndex, $count, $sort, $desc, $contentType)
+        return $this->findSendingsAsyncWithHttpInfo($authorization, $startIndex, $count, $sort, $desc, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1111,6 +1146,7 @@ class EnvoiApi
      *
      * Liste des envois
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
      * @param  string $sort (optional)
@@ -1120,10 +1156,10 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function findSendingsAsyncWithHttpInfo($startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
+    public function findSendingsAsyncWithHttpInfo($authorization, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingsResponse';
-        $request = $this->findSendingsRequest($startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->findSendingsRequest($authorization, $startIndex, $count, $sort, $desc, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1164,6 +1200,7 @@ class EnvoiApi
     /**
      * Create request for operation 'findSendings'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
      * @param  string $sort (optional)
@@ -1173,8 +1210,15 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function findSendingsRequest($startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
+    public function findSendingsRequest($authorization, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['findSendings'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling findSendings'
+            );
+        }
 
         if ($startIndex !== null && $startIndex < 1) {
             throw new \InvalidArgumentException('invalid value for "$startIndex" when calling EnvoiApi.findSendings, must be bigger than or equal to 1.');
@@ -1231,6 +1275,10 @@ class EnvoiApi
             false // required
         ) ?? []);
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
 
 
@@ -1292,6 +1340,7 @@ class EnvoiApi
      *
      * Liste des envois vérifiés avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getCheckSending'] to see the possible values for this operation
      *
@@ -1299,9 +1348,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function getCheckSending($sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
+    public function getCheckSending($authorization, $sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
     {
-        $this->getCheckSendingWithHttpInfo($sendingId, $contentType);
+        $this->getCheckSendingWithHttpInfo($authorization, $sendingId, $contentType);
     }
 
     /**
@@ -1309,6 +1358,7 @@ class EnvoiApi
      *
      * Liste des envois vérifiés avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getCheckSending'] to see the possible values for this operation
      *
@@ -1316,9 +1366,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getCheckSendingWithHttpInfo($sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
+    public function getCheckSendingWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
     {
-        $request = $this->getCheckSendingRequest($sendingId, $contentType);
+        $request = $this->getCheckSendingRequest($authorization, $sendingId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1377,15 +1427,16 @@ class EnvoiApi
      *
      * Liste des envois vérifiés avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getCheckSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getCheckSendingAsync($sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
+    public function getCheckSendingAsync($authorization, $sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
     {
-        return $this->getCheckSendingAsyncWithHttpInfo($sendingId, $contentType)
+        return $this->getCheckSendingAsyncWithHttpInfo($authorization, $sendingId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1398,16 +1449,17 @@ class EnvoiApi
      *
      * Liste des envois vérifiés avant soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getCheckSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getCheckSendingAsyncWithHttpInfo($sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
+    public function getCheckSendingAsyncWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
     {
         $returnType = '';
-        $request = $this->getCheckSendingRequest($sendingId, $contentType);
+        $request = $this->getCheckSendingRequest($authorization, $sendingId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1435,14 +1487,22 @@ class EnvoiApi
     /**
      * Create request for operation 'getCheckSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getCheckSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getCheckSendingRequest($sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
+    public function getCheckSendingRequest($authorization, $sendingId, string $contentType = self::contentTypes['getCheckSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getCheckSending'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1460,6 +1520,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -1835,6 +1899,7 @@ class EnvoiApi
      *
      * Contrôle l&#39;état d&#39;un envoi après soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getSubmitSending'] to see the possible values for this operation
      *
@@ -1842,9 +1907,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function getSubmitSending($sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
+    public function getSubmitSending($authorization, $sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
     {
-        $this->getSubmitSendingWithHttpInfo($sendingId, $contentType);
+        $this->getSubmitSendingWithHttpInfo($authorization, $sendingId, $contentType);
     }
 
     /**
@@ -1852,6 +1917,7 @@ class EnvoiApi
      *
      * Contrôle l&#39;état d&#39;un envoi après soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getSubmitSending'] to see the possible values for this operation
      *
@@ -1859,9 +1925,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getSubmitSendingWithHttpInfo($sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
+    public function getSubmitSendingWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
     {
-        $request = $this->getSubmitSendingRequest($sendingId, $contentType);
+        $request = $this->getSubmitSendingRequest($authorization, $sendingId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1920,15 +1986,16 @@ class EnvoiApi
      *
      * Contrôle l&#39;état d&#39;un envoi après soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getSubmitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getSubmitSendingAsync($sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
+    public function getSubmitSendingAsync($authorization, $sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
     {
-        return $this->getSubmitSendingAsyncWithHttpInfo($sendingId, $contentType)
+        return $this->getSubmitSendingAsyncWithHttpInfo($authorization, $sendingId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1941,16 +2008,17 @@ class EnvoiApi
      *
      * Contrôle l&#39;état d&#39;un envoi après soumission
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getSubmitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getSubmitSendingAsyncWithHttpInfo($sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
+    public function getSubmitSendingAsyncWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
     {
         $returnType = '';
-        $request = $this->getSubmitSendingRequest($sendingId, $contentType);
+        $request = $this->getSubmitSendingRequest($authorization, $sendingId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1978,14 +2046,22 @@ class EnvoiApi
     /**
      * Create request for operation 'getSubmitSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getSubmitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getSubmitSendingRequest($sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
+    public function getSubmitSendingRequest($authorization, $sendingId, string $contentType = self::contentTypes['getSubmitSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getSubmitSending'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -2003,6 +2079,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -2072,6 +2152,7 @@ class EnvoiApi
      *
      * Finalisation d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['submitSending'] to see the possible values for this operation
      *
@@ -2079,9 +2160,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function submitSending($sendingId, string $contentType = self::contentTypes['submitSending'][0])
+    public function submitSending($authorization, $sendingId, string $contentType = self::contentTypes['submitSending'][0])
     {
-        $this->submitSendingWithHttpInfo($sendingId, $contentType);
+        $this->submitSendingWithHttpInfo($authorization, $sendingId, $contentType);
     }
 
     /**
@@ -2089,6 +2170,7 @@ class EnvoiApi
      *
      * Finalisation d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['submitSending'] to see the possible values for this operation
      *
@@ -2096,9 +2178,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function submitSendingWithHttpInfo($sendingId, string $contentType = self::contentTypes['submitSending'][0])
+    public function submitSendingWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['submitSending'][0])
     {
-        $request = $this->submitSendingRequest($sendingId, $contentType);
+        $request = $this->submitSendingRequest($authorization, $sendingId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -2157,15 +2239,16 @@ class EnvoiApi
      *
      * Finalisation d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['submitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function submitSendingAsync($sendingId, string $contentType = self::contentTypes['submitSending'][0])
+    public function submitSendingAsync($authorization, $sendingId, string $contentType = self::contentTypes['submitSending'][0])
     {
-        return $this->submitSendingAsyncWithHttpInfo($sendingId, $contentType)
+        return $this->submitSendingAsyncWithHttpInfo($authorization, $sendingId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -2178,16 +2261,17 @@ class EnvoiApi
      *
      * Finalisation d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['submitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function submitSendingAsyncWithHttpInfo($sendingId, string $contentType = self::contentTypes['submitSending'][0])
+    public function submitSendingAsyncWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['submitSending'][0])
     {
         $returnType = '';
-        $request = $this->submitSendingRequest($sendingId, $contentType);
+        $request = $this->submitSendingRequest($authorization, $sendingId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -2215,14 +2299,22 @@ class EnvoiApi
     /**
      * Create request for operation 'submitSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['submitSending'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function submitSendingRequest($sendingId, string $contentType = self::contentTypes['submitSending'][0])
+    public function submitSendingRequest($authorization, $sendingId, string $contentType = self::contentTypes['submitSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling submitSending'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -2240,6 +2332,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -2309,6 +2405,7 @@ class EnvoiApi
      *
      * Modification des options d&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingUpdate $sendingUpdate sendingUpdate (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateSending'] to see the possible values for this operation
@@ -2317,9 +2414,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function updateSending($sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
+    public function updateSending($authorization, $sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
     {
-        list($response) = $this->updateSendingWithHttpInfo($sendingId, $sendingUpdate, $contentType);
+        list($response) = $this->updateSendingWithHttpInfo($authorization, $sendingId, $sendingUpdate, $contentType);
         return $response;
     }
 
@@ -2328,6 +2425,7 @@ class EnvoiApi
      *
      * Modification des options d&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingUpdate $sendingUpdate (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateSending'] to see the possible values for this operation
@@ -2336,9 +2434,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function updateSendingWithHttpInfo($sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
+    public function updateSendingWithHttpInfo($authorization, $sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
     {
-        $request = $this->updateSendingRequest($sendingId, $sendingUpdate, $contentType);
+        $request = $this->updateSendingRequest($authorization, $sendingId, $sendingUpdate, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -2452,6 +2550,7 @@ class EnvoiApi
      *
      * Modification des options d&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingUpdate $sendingUpdate (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateSending'] to see the possible values for this operation
@@ -2459,9 +2558,9 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateSendingAsync($sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
+    public function updateSendingAsync($authorization, $sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
     {
-        return $this->updateSendingAsyncWithHttpInfo($sendingId, $sendingUpdate, $contentType)
+        return $this->updateSendingAsyncWithHttpInfo($authorization, $sendingId, $sendingUpdate, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -2474,6 +2573,7 @@ class EnvoiApi
      *
      * Modification des options d&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingUpdate $sendingUpdate (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateSending'] to see the possible values for this operation
@@ -2481,10 +2581,10 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateSendingAsyncWithHttpInfo($sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
+    public function updateSendingAsyncWithHttpInfo($authorization, $sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse';
-        $request = $this->updateSendingRequest($sendingId, $sendingUpdate, $contentType);
+        $request = $this->updateSendingRequest($authorization, $sendingId, $sendingUpdate, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -2525,6 +2625,7 @@ class EnvoiApi
     /**
      * Create request for operation 'updateSending'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingUpdate $sendingUpdate (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['updateSending'] to see the possible values for this operation
@@ -2532,8 +2633,15 @@ class EnvoiApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function updateSendingRequest($sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
+    public function updateSendingRequest($authorization, $sendingId, $sendingUpdate, string $contentType = self::contentTypes['updateSending'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling updateSending'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -2558,6 +2666,10 @@ class EnvoiApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {

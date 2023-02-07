@@ -113,6 +113,8 @@ class DestinatairesApi
         $this->config = $config ?: new Configuration();
         $this->headerSelector = $selector ?: new HeaderSelector();
         $this->hostIndex = $hostIndex;
+
+        $this->config->setHost($this->config->getHostFromSettings($hostIndex));
     }
 
     /**
@@ -148,6 +150,7 @@ class DestinatairesApi
      *
      * Ajout d&#39;un destinataire à l&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientCreation $recipientCreation Nouveau destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createRecipient'] to see the possible values for this operation
@@ -156,9 +159,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function createRecipient($sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
+    public function createRecipient($authorization, $sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
     {
-        list($response) = $this->createRecipientWithHttpInfo($sendingId, $recipientCreation, $contentType);
+        list($response) = $this->createRecipientWithHttpInfo($authorization, $sendingId, $recipientCreation, $contentType);
         return $response;
     }
 
@@ -167,6 +170,7 @@ class DestinatairesApi
      *
      * Ajout d&#39;un destinataire à l&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientCreation $recipientCreation Nouveau destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createRecipient'] to see the possible values for this operation
@@ -175,9 +179,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function createRecipientWithHttpInfo($sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
+    public function createRecipientWithHttpInfo($authorization, $sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
     {
-        $request = $this->createRecipientRequest($sendingId, $recipientCreation, $contentType);
+        $request = $this->createRecipientRequest($authorization, $sendingId, $recipientCreation, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -314,6 +318,7 @@ class DestinatairesApi
      *
      * Ajout d&#39;un destinataire à l&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientCreation $recipientCreation Nouveau destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createRecipient'] to see the possible values for this operation
@@ -321,9 +326,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createRecipientAsync($sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
+    public function createRecipientAsync($authorization, $sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
     {
-        return $this->createRecipientAsyncWithHttpInfo($sendingId, $recipientCreation, $contentType)
+        return $this->createRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientCreation, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -336,6 +341,7 @@ class DestinatairesApi
      *
      * Ajout d&#39;un destinataire à l&#39;envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientCreation $recipientCreation Nouveau destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createRecipient'] to see the possible values for this operation
@@ -343,10 +349,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createRecipientAsyncWithHttpInfo($sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
+    public function createRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse';
-        $request = $this->createRecipientRequest($sendingId, $recipientCreation, $contentType);
+        $request = $this->createRecipientRequest($authorization, $sendingId, $recipientCreation, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -387,6 +393,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'createRecipient'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientCreation $recipientCreation Nouveau destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['createRecipient'] to see the possible values for this operation
@@ -394,8 +401,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function createRecipientRequest($sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
+    public function createRecipientRequest($authorization, $sendingId, $recipientCreation, string $contentType = self::contentTypes['createRecipient'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling createRecipient'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -420,6 +434,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -496,6 +514,7 @@ class DestinatairesApi
      *
      * Suppression de tous les destinataires
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteAllRecipients'] to see the possible values for this operation
      *
@@ -503,9 +522,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function deleteAllRecipients($sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
+    public function deleteAllRecipients($authorization, $sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
     {
-        $this->deleteAllRecipientsWithHttpInfo($sendingId, $contentType);
+        $this->deleteAllRecipientsWithHttpInfo($authorization, $sendingId, $contentType);
     }
 
     /**
@@ -513,6 +532,7 @@ class DestinatairesApi
      *
      * Suppression de tous les destinataires
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteAllRecipients'] to see the possible values for this operation
      *
@@ -520,9 +540,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function deleteAllRecipientsWithHttpInfo($sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
+    public function deleteAllRecipientsWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
     {
-        $request = $this->deleteAllRecipientsRequest($sendingId, $contentType);
+        $request = $this->deleteAllRecipientsRequest($authorization, $sendingId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -597,15 +617,16 @@ class DestinatairesApi
      *
      * Suppression de tous les destinataires
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteAllRecipients'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteAllRecipientsAsync($sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
+    public function deleteAllRecipientsAsync($authorization, $sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
     {
-        return $this->deleteAllRecipientsAsyncWithHttpInfo($sendingId, $contentType)
+        return $this->deleteAllRecipientsAsyncWithHttpInfo($authorization, $sendingId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -618,16 +639,17 @@ class DestinatairesApi
      *
      * Suppression de tous les destinataires
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteAllRecipients'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteAllRecipientsAsyncWithHttpInfo($sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
+    public function deleteAllRecipientsAsyncWithHttpInfo($authorization, $sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
     {
         $returnType = '';
-        $request = $this->deleteAllRecipientsRequest($sendingId, $contentType);
+        $request = $this->deleteAllRecipientsRequest($authorization, $sendingId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -655,14 +677,22 @@ class DestinatairesApi
     /**
      * Create request for operation 'deleteAllRecipients'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteAllRecipients'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function deleteAllRecipientsRequest($sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
+    public function deleteAllRecipientsRequest($authorization, $sendingId, string $contentType = self::contentTypes['deleteAllRecipients'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling deleteAllRecipients'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -680,6 +710,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -749,6 +783,7 @@ class DestinatairesApi
      *
      * Suppression d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteRecipient'] to see the possible values for this operation
@@ -757,9 +792,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function deleteRecipient($sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
+    public function deleteRecipient($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
     {
-        $this->deleteRecipientWithHttpInfo($sendingId, $recipientId, $contentType);
+        $this->deleteRecipientWithHttpInfo($authorization, $sendingId, $recipientId, $contentType);
     }
 
     /**
@@ -767,6 +802,7 @@ class DestinatairesApi
      *
      * Suppression d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteRecipient'] to see the possible values for this operation
@@ -775,9 +811,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function deleteRecipientWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
+    public function deleteRecipientWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
     {
-        $request = $this->deleteRecipientRequest($sendingId, $recipientId, $contentType);
+        $request = $this->deleteRecipientRequest($authorization, $sendingId, $recipientId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -852,6 +888,7 @@ class DestinatairesApi
      *
      * Suppression d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteRecipient'] to see the possible values for this operation
@@ -859,9 +896,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteRecipientAsync($sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
+    public function deleteRecipientAsync($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
     {
-        return $this->deleteRecipientAsyncWithHttpInfo($sendingId, $recipientId, $contentType)
+        return $this->deleteRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -874,6 +911,7 @@ class DestinatairesApi
      *
      * Suppression d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteRecipient'] to see the possible values for this operation
@@ -881,10 +919,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteRecipientAsyncWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
+    public function deleteRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
     {
         $returnType = '';
-        $request = $this->deleteRecipientRequest($sendingId, $recipientId, $contentType);
+        $request = $this->deleteRecipientRequest($authorization, $sendingId, $recipientId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -912,6 +950,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'deleteRecipient'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteRecipient'] to see the possible values for this operation
@@ -919,8 +958,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function deleteRecipientRequest($sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
+    public function deleteRecipientRequest($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['deleteRecipient'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling deleteRecipient'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -945,6 +991,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -1371,6 +1421,7 @@ class DestinatairesApi
      *
      * Télécharger la preuve de dépot du destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['downloadDepositProof'] to see the possible values for this operation
@@ -1379,9 +1430,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return string|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function downloadDepositProof($sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
+    public function downloadDepositProof($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
     {
-        list($response) = $this->downloadDepositProofWithHttpInfo($sendingId, $recipientId, $contentType);
+        list($response) = $this->downloadDepositProofWithHttpInfo($authorization, $sendingId, $recipientId, $contentType);
         return $response;
     }
 
@@ -1390,6 +1441,7 @@ class DestinatairesApi
      *
      * Télécharger la preuve de dépot du destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['downloadDepositProof'] to see the possible values for this operation
@@ -1398,9 +1450,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of string|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function downloadDepositProofWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
+    public function downloadDepositProofWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
     {
-        $request = $this->downloadDepositProofRequest($sendingId, $recipientId, $contentType);
+        $request = $this->downloadDepositProofRequest($authorization, $sendingId, $recipientId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1537,6 +1589,7 @@ class DestinatairesApi
      *
      * Télécharger la preuve de dépot du destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['downloadDepositProof'] to see the possible values for this operation
@@ -1544,9 +1597,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function downloadDepositProofAsync($sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
+    public function downloadDepositProofAsync($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
     {
-        return $this->downloadDepositProofAsyncWithHttpInfo($sendingId, $recipientId, $contentType)
+        return $this->downloadDepositProofAsyncWithHttpInfo($authorization, $sendingId, $recipientId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1559,6 +1612,7 @@ class DestinatairesApi
      *
      * Télécharger la preuve de dépot du destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['downloadDepositProof'] to see the possible values for this operation
@@ -1566,10 +1620,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function downloadDepositProofAsyncWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
+    public function downloadDepositProofAsyncWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
     {
         $returnType = 'string';
-        $request = $this->downloadDepositProofRequest($sendingId, $recipientId, $contentType);
+        $request = $this->downloadDepositProofRequest($authorization, $sendingId, $recipientId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1610,6 +1664,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'downloadDepositProof'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['downloadDepositProof'] to see the possible values for this operation
@@ -1617,8 +1672,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function downloadDepositProofRequest($sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
+    public function downloadDepositProofRequest($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['downloadDepositProof'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling downloadDepositProof'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1643,6 +1705,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -1720,6 +1786,7 @@ class DestinatairesApi
      *
      * Détail d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getRecipient'] to see the possible values for this operation
@@ -1728,9 +1795,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function getRecipient($sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
+    public function getRecipient($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
     {
-        list($response) = $this->getRecipientWithHttpInfo($sendingId, $recipientId, $contentType);
+        list($response) = $this->getRecipientWithHttpInfo($authorization, $sendingId, $recipientId, $contentType);
         return $response;
     }
 
@@ -1739,6 +1806,7 @@ class DestinatairesApi
      *
      * Détail d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getRecipient'] to see the possible values for this operation
@@ -1747,9 +1815,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getRecipientWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
+    public function getRecipientWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
     {
-        $request = $this->getRecipientRequest($sendingId, $recipientId, $contentType);
+        $request = $this->getRecipientRequest($authorization, $sendingId, $recipientId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1863,6 +1931,7 @@ class DestinatairesApi
      *
      * Détail d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getRecipient'] to see the possible values for this operation
@@ -1870,9 +1939,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getRecipientAsync($sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
+    public function getRecipientAsync($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
     {
-        return $this->getRecipientAsyncWithHttpInfo($sendingId, $recipientId, $contentType)
+        return $this->getRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1885,6 +1954,7 @@ class DestinatairesApi
      *
      * Détail d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getRecipient'] to see the possible values for this operation
@@ -1892,10 +1962,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getRecipientAsyncWithHttpInfo($sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
+    public function getRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse';
-        $request = $this->getRecipientRequest($sendingId, $recipientId, $contentType);
+        $request = $this->getRecipientRequest($authorization, $sendingId, $recipientId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1936,6 +2006,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'getRecipient'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getRecipient'] to see the possible values for this operation
@@ -1943,8 +2014,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getRecipientRequest($sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
+    public function getRecipientRequest($authorization, $sendingId, $recipientId, string $contentType = self::contentTypes['getRecipient'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getRecipient'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1969,6 +2047,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -2046,6 +2128,7 @@ class DestinatairesApi
      *
      * Liste des destinataires d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId sendingId (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
@@ -2057,9 +2140,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function getRecipients($sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
+    public function getRecipients($authorization, $sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
     {
-        list($response) = $this->getRecipientsWithHttpInfo($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        list($response) = $this->getRecipientsWithHttpInfo($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
         return $response;
     }
 
@@ -2068,6 +2151,7 @@ class DestinatairesApi
      *
      * Liste des destinataires d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
@@ -2079,9 +2163,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getRecipientsWithHttpInfo($sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
+    public function getRecipientsWithHttpInfo($authorization, $sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
     {
-        $request = $this->getRecipientsRequest($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->getRecipientsRequest($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -2218,6 +2302,7 @@ class DestinatairesApi
      *
      * Liste des destinataires d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
@@ -2228,9 +2313,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getRecipientsAsync($sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
+    public function getRecipientsAsync($authorization, $sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
     {
-        return $this->getRecipientsAsyncWithHttpInfo($sendingId, $startIndex, $count, $sort, $desc, $contentType)
+        return $this->getRecipientsAsyncWithHttpInfo($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -2243,6 +2328,7 @@ class DestinatairesApi
      *
      * Liste des destinataires d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
@@ -2253,10 +2339,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getRecipientsAsyncWithHttpInfo($sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
+    public function getRecipientsAsyncWithHttpInfo($authorization, $sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientsResponse';
-        $request = $this->getRecipientsRequest($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->getRecipientsRequest($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -2297,6 +2383,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'getRecipients'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 50)
@@ -2307,8 +2394,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getRecipientsRequest($sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
+    public function getRecipientsRequest($authorization, $sendingId, $startIndex = 1, $count = 50, $sort = null, $desc = null, string $contentType = self::contentTypes['getRecipients'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getRecipients'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -2372,6 +2466,10 @@ class DestinatairesApi
             false // required
         ) ?? []);
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -2441,6 +2539,7 @@ class DestinatairesApi
      *
      * Modification partielle d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientUpdate $recipientUpdate recipientUpdate (required)
@@ -2450,9 +2549,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function updateRecipient($sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
+    public function updateRecipient($authorization, $sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
     {
-        list($response) = $this->updateRecipientWithHttpInfo($sendingId, $recipientId, $recipientUpdate, $contentType);
+        list($response) = $this->updateRecipientWithHttpInfo($authorization, $sendingId, $recipientId, $recipientUpdate, $contentType);
         return $response;
     }
 
@@ -2461,6 +2560,7 @@ class DestinatairesApi
      *
      * Modification partielle d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientUpdate $recipientUpdate (required)
@@ -2470,9 +2570,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function updateRecipientWithHttpInfo($sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
+    public function updateRecipientWithHttpInfo($authorization, $sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
     {
-        $request = $this->updateRecipientRequest($sendingId, $recipientId, $recipientUpdate, $contentType);
+        $request = $this->updateRecipientRequest($authorization, $sendingId, $recipientId, $recipientUpdate, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -2632,6 +2732,7 @@ class DestinatairesApi
      *
      * Modification partielle d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientUpdate $recipientUpdate (required)
@@ -2640,9 +2741,9 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateRecipientAsync($sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
+    public function updateRecipientAsync($authorization, $sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
     {
-        return $this->updateRecipientAsyncWithHttpInfo($sendingId, $recipientId, $recipientUpdate, $contentType)
+        return $this->updateRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, $recipientUpdate, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -2655,6 +2756,7 @@ class DestinatairesApi
      *
      * Modification partielle d&#39;un destinataire
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientUpdate $recipientUpdate (required)
@@ -2663,10 +2765,10 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateRecipientAsyncWithHttpInfo($sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
+    public function updateRecipientAsyncWithHttpInfo($authorization, $sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientResponse';
-        $request = $this->updateRecipientRequest($sendingId, $recipientId, $recipientUpdate, $contentType);
+        $request = $this->updateRecipientRequest($authorization, $sendingId, $recipientId, $recipientUpdate, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -2707,6 +2809,7 @@ class DestinatairesApi
     /**
      * Create request for operation 'updateRecipient'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $recipientId Identifiant du destinataire (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\RecipientUpdate $recipientUpdate (required)
@@ -2715,8 +2818,15 @@ class DestinatairesApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function updateRecipientRequest($sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
+    public function updateRecipientRequest($authorization, $sendingId, $recipientId, $recipientUpdate, string $contentType = self::contentTypes['updateRecipient'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling updateRecipient'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -2748,6 +2858,10 @@ class DestinatairesApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {

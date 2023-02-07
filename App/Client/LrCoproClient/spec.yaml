@@ -35,6 +35,13 @@ paths:
       summary: Création d'un envoi
       description: 'Permet de créer un envoi. Cet envoi sera en état de brouillon (statut DRAFT), il est donc nécessaire de soummettre l''envoi afin qu''il soit envoyé en production.'
       operationId: createSending
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Nouvel envoi
         content:
@@ -72,6 +79,12 @@ paths:
       description: 'Permet d''obtenir la liste des envois. Il est possible de rajouter un attribut dans les paramètres afin de filtrer la liste des envois. La liste des envois peut être paginée. Par défaut, la pagination est de 50 résultats. Elle peut être modifiée pour atteindre jusqu''à 500 résultats.'
       operationId: findSendings
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: start_index
           in: query
           description: Le premier élément à retourner
@@ -132,6 +145,12 @@ paths:
         Si votre système ne permet pas d'utiliser le verbe PATCH, il est possible d'utiliser le verbe POST.
       operationId: updateSending
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -282,6 +301,12 @@ paths:
         Pour les envois passant par le consentement des destinataires, l'ensemble des champs sont nécessaires afin de pouvoir effectuer l'envoi en version papier ou en version électonique.
       operationId: checkSending
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -306,6 +331,12 @@ paths:
       description: Permet de connaitre l'état du contrôle de l'envoi.
       operationId: getCheckSending
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -340,6 +371,12 @@ paths:
         Un envoi soumis ne peut pas être annulé.
       operationId: submitSending
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -364,6 +401,12 @@ paths:
       description: Permet de connaitre l'état du contrôle de l'envoi.
       operationId: getSubmitSending
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -410,6 +453,12 @@ paths:
         Le document doit être transmis en mutipart ainsi que la metadata. La metadata est constituée de priority (permet de définir l'ordre de priorité des documents dans l'envoi), de name (permet de donner un nom au fichier) et adjust (permet d'ajuster la taille).
       operationId: createDocument
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -456,6 +505,12 @@ paths:
       description: 'Permet de récupérer la liste des documents associés à l''envoi. La liste des documents d''un envoi peut être paginée. Par défaut et au maximum, la pagination est de 30 résultats.'
       operationId: getDocuments
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -515,6 +570,12 @@ paths:
       description: 'Permet de modifier les metadata d''un document (priority, name, adjust)'
       operationId: updateDocument
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -561,6 +622,12 @@ paths:
       description: Permet de récupérer le détail d'un document utilisé lors de l'envoi.
       operationId: getDocument
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -597,6 +664,12 @@ paths:
       description: Permet de supprimer un document d'un envoi.
       operationId: deleteDocument
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -672,6 +745,12 @@ paths:
         Pour les destinataires passant par le mode d'envoi "USE_CONSENT" les champs obligatoires des destinataires papier et electronique sont à définir.
       operationId: createRecipient
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -719,6 +798,12 @@ paths:
       description: 'Permet de récupérer la liste des destinataires d''un envoi. Cette liste peut être paginée. Par défaut, la pagination est de 50 résultats. Elle peut atteindre 500 au maximum.'
       operationId: getRecipients
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           required: true
@@ -780,6 +865,12 @@ paths:
       description: Permet de supprimer tous les destinataires d'un envoi. Disponible pour les envois en statut Draft seulement.
       operationId: deleteAllRecipients
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -817,6 +908,12 @@ paths:
       description: Permet de lister les données d'un destinataire d'un envoi.
       operationId: getRecipient
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -853,6 +950,12 @@ paths:
       description: Permet de modifier partiellement un destinataire
       operationId: updateRecipient
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -905,6 +1008,12 @@ paths:
       description: Permet de supprimer un destinataire d'un envoi.
       operationId: deleteRecipient
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi
@@ -948,6 +1057,12 @@ paths:
       description: 'Permet de télécharger la preuve de dépôt du destinataire. Seules les preuves de dépôt des envois électronique sont disponibles. Concernant le papier, les preuves de dépôt sont transmises à l''expéditeur par recommandé papier.'
       operationId: downloadDepositProof
       parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer {access_token}"
+          required: true
+          schema:
+            type: string
         - name: sending_id
           in: path
           description: Identifiant de l'envoi

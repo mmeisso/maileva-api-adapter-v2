@@ -123,6 +123,8 @@ paths:
 
   /token:
     post:
+      tags:
+        - Auth
       description: "Permet d'obtenir un jeton d'authentification OAuth2 utilisant le mode d'authentification `Ressource Owner Password Credentials` ou le mode `Client Credentials`.
       
       
