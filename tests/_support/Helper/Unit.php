@@ -6,10 +6,12 @@ namespace Helper;
 // all public methods declared in helper class will be available in $I
 
 use Faker\Factory;
+use MailevaApiAdapter\App\Client\AuthClient\ApiException;
 use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
 use MailevaApiAdapter\App\MailevaSending;
+use MailevaApiAdapter\tests\_support\Helper\MemcachedStub;
 
 class Unit extends \Codeception\Module
 {
@@ -23,16 +25,16 @@ class Unit extends \Codeception\Module
 
     const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
     const HOST = 'https://api.release.maileva.net';
-    const CLIENT_ID = '7ea15580beed2a04b1e3290ffa37a11a';
-    const CLIENT_SECRET = '03ce163ef4946c2ee36d4178e10653f6';
-    const USERNAME = 'sandbox.48175';
-    const PASSWORD = 'wshq4e';
+    const CLIENT_ID = 'sandbox-EUKLES';
+    const CLIENT_SECRET = '4131d512-9f5b-43de-83e6-eac84059bc6a';
+    const USERNAME = 'sandbox.1567';
+    const PASSWORD = 'o93126/A*';
     const FTP_HOST = 'ftp.recette.maileva.com';
     const FTP_USERNAME = 'sandbox.1662';
     const FTP_PASSWORD = 'lfqcs7';
     const FTP_CLIENT_ID = 'mlv-s-cdbSJ3F';
     const FTP_CLIENT_SECRET = 'UxSqjsB';
-    const MEMCACHE_HOST = 'localhost';
+    const MEMCACHE_HOST = '127.0.0.1';
     const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
     const DIRECTORY_CALLBACK = '/retour_sandbox.1662/';
@@ -50,6 +52,7 @@ class Unit extends \Codeception\Module
 
     /**
      * @return MailevaApiAdapter
+     * @throws ApiException
      */
     public function getMailevaApiAdapterLRCOPRO(): MailevaApiAdapter
     {
@@ -58,16 +61,16 @@ class Unit extends \Codeception\Module
         $mailevaConnection
             ->setAuthenticationHost("")
             ->setHost(self::FTP_HOST)
-            ->setClientId(self::FTP_CLIENT_ID)
-            ->setClientSecret(self::FTP_CLIENT_SECRET)
-            ->setUsername(self::FTP_USERNAME)
-            ->setPassword(self::FTP_PASSWORD)
+            ->setClientId(self::CLIENT_ID)
+            ->setClientSecret(self::CLIENT_SECRET)
+            ->setUsername(self::USERNAME)
+            ->setPassword(self::PASSWORD)
             ->setMemcacheHost(self::MEMCACHE_HOST)
             ->setMemcachePort(self::MEMCACHE_PORT)
             ->setDirectoryCallback(self::DIRECTORY_CALLBACK)
             ->setTmpFileDirectory(self::TMP_FILE_DIRECTORY);
 
-        return new MailevaApiAdapter($mailevaConnection);
+        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
     }
 
     /**

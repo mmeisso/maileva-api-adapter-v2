@@ -8,9 +8,20 @@
 
 namespace MailevaApiAdapter\App;
 
+use GuzzleHttp\Psr7\Utils;
+use MailevaApiAdapter\App\Client\AuthClient\Api\DefaultApi;
+use MailevaApiAdapter\App\Client\AuthClient\ApiException;
+use MailevaApiAdapter\App\Client\AuthClient\Model\Errors;
+use MailevaApiAdapter\App\Client\AuthClient\Model\ModelInterface;
+use MailevaApiAdapter\App\Client\AuthClient\Model\TokenResponse;
+use MailevaApiAdapter\App\Client\LrCoproClient\Api\EnvoiApi;
+use MailevaApiAdapter\App\Client\LrCoproClient\Model\CountryCode;
+use MailevaApiAdapter\App\Client\LrCoproClient\Model\RegisteredMailOptions;
+use MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation;
 use MailevaApiAdapter\App\Core\MailevaResponse;
 use MailevaApiAdapter\App\Core\MailevaResponseInterface;
 use MailevaApiAdapter\App\Core\MailevaResponseLRCOPRO;
+use MailevaApiAdapter\App\Core\MemcachedInterface;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\Route;
 use MailevaApiAdapter\App\Core\Routing;
@@ -20,8 +31,6 @@ use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use Throwable;
 use ZipArchive;
 
-use function GuzzleHttp\Psr7\stream_for;
-
 /**
  * Class MailevaApiAdapter
  *
@@ -30,19 +39,40 @@ use function GuzzleHttp\Psr7\stream_for;
 class MailevaApiAdapter
 {
 
-    const MEMCACHE_SIMILAR_DURATION = 60 * 60 * 24 * 7;
-    private $access_token = null;
+    public const MEMCACHE_SIMILAR_DURATION = 60 * 60 * 24 * 7;
+    public const TOKEN_PREFIX_V1 = 'MT_';
+    public const TOKEN_PREFIX_V2 = 'MTV2_';
+    public const HOST_PROD_IDX = 0;
+    public const HOST_SANDBOX_IDX = 1;
+
+    private ?string $access_token = null;
     /** @var MailevaConnection|null */
-    private $mailevaConnection = null;
+    private ?MailevaConnection $mailevaConnection = null;
+    private ?MemcachedInterface $memcachedManager = null;
+
+    private int $hostIndex = self::HOST_SANDBOX_IDX;
 
     /**
      * MailevaApiAdapter constructor.
      *
      * @param MailevaConnection $mailevaConnection
+     * @param MemcachedInterface|null $memcached
+     * @throws ApiException
      */
-    public function __construct(MailevaConnection $mailevaConnection)
+    public function __construct(MailevaConnection $mailevaConnection, ?MemcachedInterface $memcached = null)
     {
         $this->mailevaConnection = $mailevaConnection;
+
+        # handle memcached injection
+        $this->memcachedManager = $memcached;
+        if (!$memcached && $mailevaConnection->useMemcache()) {
+            $this->initMemcachedManager();
+        }
+
+        # authentication V2
+        if (!$this->getAccessTokenV2()) {
+            $this->authenticateV2($mailevaConnection);
+        }
     }
 
     /**
@@ -188,17 +218,16 @@ class MailevaApiAdapter
     }
 
     /**
-     * @return string
+     * @param string $tokenKeyPrefix
+     * @return ?string
      */
-    public function getAccessToken()
+    public function getAccessToken(string $tokenKeyPrefix = self::TOKEN_PREFIX_V1): ?string
     {
         if ($this->mailevaConnection->useMemcache()) {
             if (is_null($this->access_token)) {
-                $key            = 'MT_' . $this->mailevaConnection->getClientId() . '_' . $this->mailevaConnection->getUsername();
-                $memcachedToken = MemcachedManager::getInstance(
-                    $this->mailevaConnection->getMemcacheHost(),
-                    $this->mailevaConnection->getMemcachePort()
-                )->get($key, false);
+                $key = $tokenKeyPrefix . $this->mailevaConnection->getClientId(
+                    ) . '_' . $this->mailevaConnection->getUsername();
+                $memcachedToken = $this->getMemcachedManager()->get($key, false);
                 if (false !== $memcachedToken) {
                     $this->access_token = $memcachedToken;
                 }
@@ -209,21 +238,36 @@ class MailevaApiAdapter
     }
 
     /**
-     * @param string $token
-     * @param int    $secondsDurationValidity
+     * @return string|null
      */
-    public function setAccessToken(string $token, int $secondsDurationValidity)
+    public function getAccessTokenV2(): ?string
+    {
+        return $this->getAccessToken(self::TOKEN_PREFIX_V2);
+    }
+
+    /**
+     * @param string $token
+     * @param int $secondsDurationValidity
+     * @param string $tokenKeyPrefix
+     */
+    public function setAccessToken(string $token, int $secondsDurationValidity, string $tokenKeyPrefix = self::TOKEN_PREFIX_V1): void
     {
         if ($this->mailevaConnection->useMemcache()) {
-            $key = 'MT_' . $this->mailevaConnection->getClientId() . '_' . $this->mailevaConnection->getUsername();
+            $key = $tokenKeyPrefix . $this->mailevaConnection->getClientId(
+                ) . '_' . $this->mailevaConnection->getUsername();
             #2592000 max memcache value -> http://php.net/manual/fr/memcache.set.php
-            MemcachedManager::getInstance($this->mailevaConnection->getMemcacheHost(), $this->mailevaConnection->getMemcachePort())->set(
+            $this->getMemcachedManager()->set(
                 $key,
                 $token,
                 min(abs($secondsDurationValidity / 2), 2592000)
             );
         }
         $this->access_token = $token;
+    }
+
+    public function setAccessTokenV2(string $token, int $secondsDurationValidity): void
+    {
+        $this->setAccessToken($token, $secondsDurationValidity, self::TOKEN_PREFIX_V2);
     }
 
     /**
@@ -466,10 +510,7 @@ class MailevaApiAdapter
             throw new MailevaCoreException("unable to check checkSimilarPreviousHasAlreadyBeenSent without Memcache enable");
         }
 
-        $sendingIdSimilarPrevious = MemcachedManager::getInstance(
-            $this->mailevaConnection->getMemcacheHost(),
-            $this->mailevaConnection->getMemcachePort()
-        )->get(
+        $sendingIdSimilarPrevious = $this->getMemcachedManager()->get(
             $mailevaSending->getUID()[0],
             false
         );
@@ -578,6 +619,32 @@ class MailevaApiAdapter
             ]
         );
         return $route->call();
+    }
+
+    /**
+     * @param MailevaConnection $mailevaConnection
+     * @return Errors|TokenResponse
+     * @throws ApiException
+     */
+    private function authenticateV2(MailevaConnection $mailevaConnection): ModelInterface
+    {
+        if ($mailevaConnection->isProdHost()) {
+            $this->hostIndex = self::HOST_PROD_IDX;
+        }
+
+        $apiInstance = new DefaultApi(null, null, null, $this->hostIndex);
+        $authorization = 'Basic ' . base64_encode(
+                "{$mailevaConnection->getClientId()}:{$mailevaConnection->getClientSecret()}"
+            );
+        $result = $apiInstance->tokenPost(
+            $authorization,
+            'password',
+            $mailevaConnection->getUsername(),
+            $mailevaConnection->getPassword()
+        );
+
+        $this->setAccessTokenV2($result->getAccessToken(), $result->getExpiresIn());
+        return $result;
     }
 
     /**
@@ -1023,11 +1090,61 @@ class MailevaApiAdapter
 
     /**
      * @param MailevaSending $mailevaSending
+     * @return string
+     * @throws Client\LrCoproClient\ApiException
+     */
+    public function prepareLRCOPRO(MailevaSending $mailevaSending): string
+    {
+        # prepare payload
+        $sendingCreation = new SendingCreation();
+        $sendingCreation
+            ->setName($mailevaSending->getName())
+            ->setCustomId($mailevaSending->getCustomId());
+
+        $registeredMailOptions = new RegisteredMailOptions();
+        $registeredMailOptions
+            ->setDuplexPrinting($mailevaSending->isDuplexPrinting())
+            ->setArchivingDuration(0)
+            ->setAcknowledgementOfReceiptScanning(false)
+            ->setSenderAddressLine1($mailevaSending->getSenderAddressLine1())
+            ->setSenderAddressLine2($mailevaSending->getSenderAddressLine2())
+            ->setSenderAddressLine3($mailevaSending->getSenderAddressLine3())
+            ->setSenderAddressLine4($mailevaSending->getSenderAddressLine4())
+            ->setSenderAddressLine5($mailevaSending->getSenderAddressLine5())
+            ->setSenderAddressLine6($mailevaSending->getSenderAddressLine6())
+            ->setSenderCountryCode(CountryCode::FR); //todo
+
+        $sendingCreation->setRegisteredMailOptions($registeredMailOptions);
+
+        # send payload
+
+        $envoiApi = new EnvoiApi(null, null, null, $this->hostIndex);
+        $hostSettings = $envoiApi->getConfig()->getHostSettings();
+        $envoiApi->getConfig()
+            ->setHost($hostSettings[$this->hostIndex]['url']);
+
+        $sendingResponse = $envoiApi->createSending($sendingCreation);
+
+        # store into memcached to avoid duplicate sending
+        if ($this->mailevaConnection->useMemcache() === true) {
+            MemcachedManager::getInstance(
+                $this->mailevaConnection->getMemcacheHost(),
+                $this->mailevaConnection->getMemcachePort()
+            )->set($mailevaSending->getUID()[0], $sendingResponse->getId(), self::MEMCACHE_SIMILAR_DURATION);
+        }
+
+        return $sendingResponse->getId();
+    }
+
+    /**
+     * @param MailevaSending $mailevaSending
      *
      * @return string
      * @throws MailevaCoreException
+     * @deprecated
+     * @see self::prepareLRCOPRO()
      */
-    private function prepareLRCOPRO(MailevaSending $mailevaSending): string
+    private function prepareLRCOPROLegacy(MailevaSending $mailevaSending): string
     {
         $conn      = null;
         $sendingId = null;
@@ -1197,7 +1314,7 @@ class MailevaApiAdapter
         $this->postDocumentBySendingId(
             $sendingId,
             [
-                ['name' => 'document', 'contents' => stream_for(fopen($file, 'rb'))],
+                ['name' => 'document', 'contents' => Utils::streamFor(fopen($file, 'rb'))],
                 ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
             ]
         );
@@ -1217,10 +1334,8 @@ class MailevaApiAdapter
         );
 
         if ($this->mailevaConnection->useMemcache() === true) {
-            MemcachedManager::getInstance(
-                $this->mailevaConnection->getMemcacheHost(),
-                $this->mailevaConnection->getMemcachePort()
-            )->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
+            $this->getMemcachedManager()
+                ->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
         }
 
         return $sendingId;
@@ -1277,7 +1392,7 @@ class MailevaApiAdapter
         $this->postDocumentBySendingId(
             $sendingId,
             [
-                ['name' => 'document', 'contents' => stream_for(fopen($file, 'rb'))],
+                ['name' => 'document', 'contents' => Utils::streamFor(fopen($file, 'rb'))],
                 ['name' => 'metadata', 'contents' => '{"priority": ' . $filePriority . ',"name":"' . $fileName . '"}']
             ]
         );
@@ -1297,10 +1412,8 @@ class MailevaApiAdapter
         );
 
         if ($this->mailevaConnection->useMemcache() === true) {
-            MemcachedManager::getInstance(
-                $this->mailevaConnection->getMemcacheHost(),
-                $this->mailevaConnection->getMemcachePort()
-            )->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
+            $this->getMemcachedManager()
+                ->set($mailevaSending->getUID()[0], $sendingId, self::MEMCACHE_SIMILAR_DURATION);
         }
 
         return $sendingId;
@@ -1324,7 +1437,9 @@ class MailevaApiAdapter
         }
 
         if (!ftp_pasv($conn, true)) {
-            throw new MailevaCoreException('Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail');
+            throw new MailevaCoreException(
+                'Unable to set passive mode ' . $this->mailevaConnection->getHost() . ' fail'
+            );
         }
 
         if (!ftp_rename($conn, $sendingId . '.zip', $sendingId . '.zcou')) {
@@ -1333,4 +1448,30 @@ class MailevaApiAdapter
 
         ftp_close($conn);
     }
+
+    private function getMemcachedManager(): MemcachedInterface
+    {
+        return $this->memcachedManager;
+    }
+
+    /**
+     * @param MemcachedInterface|null $memcachedManager
+     */
+    public function setMemcachedManager(?MemcachedInterface $memcachedManager): void
+    {
+        $this->memcachedManager = $memcachedManager;
+    }
+
+    /**
+     * @return void
+     */
+    private function initMemcachedManager(): void
+    {
+        $this->memcachedManager = MemcachedManager::getInstance(
+            $this->mailevaConnection->getMemcacheHost(),
+            $this->mailevaConnection->getMemcachePort()
+        );
+    }
 }
+
+

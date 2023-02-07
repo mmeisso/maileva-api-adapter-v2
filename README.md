@@ -1,5 +1,27 @@
 # Maileva Api Connector
 
+## Init project
+### Composer install
+```shell
+docker compose run composer
+```
+### Run test
+```shell
+docker compose run test
+```
+
+## Generate maileva client api classes
+```shell
+docker compose run generate
+```
+If you want to add new openapi specification, add url in [generate-clients.sh:9](./bin/generate-clients.sh)
+
+## Test via php storm
+```shell
+docker compose up -d
+```
+Ensuite utiliser le service `app` pour les tests via docker en choisissent d'executer sur une stack docker existante. 
+
 ## Prepare adapter
     #Connection settings
     $mailevaConnection = new \MailevaApiAdapter\App\MailevaConnection();

@@ -1,7 +1,14 @@
 <?php
 
 use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
+use MailevaApiAdapter\App\Exception\MailevaException;
+use MailevaApiAdapter\App\Exception\MailevaParameterException;
+use MailevaApiAdapter\App\Exception\MailevaResponseException;
+use MailevaApiAdapter\App\Exception\MailevaRoutingException;
+use MailevaApiAdapter\App\MailevaApiAdapter;
+use MailevaApiAdapter\App\MailevaSending;
 use MailevaApiAdapter\App\MailevaSendingStatus;
+use MailevaApiAdapter\tests\_support\Helper\MemcachedStub;
 
 /**
  * Created by PhpStorm.
@@ -17,22 +24,23 @@ class MailevaSendingLRCOPROCest
      *
      * @group MailevaSendingLRCOPROCest
      *
-     * @throws \MailevaApiAdapter\App\Exception\MailevaException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
+     * @throws MailevaException
+     * @throws MailevaParameterException
+     * @throws MailevaResponseException
+     * @throws MailevaRoutingException
      * @throws Exception
      */
-    public function prepareAndPost(\UnitTester $I)
+    public function prepareAndPost(UnitTester $I)
     {
         $arraySendingId = [];
 
-        /** @var \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter */
+        /** @var MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
+        $mailevaApiAdapter->setMemcachedManager(new MemcachedStub());
 
         //for($i = 1; $i <= 5; $i++){
 
-        /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
+        /** @var MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
 
         echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
@@ -57,9 +65,9 @@ class MailevaSendingLRCOPROCest
 
                 try {
                     $result = $mailevaApiAdapter->getSendingBySendingId($sendingId)->getResponseAsArray();
-                } catch (\MailevaApiAdapter\App\Exception\MailevaResponseException $e) {
-                } catch (\MailevaApiAdapter\App\Exception\MailevaRoutingException $e) {
-                } catch (\MailevaApiAdapter\App\Exception\MailevaException $e) {
+                } catch (MailevaResponseException $e) {
+                } catch (MailevaRoutingException $e) {
+                } catch (MailevaException $e) {
                 }
 
                 if (null === $result || array_key_exists('status', $result) === false || $result['status'] !== MailevaSendingStatus::ACCEPTED) {
