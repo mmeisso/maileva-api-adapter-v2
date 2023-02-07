@@ -17,15 +17,15 @@ use MemcachedException;
  *
  * @package MailevaApiAdapter\App\Core
  */
-class MemcachedManager
+class MemcachedManager implements MemcachedInterface
 {
 
-    private static $instance = null;
+    private static ?MemcachedManager $instance = null;
     /**
      * @throws MemcachedException
      * @var Memcached
      */
-    private $memcached;
+    private Memcached $memcached;
 
     /**
      * MemcachedManager constructor.
@@ -45,7 +45,12 @@ class MemcachedManager
         }
     }
 
-    public static function getInstance(string $host, int $port): MemcachedManager
+    /**
+     * @param string $host
+     * @param int $port
+     * @return MemcachedManager
+     */
+    public static function getInstance(string $host='localhost', int $port=11211): MemcachedManager
     {
         if (is_null(self::$instance)) {
             self::$instance = new MemcachedManager($host, $port);
@@ -62,7 +67,7 @@ class MemcachedManager
      *
      * @return bool
      */
-    public function delete($key, $time = 0)
+    public function delete($key, $time = 0): bool
     {
         return $this->memcached->delete($key, $time);
     }
@@ -100,7 +105,7 @@ class MemcachedManager
      *
      * @return array
      */
-    public function getAllKeys()
+    public function getAllKeys(): array
     {
         return $this->memcached->getAllKeys();
     }
@@ -115,12 +120,12 @@ class MemcachedManager
      * @return bool
      * @throws MemcachedException
      */
-    public function set($key, $value, $duration = 0)
+    public function set($key, $value, $duration = 0): bool
     {
         $result = $this->memcached->set($key, $value, ($duration > 0) ? $duration : 0);
 
         if ($result === false) {
-            throw new MemcachedException('ERROR_CANNOT_STORE_KEY_' . $key);
+            throw new MemcachedException($this->memcached->getResultMessage());
         }
 
         return true;

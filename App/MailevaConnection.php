@@ -251,4 +251,22 @@ class MailevaConnection
     {
         return empty($this->getMemcacheHost()) === false && empty($this->getMemcachePort()) === false;
     }
+
+
+    /**
+     * @return bool
+     */
+    public function isSandboxHost(): bool
+    {
+        foreach (['sandbox', 'recette'] as $needle) {
+            if(mb_strpos($this->getHost(),$needle)!== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isProdHost():bool {
+        return !$this->isSandboxHost();
+    }
 }

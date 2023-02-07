@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+
+  app:
+    build:
+      target: app
+      context: .
+    volumes:
+      - ./:/app
+
+  generate:
+    image: openapitools/openapi-generator-cli
+    working_dir: /local
+    profiles:
+      - generate
+    volumes:
+      - ./App/Client:/local
+      - ./bin/generate-clients.sh:/usr/local/bin/generate-clients
+    entrypoint:
+      - generate-clients
+
+  composer:
+    build:
+      target: app
+      context: .
+    volumes:
+      - ./:/app
+    command:
+      - sh
+      - -c
+      - gosu application composer install
+
+  test:
+    build:
+      target: test
+      context: .
+    profiles:
+      - test
+    volumes:
+      - ./:/app/
+    depends_on:
+      composer:
+        condition: service_completed_successfully

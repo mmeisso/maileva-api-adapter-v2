@@ -1,0 +1,10 @@
+Api/DefaultApi.php
+ApiException.php
+Configuration.php
+HeaderSelector.php
+Model/Authorize.php
+Model/Error.php
+Model/Errors.php
+Model/ModelInterface.php
+Model/TokenResponse.php
+ObjectSerializer.php

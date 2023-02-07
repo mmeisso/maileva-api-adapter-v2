@@ -11,3 +11,8 @@ extensions:
 settings:
     bootstrap: _bootstrap.php
     colors: false
+
+coverage:
+    enabled: true
+    include:
+        - App/*
