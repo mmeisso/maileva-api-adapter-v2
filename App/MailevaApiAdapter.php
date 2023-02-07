@@ -9,7 +9,7 @@
 namespace MailevaApiAdapter\App;
 
 use GuzzleHttp\Psr7\Utils;
-use MailevaApiAdapter\App\Client\AuthClient\Api\DefaultApi;
+use MailevaApiAdapter\App\Client\AuthClient\Api\AuthApi;
 use MailevaApiAdapter\App\Client\AuthClient\ApiException;
 use MailevaApiAdapter\App\Client\AuthClient\Model\Errors;
 use MailevaApiAdapter\App\Client\AuthClient\Model\ModelInterface;
@@ -18,6 +18,7 @@ use MailevaApiAdapter\App\Client\LrCoproClient\Api\EnvoiApi;
 use MailevaApiAdapter\App\Client\LrCoproClient\Model\CountryCode;
 use MailevaApiAdapter\App\Client\LrCoproClient\Model\RegisteredMailOptions;
 use MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingCreation;
+use MailevaApiAdapter\App\Client\LrCoproClient\Model\SendingResponse;
 use MailevaApiAdapter\App\Core\MailevaResponse;
 use MailevaApiAdapter\App\Core\MailevaResponseInterface;
 use MailevaApiAdapter\App\Core\MailevaResponseLRCOPRO;
@@ -632,7 +633,7 @@ class MailevaApiAdapter
             $this->hostIndex = self::HOST_PROD_IDX;
         }
 
-        $apiInstance = new DefaultApi(null, null, null, $this->hostIndex);
+        $apiInstance = new AuthApi(null, null, null, $this->hostIndex);
         $authorization = 'Basic ' . base64_encode(
                 "{$mailevaConnection->getClientId()}:{$mailevaConnection->getClientSecret()}"
             );
@@ -959,15 +960,41 @@ class MailevaApiAdapter
 
     /**
      * @param string $sendingId
+     * @return MailevaResponseLRCOPRO
+     * @throws Client\LrCoproClient\ApiException
+     */
+    private function getSendingBySendingIdLRCOPRO(string $sendingId): MailevaResponseLRCOPRO
+    {
+        $envoiApi = new EnvoiApi(null, null, null, $this->hostIndex);
+        $submitSending = $envoiApi->getSending($this->getAccessTokenV2(), $sendingId);
+
+        # new status unhandled by resoposte
+        if ($submitSending->getStatus() === SendingResponse::STATUS_BLOCKED) {
+            $submitSending->setStatus(SendingResponse::STATUS_PENDING);
+        } elseif ($submitSending->getStatus() === SendingResponse::STATUS_PREPARING) {
+            $submitSending->setStatus(SendingResponse::STATUS_ACCEPTED);
+        }
+
+        # Because some peoples love array...
+        $mailevaResponseLRCOPRO = new MailevaResponseLRCOPRO();
+        $mailevaResponseLRCOPRO->setResponseAsArray(json_decode($submitSending->jsonSerialize(), true));
+
+        return $mailevaResponseLRCOPRO;
+    }
+
+    /**
+     * @param string $sendingId
      *
      * @return MailevaResponseLRCOPRO
      * @throws MailevaCoreException
      * @throws MailevaResponseException
+     *
+     * @deprecated
      */
-    private function getSendingBySendingIdLRCOPRO(string $sendingId): MailevaResponseLRCOPRO
+    private function getSendingBySendingIdLRCOPRO_legacy(string $sendingId): MailevaResponseLRCOPRO
     {
         $mailevaResponseLRCOPRO = new MailevaResponseLRCOPRO();
-        $responseAsArray        = [];
+        $responseAsArray = [];
 
         $conn = null;
         //Get list notification
@@ -1119,11 +1146,7 @@ class MailevaApiAdapter
         # send payload
 
         $envoiApi = new EnvoiApi(null, null, null, $this->hostIndex);
-        $hostSettings = $envoiApi->getConfig()->getHostSettings();
-        $envoiApi->getConfig()
-            ->setHost($hostSettings[$this->hostIndex]['url']);
-
-        $sendingResponse = $envoiApi->createSending($sendingCreation);
+        $sendingResponse = $envoiApi->createSending($this->getAccessTokenV2(), $sendingCreation);
 
         # store into memcached to avoid duplicate sending
         if ($this->mailevaConnection->useMemcache() === true) {
@@ -1421,10 +1444,21 @@ class MailevaApiAdapter
 
     /**
      * @param string $sendingId
+     * @return void
+     * @throws Client\LrCoproClient\ApiException
+     */
+    private function submitLrCopro(string $sendingId): void
+    {
+        $envoiApi = new EnvoiApi(null, null, null, $this->hostIndex);
+        $envoiApi->submitSending($this->getAccessTokenV2(), $sendingId);
+    }
+
+    /**
+     * @param string $sendingId
      *
      * @throws MailevaCoreException
      */
-    private function submitLrCopro(string $sendingId)
+    private function submitLrCopro_legacy(string $sendingId)
     {
         $conn = ftp_connect($this->mailevaConnection->getHost());
 

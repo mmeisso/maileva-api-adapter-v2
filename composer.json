@@ -22,7 +22,8 @@
     "ext-memcached": "*",
     "ext-ftp": "*",
     "ext-zip": "*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "ext-json": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "6.0.*",

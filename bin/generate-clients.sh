@@ -54,7 +54,6 @@ phpunit.xml.dist
 README.md
 
 test/
-docs/
 .openapi-generator/
 EOF
   fi

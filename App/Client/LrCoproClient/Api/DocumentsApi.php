@@ -104,6 +104,8 @@ class DocumentsApi
         $this->config = $config ?: new Configuration();
         $this->headerSelector = $selector ?: new HeaderSelector();
         $this->hostIndex = $hostIndex;
+
+        $this->config->setHost($this->config->getHostFromSettings($hostIndex));
     }
 
     /**
@@ -139,6 +141,7 @@ class DocumentsApi
      *
      * Ajout d&#39;un document à l&#39;envoi.
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \SplFileObject $document document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentCreationMetadata $metadata metadata (optional)
@@ -148,9 +151,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function createDocument($sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
+    public function createDocument($authorization, $sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
     {
-        list($response) = $this->createDocumentWithHttpInfo($sendingId, $document, $metadata, $contentType);
+        list($response) = $this->createDocumentWithHttpInfo($authorization, $sendingId, $document, $metadata, $contentType);
         return $response;
     }
 
@@ -159,6 +162,7 @@ class DocumentsApi
      *
      * Ajout d&#39;un document à l&#39;envoi.
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \SplFileObject $document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentCreationMetadata $metadata (optional)
@@ -168,9 +172,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function createDocumentWithHttpInfo($sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
+    public function createDocumentWithHttpInfo($authorization, $sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
     {
-        $request = $this->createDocumentRequest($sendingId, $document, $metadata, $contentType);
+        $request = $this->createDocumentRequest($authorization, $sendingId, $document, $metadata, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -307,6 +311,7 @@ class DocumentsApi
      *
      * Ajout d&#39;un document à l&#39;envoi.
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \SplFileObject $document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentCreationMetadata $metadata (optional)
@@ -315,9 +320,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createDocumentAsync($sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
+    public function createDocumentAsync($authorization, $sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
     {
-        return $this->createDocumentAsyncWithHttpInfo($sendingId, $document, $metadata, $contentType)
+        return $this->createDocumentAsyncWithHttpInfo($authorization, $sendingId, $document, $metadata, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -330,6 +335,7 @@ class DocumentsApi
      *
      * Ajout d&#39;un document à l&#39;envoi.
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \SplFileObject $document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentCreationMetadata $metadata (optional)
@@ -338,10 +344,10 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function createDocumentAsyncWithHttpInfo($sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
+    public function createDocumentAsyncWithHttpInfo($authorization, $sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse';
-        $request = $this->createDocumentRequest($sendingId, $document, $metadata, $contentType);
+        $request = $this->createDocumentRequest($authorization, $sendingId, $document, $metadata, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -382,6 +388,7 @@ class DocumentsApi
     /**
      * Create request for operation 'createDocument'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  \SplFileObject $document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentCreationMetadata $metadata (optional)
@@ -390,8 +397,15 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function createDocumentRequest($sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
+    public function createDocumentRequest($authorization, $sendingId, $document, $metadata = null, string $contentType = self::contentTypes['createDocument'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling createDocument'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -417,6 +431,10 @@ class DocumentsApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -502,6 +520,7 @@ class DocumentsApi
      *
      * Suppression d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteDocument'] to see the possible values for this operation
@@ -510,9 +529,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return void
      */
-    public function deleteDocument($sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
+    public function deleteDocument($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
     {
-        $this->deleteDocumentWithHttpInfo($sendingId, $documentId, $contentType);
+        $this->deleteDocumentWithHttpInfo($authorization, $sendingId, $documentId, $contentType);
     }
 
     /**
@@ -520,6 +539,7 @@ class DocumentsApi
      *
      * Suppression d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteDocument'] to see the possible values for this operation
@@ -528,9 +548,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return array of null, HTTP status code, HTTP response headers (array of strings)
      */
-    public function deleteDocumentWithHttpInfo($sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
+    public function deleteDocumentWithHttpInfo($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
     {
-        $request = $this->deleteDocumentRequest($sendingId, $documentId, $contentType);
+        $request = $this->deleteDocumentRequest($authorization, $sendingId, $documentId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -605,6 +625,7 @@ class DocumentsApi
      *
      * Suppression d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteDocument'] to see the possible values for this operation
@@ -612,9 +633,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteDocumentAsync($sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
+    public function deleteDocumentAsync($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
     {
-        return $this->deleteDocumentAsyncWithHttpInfo($sendingId, $documentId, $contentType)
+        return $this->deleteDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -627,6 +648,7 @@ class DocumentsApi
      *
      * Suppression d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteDocument'] to see the possible values for this operation
@@ -634,10 +656,10 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function deleteDocumentAsyncWithHttpInfo($sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
+    public function deleteDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
     {
         $returnType = '';
-        $request = $this->deleteDocumentRequest($sendingId, $documentId, $contentType);
+        $request = $this->deleteDocumentRequest($authorization, $sendingId, $documentId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -665,6 +687,7 @@ class DocumentsApi
     /**
      * Create request for operation 'deleteDocument'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['deleteDocument'] to see the possible values for this operation
@@ -672,8 +695,15 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function deleteDocumentRequest($sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
+    public function deleteDocumentRequest($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['deleteDocument'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling deleteDocument'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -698,6 +728,10 @@ class DocumentsApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -775,6 +809,7 @@ class DocumentsApi
      *
      * Détail d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDocument'] to see the possible values for this operation
@@ -783,9 +818,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorResponse
      */
-    public function getDocument($sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
+    public function getDocument($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
     {
-        list($response) = $this->getDocumentWithHttpInfo($sendingId, $documentId, $contentType);
+        list($response) = $this->getDocumentWithHttpInfo($authorization, $sendingId, $documentId, $contentType);
         return $response;
     }
 
@@ -794,6 +829,7 @@ class DocumentsApi
      *
      * Détail d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDocument'] to see the possible values for this operation
@@ -802,9 +838,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorResponse, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getDocumentWithHttpInfo($sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
+    public function getDocumentWithHttpInfo($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
     {
-        $request = $this->getDocumentRequest($sendingId, $documentId, $contentType);
+        $request = $this->getDocumentRequest($authorization, $sendingId, $documentId, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -964,6 +1000,7 @@ class DocumentsApi
      *
      * Détail d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDocument'] to see the possible values for this operation
@@ -971,9 +1008,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getDocumentAsync($sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
+    public function getDocumentAsync($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
     {
-        return $this->getDocumentAsyncWithHttpInfo($sendingId, $documentId, $contentType)
+        return $this->getDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -986,6 +1023,7 @@ class DocumentsApi
      *
      * Détail d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDocument'] to see the possible values for this operation
@@ -993,10 +1031,10 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getDocumentAsyncWithHttpInfo($sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
+    public function getDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse';
-        $request = $this->getDocumentRequest($sendingId, $documentId, $contentType);
+        $request = $this->getDocumentRequest($authorization, $sendingId, $documentId, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1037,6 +1075,7 @@ class DocumentsApi
     /**
      * Create request for operation 'getDocument'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['getDocument'] to see the possible values for this operation
@@ -1044,8 +1083,15 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getDocumentRequest($sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
+    public function getDocumentRequest($authorization, $sendingId, $documentId, string $contentType = self::contentTypes['getDocument'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getDocument'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1070,6 +1116,10 @@ class DocumentsApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -1147,6 +1197,7 @@ class DocumentsApi
      *
      * Liste des documents d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 30)
@@ -1158,9 +1209,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function getDocuments($sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
+    public function getDocuments($authorization, $sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
     {
-        list($response) = $this->getDocumentsWithHttpInfo($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        list($response) = $this->getDocumentsWithHttpInfo($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
         return $response;
     }
 
@@ -1169,6 +1220,7 @@ class DocumentsApi
      *
      * Liste des documents d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 30)
@@ -1180,9 +1232,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentsResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function getDocumentsWithHttpInfo($sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
+    public function getDocumentsWithHttpInfo($authorization, $sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
     {
-        $request = $this->getDocumentsRequest($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->getDocumentsRequest($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1296,6 +1348,7 @@ class DocumentsApi
      *
      * Liste des documents d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 30)
@@ -1306,9 +1359,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getDocumentsAsync($sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
+    public function getDocumentsAsync($authorization, $sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
     {
-        return $this->getDocumentsAsyncWithHttpInfo($sendingId, $startIndex, $count, $sort, $desc, $contentType)
+        return $this->getDocumentsAsyncWithHttpInfo($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1321,6 +1374,7 @@ class DocumentsApi
      *
      * Liste des documents d&#39;un envoi
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 30)
@@ -1331,10 +1385,10 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getDocumentsAsyncWithHttpInfo($sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
+    public function getDocumentsAsyncWithHttpInfo($authorization, $sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentsResponse';
-        $request = $this->getDocumentsRequest($sendingId, $startIndex, $count, $sort, $desc, $contentType);
+        $request = $this->getDocumentsRequest($authorization, $sendingId, $startIndex, $count, $sort, $desc, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1375,6 +1429,7 @@ class DocumentsApi
     /**
      * Create request for operation 'getDocuments'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  int $startIndex Le premier élément à retourner (optional, default to 1)
      * @param  int $count Le nombre d&#39;élément à retourner (optional, default to 30)
@@ -1385,8 +1440,15 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function getDocumentsRequest($sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
+    public function getDocumentsRequest($authorization, $sendingId, $startIndex = 1, $count = 30, $sort = null, $desc = null, string $contentType = self::contentTypes['getDocuments'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling getDocuments'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1450,6 +1512,10 @@ class DocumentsApi
             false // required
         ) ?? []);
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {
@@ -1519,6 +1585,7 @@ class DocumentsApi
      *
      * Modification des metadata d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentUpdateMetadata $metadata metadata (optional)
@@ -1528,9 +1595,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto
      */
-    public function updateDocument($sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
+    public function updateDocument($authorization, $sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
     {
-        list($response) = $this->updateDocumentWithHttpInfo($sendingId, $documentId, $metadata, $contentType);
+        list($response) = $this->updateDocumentWithHttpInfo($authorization, $sendingId, $documentId, $metadata, $contentType);
         return $response;
     }
 
@@ -1539,6 +1606,7 @@ class DocumentsApi
      *
      * Modification des metadata d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentUpdateMetadata $metadata (optional)
@@ -1548,9 +1616,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return array of \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto|\MailevaApiAdapter\App\Client\LrCoproClient\Model\ErrorsDto, HTTP status code, HTTP response headers (array of strings)
      */
-    public function updateDocumentWithHttpInfo($sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
+    public function updateDocumentWithHttpInfo($authorization, $sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
     {
-        $request = $this->updateDocumentRequest($sendingId, $documentId, $metadata, $contentType);
+        $request = $this->updateDocumentRequest($authorization, $sendingId, $documentId, $metadata, $contentType);
 
         try {
             $options = $this->createHttpClientOption();
@@ -1687,6 +1755,7 @@ class DocumentsApi
      *
      * Modification des metadata d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentUpdateMetadata $metadata (optional)
@@ -1695,9 +1764,9 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateDocumentAsync($sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
+    public function updateDocumentAsync($authorization, $sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
     {
-        return $this->updateDocumentAsyncWithHttpInfo($sendingId, $documentId, $metadata, $contentType)
+        return $this->updateDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, $metadata, $contentType)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1710,6 +1779,7 @@ class DocumentsApi
      *
      * Modification des metadata d&#39;un document
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentUpdateMetadata $metadata (optional)
@@ -1718,10 +1788,10 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function updateDocumentAsyncWithHttpInfo($sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
+    public function updateDocumentAsyncWithHttpInfo($authorization, $sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
     {
         $returnType = '\MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentResponse';
-        $request = $this->updateDocumentRequest($sendingId, $documentId, $metadata, $contentType);
+        $request = $this->updateDocumentRequest($authorization, $sendingId, $documentId, $metadata, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1762,6 +1832,7 @@ class DocumentsApi
     /**
      * Create request for operation 'updateDocument'
      *
+     * @param  string $authorization Bearer {access_token} (required)
      * @param  string $sendingId Identifiant de l&#39;envoi (required)
      * @param  string $documentId Identifiant du document (required)
      * @param  \MailevaApiAdapter\App\Client\LrCoproClient\Model\DocumentUpdateMetadata $metadata (optional)
@@ -1770,8 +1841,15 @@ class DocumentsApi
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    public function updateDocumentRequest($sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
+    public function updateDocumentRequest($authorization, $sendingId, $documentId, $metadata = null, string $contentType = self::contentTypes['updateDocument'][0])
     {
+
+        // verify the required parameter 'authorization' is set
+        if ($authorization === null || (is_array($authorization) && count($authorization) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $authorization when calling updateDocument'
+            );
+        }
 
         // verify the required parameter 'sendingId' is set
         if ($sendingId === null || (is_array($sendingId) && count($sendingId) === 0)) {
@@ -1797,6 +1875,10 @@ class DocumentsApi
         $multipart = false;
 
 
+        // header params
+        if ($authorization !== null) {
+            $headerParams['Authorization'] = ObjectSerializer::toHeaderValue($authorization);
+        }
 
         // path params
         if ($sendingId !== null) {

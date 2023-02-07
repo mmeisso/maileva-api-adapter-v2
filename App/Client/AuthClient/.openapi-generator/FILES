@@ -1,4 +1,4 @@
-Api/DefaultApi.php
+Api/AuthApi.php
 ApiException.php
 Configuration.php
 HeaderSelector.php
@@ -8,3 +8,8 @@ Model/Errors.php
 Model/ModelInterface.php
 Model/TokenResponse.php
 ObjectSerializer.php
+docs/Api/AuthApi.md
+docs/Model/Authorize.md
+docs/Model/Error.md
+docs/Model/Errors.md
+docs/Model/TokenResponse.md
