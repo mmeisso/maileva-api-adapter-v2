@@ -9,6 +9,7 @@ declare -A urlList
 urlList=(
   [Auth]=https://www.maileva.com/api/com-maileva-connect-authentication-v2-0-public.yaml
   [LrCopro]=https://www.maileva.com/api/api-real_estate-v1-37.yaml
+  [SimpleSending]=https://www.maileva.com/api/api-mail-v2-6.yaml
 )
 
 for apiName in "${!urlList[@]}"; do
