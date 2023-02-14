@@ -23,8 +23,8 @@ class Unit extends \Codeception\Module
 //    const USERNAME = 'sandbox.1567';
 //    const PASSWORD = 'o93126';
 
-    const AUTHENTICATION_HOST = 'https://api.release.maileva.net';
-    const HOST = 'https://api.release.maileva.net';
+    const AUTHENTICATION_HOST = 'https://connexion.sandbox.maileva.net';
+    const HOST = 'https://api.sandbox.maileva.net';
     const CLIENT_ID = 'sandbox-EUKLES';
     const CLIENT_SECRET = '4131d512-9f5b-43de-83e6-eac84059bc6a';
     const USERNAME = 'sandbox.1567';
@@ -47,7 +47,7 @@ class Unit extends \Codeception\Module
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::CLASSIC);
-        return new MailevaApiAdapter($mailevaConnection);
+        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
     }
 
     /**
@@ -80,7 +80,7 @@ class Unit extends \Codeception\Module
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::LRE);
-        return new MailevaApiAdapter($mailevaConnection);
+        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
     }
 
     /**
@@ -155,6 +155,7 @@ class Unit extends \Codeception\Module
     private function getMailevaSendingCommon(): MailevaSending
     {
         $address        = $this->getRandomAddress();
+        $senderAddress  = $this->getRandomAddress();
         $mailevaSending = new MailevaSending();
 
         $sendingName          = (new \DateTime())->format('Y-m-d H:i:s') . ' ' . Factory::create('fr_FR')->name;

@@ -1,0 +1,8 @@
+# https://openapi-generator.tech/docs/generators/php
+inputSpec: SimpleSendingClient/spec.yaml
+outputDir: SimpleSendingClient
+generatorName: php
+invokerPackage: MailevaApiAdapter\App\Client\SimpleSendingClient
+packageName: SimpleSendingClient
+srcBasePath: /
+variableNamingConvention: camelCase

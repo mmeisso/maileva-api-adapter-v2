@@ -178,7 +178,6 @@ class MailevaSendingClassicCest
             #STATUS
             $result = $mailevaApiAdapter->getSendingStatusBySendingIdAndRecipientId($sendingId, $recipientId)->getResponseAsArray();
             $I->assertNotEmpty($result);
-            var_dump($result);
         }
 
     }

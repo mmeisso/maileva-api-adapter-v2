@@ -27,17 +27,20 @@ class MailevaResponse implements MailevaResponseInterface
     /**
      * MailevaResponse constructor.
      *
-     * @param Route    $route
-     * @param Response $response
+     * @param Route|null $route
+     * @param Response|null $response
      *
+     * @throws MailevaCoreException
      * @throws MailevaResponseException
      */
-    public function __construct(Route $route, Response $response)
+    public function __construct(?Route $route=null, ?Response $response=null)
     {
         $this->route = $route;
 
-        $this->checkValidityResponse($route, $response);
-        $this->registerAuthentication();
+        if($route && $response) {
+            $this->checkValidityResponse($route, $response);
+            $this->registerAuthentication();
+        }
     }
 
     /**
@@ -47,6 +50,16 @@ class MailevaResponse implements MailevaResponseInterface
     {
         return $this->responseAsArray;
     }
+
+    /**
+     * @param array $responseAsArray
+     */
+    public function setResponseAsArray(array $responseAsArray): void
+    {
+        $this->responseAsArray = $responseAsArray;
+    }
+
+
 
     /**
      * @param Route    $route
