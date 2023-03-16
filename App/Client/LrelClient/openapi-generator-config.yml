@@ -1,0 +1,8 @@
+# https://openapi-generator.tech/docs/generators/php
+inputSpec: LrelClient/spec.yaml
+outputDir: LrelClient
+generatorName: php
+invokerPackage: MailevaApiAdapter\App\Client\LrelClient
+packageName: LrelClient
+srcBasePath: /
+variableNamingConvention: camelCase

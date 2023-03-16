@@ -11,7 +11,6 @@ use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
 use MailevaApiAdapter\App\MailevaSending;
-use MailevaApiAdapter\tests\_support\Helper\MemcachedStub;
 
 class Unit extends \Codeception\Module
 {
@@ -23,31 +22,30 @@ class Unit extends \Codeception\Module
 //    const USERNAME = 'sandbox.1567';
 //    const PASSWORD = 'o93126';
 
-    const AUTHENTICATION_HOST = 'https://connexion.sandbox.maileva.net';
-    const HOST = 'https://api.sandbox.maileva.net';
+    const HOST_ENV = MailevaConnection::HOST_ENV_SANDBOX;
     const CLIENT_ID = 'sandbox-EUKLES';
     const CLIENT_SECRET = '4131d512-9f5b-43de-83e6-eac84059bc6a';
     const USERNAME = 'sandbox.1567';
     const PASSWORD = 'o93126/A*';
-    const FTP_HOST = 'ftp.recette.maileva.com';
     const FTP_USERNAME = 'sandbox.1662';
     const FTP_PASSWORD = 'lfqcs7';
     const FTP_CLIENT_ID = 'mlv-s-cdbSJ3F';
     const FTP_CLIENT_SECRET = 'UxSqjsB';
-    const MEMCACHE_HOST = '127.0.0.1';
-    const MEMCACHE_PORT = 11211;
     const NOTIFICATION_EMAIL = 'lpettiti@eukles.com';
-    const DIRECTORY_CALLBACK = '/retour_sandbox.1662/';
+    const DIRECTORY_CALLBACK = '/retour_sandbox.1662';
     const TMP_FILE_DIRECTORY = '/tmp/MAILEVA';
+
 
     /**
      * @return MailevaApiAdapter
+     * @throws ApiException
+     * @throws MailevaCoreException
      */
     public function getMailevaApiAdapterClassic(): MailevaApiAdapter
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::CLASSIC);
-        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
+        return new MailevaApiAdapter($mailevaConnection);
     }
 
     /**
@@ -56,21 +54,17 @@ class Unit extends \Codeception\Module
      */
     public function getMailevaApiAdapterLRCOPRO(): MailevaApiAdapter
     {
-        $mailevaConnection = new MailevaConnection();
-        $mailevaConnection->setType(MailevaConnection::LRCOPRO);
+        $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection
-            ->setAuthenticationHost("")
-            ->setHost(self::FTP_HOST)
-            ->setClientId(self::CLIENT_ID)
-            ->setClientSecret(self::CLIENT_SECRET)
-            ->setUsername(self::USERNAME)
-            ->setPassword(self::PASSWORD)
-            ->setMemcacheHost(self::MEMCACHE_HOST)
-            ->setMemcachePort(self::MEMCACHE_PORT)
+            ->setType(MailevaConnection::LRCOPRO)
+            ->setHostEnv(self::HOST_ENV)
+            ->setFtpClientId(self::FTP_CLIENT_ID)
+            ->setFtpClientSecret(self::FTP_CLIENT_SECRET)
+            ->setFtpUserName(self::FTP_USERNAME)
+            ->setFtpPassword(self::FTP_PASSWORD)
             ->setDirectoryCallback(self::DIRECTORY_CALLBACK)
             ->setTmpFileDirectory(self::TMP_FILE_DIRECTORY);
-
-        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
+        return new MailevaApiAdapter($mailevaConnection);
     }
 
     /**
@@ -80,24 +74,22 @@ class Unit extends \Codeception\Module
     {
         $mailevaConnection = $this->getMailevaApiConnection();
         $mailevaConnection->setType(MailevaConnection::LRE);
-        return new MailevaApiAdapter($mailevaConnection, new MemcachedStub());
+        return new MailevaApiAdapter($mailevaConnection);
     }
 
     /**
      * @return MailevaConnection
+     * @throws MailevaCoreException
      */
     public function getMailevaApiConnection(): MailevaConnection
     {
         $mailevaConnection = new MailevaConnection();
         $mailevaConnection
-            ->setAuthenticationHost(self::AUTHENTICATION_HOST)
-            ->setHost(self::HOST)
+            ->setHostEnv(self::HOST_ENV)
             ->setClientId(self::CLIENT_ID)
             ->setClientSecret(self::CLIENT_SECRET)
             ->setUsername(self::USERNAME)
-            ->setPassword(self::PASSWORD)
-            ->setMemcacheHost(self::MEMCACHE_HOST)
-            ->setMemcachePort(self::MEMCACHE_PORT);
+            ->setPassword(self::PASSWORD);
         return $mailevaConnection;
     }
 
@@ -124,7 +116,7 @@ class Unit extends \Codeception\Module
                 throw new MailevaCoreException('Unable to retreive $mailevaApiAdapter->getType() : ' . $mailevaApiAdapter->getType());
         }
 
-        $mailevaSending->validate($mailevaApiAdapter);
+        $mailevaSending->validate($mailevaApiAdapter->getType());
         return $mailevaSending;
     }
 

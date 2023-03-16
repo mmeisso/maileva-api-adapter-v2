@@ -23,7 +23,7 @@ class MailevaLREStatuses
         'D01',
         'A19'
     ];
-    private $codeDescriptionMapping = [
+    private array $codeDescriptionMapping = [
         'A01' => 'Pris en charge',
         'A02' => 'Avisé',
         'A03' => 'Départ de France',
@@ -69,7 +69,7 @@ class MailevaLREStatuses
         'N09' => 'Régime international',
         'N10' => 'PND (Pli Non Distribuable) pour un courrier'
     ];
-    private $statuses = [];
+    private array $statuses = [];
 
     public function __construct() { }
 
@@ -145,7 +145,7 @@ class MailevaLREStatuses
      *
      * @throws MailevaCoreException
      */
-    public function setStatuses(array $statuses)
+    public function setStatuses(array $statuses): void
     {
         foreach ($statuses as $item) {
             try {

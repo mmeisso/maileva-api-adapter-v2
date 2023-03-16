@@ -1,0 +1,45 @@
+# # SendingResponse
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**id** | **string** | Identifiant d&#39;un envoi | [optional]
+**name** | **string** | Nom d&#39;un envoi | [optional]
+**customId** | **string** | Identifiant de l&#39;envoi défini par le client | [optional]
+**customData** | **string** | Information libre fournie par le client | [optional]
+**status** | [**\MailevaApiAdapter\App\Client\LrelClient\Model\SendingStatus**](SendingStatus.md) |  | [optional]
+**statusDetail** | **string** | Détail d&#39;un statut (cause du rejet) | [optional]
+**acknowledgementOfReceipt** | **bool** | Avis de réception (AR) | [optional]
+**acknowledgementOfReceiptScanning** | **bool** | Gestion électronique des avis de réception (AR). Cette option indique que Maileva doit recevoir, numériser, mettre en ligne l’image et archiver physiquement les Avis de Réception. Pour cela, la première ligne de l’adresse de l’expéditeur sera conservée, mais les 5 autres lignes et le pays seront remplacés par l’adresse de Maileva. Cette option nécessite que l’option avis de réception soit activée. | [optional]
+**creationDate** | **\DateTime** | Date et heure de création | [optional]
+**submissionDate** | **\DateTime** | Date et heure de soumission | [optional]
+**scheduledDate** | **\DateTime** | Date et heure de planification | [optional]
+**processedDate** | **\DateTime** | Date et heure de production | [optional]
+**archiveDate** | **\DateTime** | Date d&#39;archivage du dernier pli archivable | [optional]
+**documentsCount** | **int** | Nombre de documents dans l&#39;envoi | [optional]
+**documentsWeight** | **int** | Poids du document (en octets) | [optional]
+**pagesCount** | **int** | Somme du nombre de pages de chaque destinataire. Ce nombre de pages inclut les pages porte-adresse (payantes ou obligatoires) mais n&#39;inclut pas les pages blanches ajoutées au verso par Maileva. | [optional]
+**billedPagesCount** | **int** | Nombre de pages facturées (disponible à partir du statut ACCEPTED). Ce nombre de pages inclut les pages porte-adresse payantes (DL) mais n&#39;inclut pas les pages porte-adresse obligatoires (C4) ni les pages blanches ajoutées au verso par Maileva. | [optional]
+**sheetsCount** | **int** | Somme du nombre de feuilles de chaque destinataire (disponible à partir du statut ACCEPTED). Ce nombre de feuilles inclut les pages porte-adresse (payantes ou obligatoires). | [optional]
+**recipientsCounts** | [**\MailevaApiAdapter\App\Client\LrelClient\Model\RecipientsCounts**](RecipientsCounts.md) |  | [optional]
+**colorPrinting** | **bool** | Impression couleur | [optional]
+**duplexPrinting** | **bool** | Impression recto verso | [optional]
+**optionalAddressSheet** | **bool** | Feuille porte adresse optionnnelle (payante) | [optional]
+**systemAddressSheet** | **bool** | Feuille porte adresse imposée (gratuite) | [optional]
+**notificationEmail** | **string** | Email de notification | [optional]
+**envelopeType** | [**\MailevaApiAdapter\App\Client\LrelClient\Model\EnvelopeType**](EnvelopeType.md) |  | [optional]
+**senderAddressLine1** | **string** | Ligne d&#39;adresse n°1 (Société) de l&#39;expéditeur | [optional]
+**senderAddressLine2** | **string** | Ligne d&#39;adresse n°2 (Civilité, Prénom, Nom) de l&#39;expéditeur | [optional]
+**senderAddressLine3** | **string** | Ligne d&#39;adresse n°3 (Résidence, Bâtiement ...) de l&#39;expéditeur | [optional]
+**senderAddressLine4** | **string** | Ligne d&#39;adresse n°4 (N° et libellé de la voie) de l&#39;expéditeur | [optional]
+**senderAddressLine5** | **string** | Ligne d&#39;adresse n°5 (Lieu dit, BP...) de l&#39;expéditeur | [optional]
+**senderAddressLine6** | **string** | Ligne d&#39;adresse n°6 (Code postal et ville) de l&#39;expéditeur | [optional]
+**senderCountryCode** | [**\MailevaApiAdapter\App\Client\LrelClient\Model\CountryCode**](CountryCode.md) |  | [optional]
+**archivingDuration** | **int** | Durée d&#39;archivage en années | [optional]
+**returnEnvelope** | [**\MailevaApiAdapter\App\Client\LrelClient\Model\ReturnEnvelopeOutput**](ReturnEnvelopeOutput.md) |  | [optional]
+**depositProofDate** | **string** | Date de la preuve de dépôt | [optional]
+**depositProofUrl** | **string** | Lien de téléchargement de la preuve de dépôt | [optional]
+**depositProofArchiveDate** | **string** | Date d&#39;archivage de la preuve de dépôt | [optional]
+
+[[Back to Model list]](../../README.md#models) [[Back to API list]](../../README.md#endpoints) [[Back to README]](../../README.md)

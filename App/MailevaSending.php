@@ -4,7 +4,6 @@ namespace MailevaApiAdapter\App;
 
 use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
-use PdfUtil\Exception\PdfReportException;
 use Throwable;
 
 /**
@@ -14,71 +13,56 @@ use Throwable;
  */
 class MailevaSending
 {
+    public const LINE_ADDRESS_MAX_LENGTH = 38;
+    public const EMAIL_REGEX = '/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/';
+    public const POSTAGE_TYPE_ECONOMIC = 'ECONOMIC';
+    public const POSTAGE_TYPE_FAST = 'FAST';
+    public const POSTAGE_TYPE_LRE = 'LRE';
+    public const POSTAGE_TYPE_LRCOPRO = 'LRCOPRO';
+    public const POSTAGE_TYPE_MAILEVA_COPRO = 'MAILEVA_COPRO';
+    public const POSTAGE_TYPE_LISTE = [
+        self::POSTAGE_TYPE_ECONOMIC,
+        self::POSTAGE_TYPE_FAST,
+        self::POSTAGE_TYPE_LRE,
+        self::POSTAGE_TYPE_LRCOPRO,
+        self::POSTAGE_TYPE_MAILEVA_COPRO,
+    ];
+    public const POSTAGE_TYPE_COPRO_LISTE = [
+        self::POSTAGE_TYPE_LRCOPRO,
+        self::POSTAGE_TYPE_MAILEVA_COPRO,
+    ];
 
-    const LINE_ADDRESS_MAX_LENGTH = 38;
-    const EMAIL_REGEX = '/[a-zA-Z0-9_\-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/';
-    const POSTAGE_TYPE_ECONOMIC = 'ECONOMIC';
-    const POSTAGE_TYPE_FAST = 'FAST';
-    const POSTAGE_TYPE_LRE = 'LRE';
-    const POSTAGE_TYPE_LRCOPRO = 'LRCOPRO';
-    const UID_METHOD_PDFTEXT = 'UID_METHOD_PDFTEXT';
-    const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
-    const MAX_MB_FILE_MAILEVA = 20971520; #20MO
-    /**@var String */
-    private $addressLine1 = null;
-    /**@var String */
-    private $addressLine2 = null;
-    /**@var String */
-    private $addressLine3 = '';
-    /**@var String */
-    private $addressLine4 = '';
-    /**@var String */
-    private $addressLine5 = '';
-    /**@var String */
-    private $addressLine6 = null;
-    /**@var Bool */
-    private $colorPrinting = null;
-    /**@var String */
-    private $countryCode = 'FR';
-    /**@var String */
-    private $customId = null;
-    /**@var Bool */
-    private $duplexPrinting = null;
-    /**@var String */
-    private $file = null;
-    /**@var String */
-    private $filename = null;
-    /**@var Int */
-    private $filepriority = 1;
-    /**@var String */
-    private $name = null;
-    /** @var int */
-    private $nbPage = null;
-    /**@var String */
-    private $notificationEmail = null;
-    /**@var String */
-    private $notificationTreatUndeliveredMail = null;
-    /**@var Bool */
-    private $optionalAddressSheet = null;
+    public const UID_METHOD_PDFTEXT = 'UID_METHOD_PDFTEXT';
+    public const UID_METHOD_MD5_FILE = 'UID_METHOD_MD5_FILE';
+    public const MAX_MB_FILE_MAILEVA = 20971520; #20MO
+    private ?string $addressLine1 = null;
+    private ?string $addressLine2 = null;
+    private string $addressLine3 = '';
+    private string $addressLine4 = '';
+    private string $addressLine5 = '';
+    private ?string $addressLine6 = null;
+    private ?bool $colorPrinting = null;
+    private string $countryCode = 'FR';
+    private ?string $customId = null;
+    private ?bool $duplexPrinting = null;
+    private ?string $file = null;
+    private ?string $filename = null;
+    private int $filepriority = 1;
+    private ?string $name = null;
+    private ?int $nbPage = null;
+    private ?string $notificationEmail = null;
+    private ?string $notificationTreatUndeliveredMail = null;
+    private ?bool $optionalAddressSheet = null;
     #LRE
-    /**@var String */
-    private $postageType = null;
-    /**@var String */
-    private $senderAddressLine1 = null;
-    /**@var String */
-    private $senderAddressLine2 = null;
-    /**@var String */
-    private $senderAddressLine3 = '';
-    /**@var String */
-    private $senderAddressLine4 = '';
-    /**@var String */
-    private $senderAddressLine5 = '';
-    /**@var String */
-    private $senderAddressLine6 = null;
-    /**@var String */
-    private $senderCountryCode = 'FR';
-    /**@var bool */
-    private $treatUndeliveredMail = null;
+    private ?string $postageType = null;
+    private ?string $senderAddressLine1 = null;
+    private ?string $senderAddressLine2 = null;
+    private string $senderAddressLine3 = '';
+    private string $senderAddressLine4 = '';
+    private string $senderAddressLine5 = '';
+    private ?string $senderAddressLine6 = null;
+    private string $senderCountryCode = 'FR';
+    private ?bool $treatUndeliveredMail = null;
 
     /**
      * @return String
@@ -360,9 +344,9 @@ class MailevaSending
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    public function getNotificationTreatUndeliveredMail()
+    public function getNotificationTreatUndeliveredMail(): ?string
     {
         return $this->notificationTreatUndeliveredMail;
     }
@@ -379,9 +363,9 @@ class MailevaSending
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    public function getPostageType()
+    public function getPostageType(): ?string
     {
         return $this->postageType;
     }
@@ -394,24 +378,21 @@ class MailevaSending
      */
     public function setPostageType(string $postageType): MailevaSending
     {
-        if (!in_array(
-            strtoupper($postageType),
-            [self::POSTAGE_TYPE_ECONOMIC, self::POSTAGE_TYPE_FAST, self::POSTAGE_TYPE_LRE, self::POSTAGE_TYPE_LRCOPRO]
-        )) {
+        $this->postageType = strtoupper($postageType);
+
+        if (!in_array($this->postageType, self::POSTAGE_TYPE_LISTE)) {
             throw new MailevaParameterException(
                 MailevaParameterException::ERROR_POSTAGE_TYPE_DOES_NOT_MATCH,
-                'Postage type should be ' . self::POSTAGE_TYPE_ECONOMIC . ', ' . self::POSTAGE_TYPE_FAST . 'or ' . self::POSTAGE_TYPE_LRE . 'or ' . self::POSTAGE_TYPE_LRCOPRO
+                'Postage type should be one of theses values'. implode('; ',self::POSTAGE_TYPE_LISTE)
             );
         }
-
-        $this->postageType = strtoupper($postageType);
         return $this;
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    public function getSenderAddressLine1()
+    public function getSenderAddressLine1(): ?string
     {
         return $this->senderAddressLine1;
     }
@@ -428,9 +409,9 @@ class MailevaSending
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    public function getSenderAddressLine2()
+    public function getSenderAddressLine2(): ?string
     {
         return $this->senderAddressLine2;
     }
@@ -449,7 +430,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getSenderAddressLine3()
+    public function getSenderAddressLine3(): string
     {
         return $this->senderAddressLine3;
     }
@@ -468,7 +449,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getSenderAddressLine4()
+    public function getSenderAddressLine4(): string
     {
         return $this->senderAddressLine4;
     }
@@ -487,7 +468,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getSenderAddressLine5()
+    public function getSenderAddressLine5(): string
     {
         return $this->senderAddressLine5;
     }
@@ -506,7 +487,7 @@ class MailevaSending
     /**
      * @return String
      */
-    public function getSenderAddressLine6()
+    public function getSenderAddressLine6(): ?string
     {
         return $this->senderAddressLine6;
     }
@@ -546,7 +527,6 @@ class MailevaSending
      */
     public function getUID(): array
     {
-        $method                 = null;
         $postageType            = is_null($this->getPostageType()) ? "pe" : $this->getPostageType();
         $colorPrinting          = is_null($this->isColorPrinting()) ? "cg" : (string)$this->isColorPrinting();
         $isDuplexPrinting       = is_null($this->isDuplexPrinting()) ? "dg" : (string)$this->isDuplexPrinting();
@@ -686,7 +666,7 @@ class MailevaSending
         return $this;
     }
 
-    public function toString()
+    public function toString(): ?string
     {
         $var = get_object_vars($this);
         foreach ($var as $key => &$value) {
@@ -701,16 +681,17 @@ class MailevaSending
     }
 
     /**
-     * @param MailevaApiAdapter $mailevaApiAdapter
-     *
+     * @param string $mailevaConnectionType
      * @return $this
      * @throws MailevaParameterException
      */
-    public function validate(MailevaApiAdapter $mailevaApiAdapter)
+    public function validate(string $mailevaConnectionType): self
     {
         $fields = get_object_vars($this);
 
-        if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
+        # Validate special fields linked to LRE,LREL or MAILEVA_COPRO
+        $connectionTypeList = [MailevaConnection::LRE, MailevaConnection::MAILEVA_COPRO, MailevaConnection::LRCOPRO];
+        if (in_array($mailevaConnectionType, $connectionTypeList)) {
             if (empty($fields['senderAddressLine1']) && empty($fields['senderAddressLine2'])) {
                 throw new MailevaParameterException(
                     MailevaParameterException::ERROR_MAILEVA_SENDERADDRESS_LINE_1_OR_2_NOT_SET,
@@ -798,7 +779,7 @@ class MailevaSending
                 if (!file_exists($value)) {
                     throw new MailevaParameterException(MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND, 'file ' . $value . ' not found');
                 }
-                if (!in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRCOPRO])) {
+                if ($this->isNotCopro()) {
                     if (filesize($value) >= self::MAX_MB_FILE_MAILEVA) {
                         throw new MailevaParameterException(
                             MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
@@ -810,5 +791,20 @@ class MailevaSending
         }
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCopro(): bool
+    {
+        return in_array($this->postageType,self::POSTAGE_TYPE_COPRO_LISTE);
+    }
+    /**
+     * @return bool
+     */
+    public function isNotCopro(): bool
+    {
+        return !$this->isCopro();
     }
 }

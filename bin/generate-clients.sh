@@ -8,8 +8,9 @@ ln -s /usr/local/bin/docker-entrypoint.sh /usr/local/bin/openapi-generator-cli
 declare -A urlList
 urlList=(
   [Auth]=https://www.maileva.com/api/com-maileva-connect-authentication-v2-0-public.yaml
-  [LrCopro]=https://www.maileva.com/api/api-real_estate-v1-37.yaml
+  [MailevaCopro]=https://www.maileva.com/api/api-real_estate-v1-37.yaml
   [SimpleSending]=https://www.maileva.com/api/api-mail-v2-6.yaml
+  [Lrel]=https://www.maileva.com/api/api-registered_mail-v2-5.yaml
 )
 
 for apiName in "${!urlList[@]}"; do

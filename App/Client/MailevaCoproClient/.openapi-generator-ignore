@@ -1,0 +1,12 @@
+# https://openapi-generator.tech/docs/customization/#ignore-file-format
+.gitignore
+.openapi-generator-ignore
+.php-cs-fixer.dist.php
+.travis.yml
+composer.*
+git_push.sh
+phpunit.xml.dist
+README.md
+
+test/
+.openapi-generator/
