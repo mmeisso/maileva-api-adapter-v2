@@ -8,9 +8,9 @@
 
 namespace MailevaApiAdapter\App\Core;
 
-use Exception;
 use Memcached;
 use MemcachedException;
+use Throwable;
 
 /**
  * Class MemcachedManager
@@ -40,7 +40,7 @@ class MemcachedManager implements MemcachedInterface
             $this->memcached->addServer($host, $port);
         } catch (MemcachedException $e) {
             throw $e;
-        } catch (Exception $e) {
+        } catch (Throwable $ex) {
             throw new MemcachedException('ERROR_UNABLE_TO_CONNECT');
         }
     }
@@ -62,12 +62,12 @@ class MemcachedManager implements MemcachedInterface
      * Delete a given memcache key
      *
      * @param string $key
-     * @param int    $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
+     * @param int $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
      *                     (set will work)
      *
      * @return bool
      */
-    public function delete($key, $time = 0): bool
+    public function delete(string $key, int $time = 0): bool
     {
         return $this->memcached->delete($key, $time);
     }
@@ -76,11 +76,11 @@ class MemcachedManager implements MemcachedInterface
      * Return a memcache value
      *
      * @param string $key
-     * @param mixed  $default
+     * @param mixed|null $default
      *
      * @return mixed Return false if memcache is not available or $default if there is no value on memcache for that key
      */
-    public function get($key, $default = null)
+    public function get(string $key, $default = null)
     {
         $mmcValue = $this->memcached->get($key);
 
@@ -91,7 +91,7 @@ class MemcachedManager implements MemcachedInterface
                 return false;
             }
 
-            # They key does not exists, returns the default given value if set
+            # They key does not exist, returns the default given value if set
             if ($this->memcached->getResultCode() === Memcached::RES_NOTFOUND && $default != null) {
                 return $default;
             }

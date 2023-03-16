@@ -21,7 +21,7 @@ class MailevaAllReadyExistException extends MailevaException
     /** Same mailevaSending has already been sent with sendingId  */
     const ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID = -139;
     /** @var array */
-    private $previousMailevaSending;
+    private array $previousMailevaSending;
 
     /**
      * MailevaAllReadyExistException constructor.

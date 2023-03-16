@@ -8,6 +8,15 @@
 
 namespace MailevaApiAdapter\App;
 
+use GuzzleHttp\Client;
+use MailevaApiAdapter\App\Client\AuthClient\Api\AuthApi;
+use MailevaApiAdapter\App\Client\AuthClient\ApiException;
+use MailevaApiAdapter\App\Client\AuthClient\Configuration;
+use MailevaApiAdapter\App\Core\MemcachedInterface;
+use MailevaApiAdapter\App\Core\MemcachedManager;
+use MailevaApiAdapter\App\Core\MemcachedStub;
+use MailevaApiAdapter\App\Exception\MailevaCoreException;
+
 /**
  * Class MailevaConnection
  *
@@ -16,42 +25,95 @@ namespace MailevaApiAdapter\App;
 class MailevaConnection
 {
 
-    const CLASSIC = 'classic';
-    const LRE = 'lre';
-    const LRCOPRO = 'lrcopro';
-    private $authenticationHost;
-    private $clientId = null;
-    private $clientSecret = null;
-    private $directoryCallback = null;
-    private $host;
-    private $memcacheHost = null;
-    private $memcachePort = null;
-    private $password = null;
-    private $tmpFileDirectory = null;
-    private $type = self::CLASSIC;
-    private $username = null;
+    public const CLASSIC = 'classic';
+    public const LRE = 'lre';
+    public const LRCOPRO = 'lrcopro';
+    public const MAILEVA_COPRO = 'mailevaCopro';
+    public const COPRO_LIST = [MailevaConnection::MAILEVA_COPRO, MailevaConnection::LRCOPRO];
 
-    public function __construct()
+    const TYPE_LIST = [
+        self::CLASSIC,
+        self::LRE,
+        self::LRCOPRO,
+        self::MAILEVA_COPRO
+    ];
+    public const HOST_ENV_SANDBOX = 'sandbox';
+    public const HOST_ENV_PROD = 'prod';
+    public const HOST_ENV_LIST = [
+        self::HOST_ENV_SANDBOX,
+        self::HOST_ENV_PROD
+    ];
+
+    public const HOST_PROD_IDX = 0;
+    public const HOST_SANDBOX_IDX = 1;
+    public const TOKEN_PREFIX_V2 = 'MTV2_';
+    private string $clientId;
+    private string $clientSecret;
+    private string $hostEnv;
+    private string $memcacheHost;
+    private int $memcachePort;
+    private string $password;
+    private string $type = self::CLASSIC;
+    private string $username;
+    private string $ftpClientId;
+    private string $ftpClientSecret;
+    private string $ftpUserName;
+    private string $ftpPassword;
+    private string $directoryCallback;
+    private string $tmpFileDirectory;
+    private string $usernameMailevaCopro;
+    private string $passwordMailevaCopro;
+    private string $accessToken;
+    private int $hostIndex = self::HOST_SANDBOX_IDX;
+
+    private MemcachedInterface $memcachedManager;
+
+    /**
+     * @return void
+     */
+    public function initMemcachedManager(): void
     {
+        if ($this->useMemcache()) {
+            $this->memcachedManager = MemcachedManager::getInstance(
+                $this->getMemcacheHost(),
+                $this->getMemcachePort()
+            );
+        } else {
+            $this->memcachedManager = new MemcachedStub();
+        }
     }
 
     /**
-     * @return string
+     * @param MailevaConnection $mailevaConnection
+     * @throws ApiException
      */
-    public function getAuthenticationHost(): string
+    public function authenticate(MailevaConnection $mailevaConnection): void
     {
-        return $this->authenticationHost;
-    }
+        $configuration = new Configuration();
+        $configuration->setHost($configuration->getHostFromSettings($this->hostIndex));
+        $apiInstance = new AuthApi(new Client(), $configuration);
+        $authorization = 'Basic ' . base64_encode(
+                "{$mailevaConnection->getClientId()}:{$mailevaConnection->getClientSecret()}"
+            );
 
-    /**
-     * @param string $authenticationHost
-     *
-     * @return MailevaConnection
-     */
-    public function setAuthenticationHost(string $authenticationHost): MailevaConnection
-    {
-        $this->authenticationHost = $authenticationHost;
-        return $this;
+        # use a special account for MailevaCopro
+        if ($this->getType() === self::MAILEVA_COPRO) {
+            $username = $mailevaConnection->getUsernameMailevaCopro();
+            $password = $mailevaConnection->getUsernameMailevaCopro();
+        } else {
+            $username = $mailevaConnection->getUsername();
+            $password = $mailevaConnection->getPassword();
+        }
+
+        var_dump($mailevaConnection->getClientId(), $mailevaConnection->getClientSecret(), $username, $password);
+        $result = $apiInstance->tokenPost(
+            $authorization,
+            'password',
+            $username,
+            $password
+        );
+
+        $this->setAccessToken($result->getAccessToken(), $result->getExpiresIn());
     }
 
     /**
@@ -93,47 +155,35 @@ class MailevaConnection
     }
 
     /**
-     * @return null
+     * @return string
      */
-    public function getDirectoryCallback()
+    public function getHostEnv(): string
     {
-        return $this->directoryCallback;
+        return $this->hostEnv;
     }
 
     /**
-     * @param null $directoryRetour
+     * @param string $hostEnv
      *
      * @return MailevaConnection
+     * @throws MailevaCoreException
      */
-    public function setDirectoryCallback($directoryRetour)
+    public function setHostEnv(string $hostEnv): MailevaConnection
     {
-        $this->directoryCallback = $directoryRetour;
+        if (!in_array($hostEnv, self::HOST_ENV_LIST)) {
+            throw new MailevaCoreException("Host '$hostEnv' is not a valid value");
+        }
+        $this->hostEnv = $hostEnv;
+        if ($this->isProdHost()) {
+            $this->hostIndex = self::HOST_PROD_IDX;
+        }
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getHost(): string
-    {
-        return $this->host;
-    }
-
-    /**
-     * @param string $host
-     *
-     * @return MailevaConnection
-     */
-    public function setHost(string $host): MailevaConnection
-    {
-        $this->host = $host;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMemcacheHost()
+    public function getMemcacheHost(): string
     {
         return $this->memcacheHost;
     }
@@ -150,9 +200,9 @@ class MailevaConnection
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getMemcachePort()
+    public function getMemcachePort(): ?int
     {
         return $this->memcachePort;
     }
@@ -167,6 +217,7 @@ class MailevaConnection
         $this->memcachePort = $memcachePort;
         return $this;
     }
+
 
     /**
      * @return string
@@ -188,21 +239,74 @@ class MailevaConnection
     }
 
     /**
-     * @return null
+     * @return string
      */
-    public function getTmpFileDirectory()
+    public function getFtpClientId(): string
     {
-        return $this->tmpFileDirectory;
+        return $this->ftpClientId;
     }
 
     /**
-     * @param null $tmpFileDirectory
-     *
+     * @param string $ftpClientId
      * @return MailevaConnection
      */
-    public function setTmpFileDirectory($tmpFileDirectory)
+    public function setFtpClientId(string $ftpClientId): MailevaConnection
     {
-        $this->tmpFileDirectory = $tmpFileDirectory;
+        $this->ftpClientId = $ftpClientId;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFtpClientSecret(): string
+    {
+        return $this->ftpClientSecret;
+    }
+
+    /**
+     * @param string $ftpClientSecret
+     * @return MailevaConnection
+     */
+    public function setFtpClientSecret(string $ftpClientSecret): MailevaConnection
+    {
+        $this->ftpClientSecret = $ftpClientSecret;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFtpUserName(): string
+    {
+        return $this->ftpUserName;
+    }
+
+    /**
+     * @param string $ftpUserName
+     * @return MailevaConnection
+     */
+    public function setFtpUserName(string $ftpUserName): MailevaConnection
+    {
+        $this->ftpUserName = $ftpUserName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFtpPassword(): string
+    {
+        return $this->ftpPassword;
+    }
+
+    /**
+     * @param string $ftpPassword
+     * @return MailevaConnection
+     */
+    public function setFtpPassword(string $ftpPassword): MailevaConnection
+    {
+        $this->ftpPassword = $ftpPassword;
         return $this;
     }
 
@@ -218,9 +322,13 @@ class MailevaConnection
      * @param string $type
      *
      * @return MailevaConnection
+     * @throws MailevaCoreException
      */
     public function setType(string $type): MailevaConnection
     {
+        if (!in_array($type, self::TYPE_LIST)) {
+            throw new MailevaCoreException("Type '$type' is not a valid value");
+        }
         $this->type = $type;
         return $this;
     }
@@ -245,28 +353,187 @@ class MailevaConnection
     }
 
     /**
+     * @return string
+     */
+    public function getDirectoryCallback(): string
+    {
+        return $this->directoryCallback;
+    }
+
+    /**
+     * @param null $directoryRetour
+     *
+     * @return MailevaConnection
+     */
+    public function setDirectoryCallback($directoryRetour): MailevaConnection
+    {
+        $this->directoryCallback = $directoryRetour;
+        return $this;
+    }
+
+    /**
+     * @return null
+     */
+    public function getTmpFileDirectory(): ?string
+    {
+        return $this->tmpFileDirectory;
+    }
+
+    /**
+     * @param null $tmpFileDirectory
+     *
+     * @return MailevaConnection
+     */
+    public function setTmpFileDirectory($tmpFileDirectory): MailevaConnection
+    {
+        $this->tmpFileDirectory = $tmpFileDirectory;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsernameMailevaCopro(): string
+    {
+        return $this->usernameMailevaCopro;
+    }
+
+    /**
+     * @param string $usernameMailevaCopro
+     * @return MailevaConnection
+     */
+    public function setUsernameMailevaCopro(string $usernameMailevaCopro): MailevaConnection
+    {
+        $this->usernameMailevaCopro = $usernameMailevaCopro;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPasswordMailevaCopro(): string
+    {
+        return $this->passwordMailevaCopro;
+    }
+
+    /**
+     * @param string $passwordMailevaCopro
+     * @return MailevaConnection
+     */
+    public function setPasswordMailevaCopro(string $passwordMailevaCopro): MailevaConnection
+    {
+        $this->passwordMailevaCopro = $passwordMailevaCopro;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHostIndex(): int
+    {
+        return $this->hostIndex;
+    }
+
+
+    /**
+     * @return MemcachedInterface
+     */
+    public function getMemcachedManager(): MemcachedInterface
+    {
+        return $this->memcachedManager;
+    }
+
+    /**
+     * @param MemcachedInterface $memcachedManager
+     * @return MailevaConnection
+     */
+    public function setMemcachedManager(MemcachedInterface $memcachedManager): self
+    {
+        $this->memcachedManager = $memcachedManager;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function useMemcache(): bool
     {
-        return empty($this->getMemcacheHost()) === false && empty($this->getMemcachePort()) === false;
+        return !empty($this->memcacheHost) && !empty($this->memcachePort);
     }
-
 
     /**
      * @return bool
      */
     public function isSandboxHost(): bool
     {
-        foreach (['sandbox', 'recette'] as $needle) {
-            if(mb_strpos($this->getHost(),$needle)!== false) {
-                return true;
-            }
-        }
-        return false;
+        return $this->hostEnv === self::HOST_ENV_SANDBOX;
     }
 
-    public function isProdHost():bool {
-        return !$this->isSandboxHost();
+    /**
+     * @return bool
+     */
+    public function isProdHost(): bool
+    {
+        return $this->hostEnv === self::HOST_ENV_PROD;
     }
+
+    public function isCopro(): bool
+    {
+        return in_array($this->getType(), self::COPRO_LIST);
+    }
+
+    /**
+     * @return bool
+     */
+    public function requireAuthentication(): bool
+    {
+        return $this->getType() !== self::LRCOPRO;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAccessToken(): string
+    {
+        if ($this->accessToken) {
+            return $this->accessToken;
+        }
+
+        $accessToken = $this->memcachedManager->get($this->getMemcachedKeyForAccessToken());
+        if ($accessToken !== false) {
+            $this->accessToken = $accessToken;
+        }
+
+        return $this->accessToken;
+    }
+
+    /**
+     * @return string
+     */
+    private function getMemcachedKeyForAccessToken(): string
+    {
+        return sprintf(
+            "%s%s_%s",
+            self::TOKEN_PREFIX_V2,
+            $this->getClientId(),
+            $this->getUsername()
+        );
+    }
+
+    /**
+     * @param string $token
+     * @param int $secondsDurationValidity
+     */
+    private function setAccessToken(string $token, int $secondsDurationValidity): void
+    {
+        #2592000 max memcache value -> http://php.net/manual/fr/memcache.set.php
+        $this->memcachedManager->set(
+            $this->getMemcachedKeyForAccessToken(),
+            $token,
+            min(abs($secondsDurationValidity / 2), 2592000)
+        );
+        $this->accessToken = $token;
+    }
+
+
 }

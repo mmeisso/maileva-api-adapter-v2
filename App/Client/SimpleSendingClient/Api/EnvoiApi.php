@@ -107,8 +107,6 @@ class EnvoiApi
         $this->config = $config ?: new Configuration();
         $this->headerSelector = $selector ?: new HeaderSelector();
         $this->hostIndex = $hostIndex;
-
-        $this->config->setHost($this->config->getHostFromSettings($hostIndex));
     }
 
     /**

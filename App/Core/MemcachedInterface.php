@@ -16,29 +16,29 @@ interface MemcachedInterface
      * Delete a given memcache key
      *
      * @param string $key
-     * @param int    $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
+     * @param int $time If given this will be the time during with any add or replace operations will be forbidden after the deletion of the key
      *                     (set will work)
      *
      * @return bool
      */
-    public function delete($key, $time = 0);
+    public function delete(string $key, int $time = 0): bool;
 
     /**
      * Return a memcache value
      *
      * @param string $key
-     * @param mixed  $default
+     * @param mixed|null $default
      *
      * @return mixed Return false if memcache is not available or $default if there is no value on memcache for that key
      */
-    public function get($key, $default = null);
+    public function get(string $key, $default = null);
 
     /**
      * Get all keys sorted into memcached
      *
      * @return array
      */
-    public function getAllKeys();
+    public function getAllKeys(): array;
 
     public function set($key, $value, $duration = 0);
 

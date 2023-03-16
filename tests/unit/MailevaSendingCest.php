@@ -43,17 +43,16 @@ class MailevaSendingCest
                     ) . 'testFiles/filesizelargeplus10mo.pdf the maximum is ' . MailevaSending::MAX_MB_FILE_MAILEVA . ' MB'
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
         }
 
-        /** @var MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
         /** @var MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
         $mailevaSending->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
-        $mailevaSending->validate($mailevaApiAdapter);
+        $mailevaSending->validate($mailevaApiAdapter->getType());
     }
 
     /**
@@ -76,7 +75,7 @@ class MailevaSendingCest
                     "addressLine1 || addressLine2 not set"
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
 
@@ -90,7 +89,7 @@ class MailevaSendingCest
                     "addressLine6 not set"
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
 
@@ -105,7 +104,7 @@ class MailevaSendingCest
                     "too long address on addressLine1 : " . $addressLine1
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
         }
@@ -122,7 +121,7 @@ class MailevaSendingCest
                     "senderAddressLine1 || senderAddressLine2 not set"
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
 
@@ -136,7 +135,7 @@ class MailevaSendingCest
                     "senderAddressLine6 not set"
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
 
@@ -151,7 +150,7 @@ class MailevaSendingCest
                     "too long address on senderAddressLine1 : " . $senderAddressLine1
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
         }
@@ -175,7 +174,7 @@ class MailevaSendingCest
                     'file toto not found'
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
         }
@@ -199,7 +198,7 @@ class MailevaSendingCest
                     "Wrong email syntax on notificationEmail parameter"
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
-                    $mailevaSending->validate($mailevaApiAdapter);
+                    $mailevaSending->validate($mailevaApiAdapter->getType());
                 }
             );
         }
@@ -272,7 +271,10 @@ class MailevaSendingCest
         $mailevaSendingDest->setAddressLine5($mailevaSendingSrc->getAddressLine5());
         $mailevaSendingDest->setAddressLine6($mailevaSendingSrc->getAddressLine6());
 
-        if (in_array($mailevaApiAdapter->getType(), [MailevaConnection::LRE, MailevaConnection::LRCOPRO])) {
+        if (in_array(
+            $mailevaApiAdapter->getType(),
+            [MailevaConnection::LRE, MailevaConnection::LRCOPRO, MailevaConnection::MAILEVA_COPRO]
+        )) {
             $mailevaSendingDest->setSenderAddressLine1($mailevaSendingSrc->getSenderAddressLine1());
             $mailevaSendingDest->setSenderAddressLine2($mailevaSendingSrc->getSenderAddressLine2());
             $mailevaSendingDest->setSenderAddressLine3($mailevaSendingSrc->getSenderAddressLine3());
