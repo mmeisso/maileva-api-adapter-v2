@@ -393,6 +393,7 @@ components:
       enum:
         - DL
         - C4
+        - C6
       example: DL
 
     error_response:

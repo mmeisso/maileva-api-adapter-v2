@@ -105,7 +105,6 @@ class MailevaConnection
             $password = $mailevaConnection->getPassword();
         }
 
-        var_dump($mailevaConnection->getClientId(), $mailevaConnection->getClientSecret(), $username, $password);
         $result = $apiInstance->tokenPost(
             $authorization,
             'password',

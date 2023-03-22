@@ -27,7 +27,6 @@
  */
 
 namespace MailevaApiAdapter\App\Client\LrelClient\Model;
-use \MailevaApiAdapter\App\Client\LrelClient\ObjectSerializer;
 
 /**
  * EnvelopeType Class Doc Comment
@@ -47,6 +46,8 @@ class EnvelopeType
 
     public const C4 = 'C4';
 
+    public const C6 = 'C6';
+
     /**
      * Gets allowable values of the enum
      * @return string[]
@@ -55,7 +56,8 @@ class EnvelopeType
     {
         return [
             self::DL,
-            self::C4
+            self::C4,
+            self::C6
         ];
     }
 }
