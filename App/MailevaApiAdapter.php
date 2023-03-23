@@ -16,6 +16,7 @@ use MailevaApiAdapter\App\Exception\MailevaAllReadyExistException;
 use MailevaApiAdapter\App\Exception\MailevaCoreException;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
 use MailevaApiAdapter\App\Exception\MailevaResponseException;
+use Symfony\Component\Filesystem\Filesystem;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -68,7 +69,7 @@ class MailevaApiAdapter
     /**
      * @param string $sendingId
      * @param string $recipientId
-     * @param string|null $localFilePath
+     * @param string $localFilePath
      * @return MailevaResponse
      * @throws ApiException
      * @throws Client\LrelClient\ApiException
@@ -77,31 +78,44 @@ class MailevaApiAdapter
     public function downloadAcknowledgementOfReceiptBySendingIdAndRecipientId(
         string $sendingId,
         string $recipientId,
-        string $localFilePath = null
+        string $localFilePath
     ): MailevaResponse {
         if ($this->getType() !== MailevaConnection::LRE) {
             throw new MailevaCoreException('Only available for LRE');
         }
 
         $lrelClient = new LrelClient($this->mailevaConnection);
-        return $lrelClient->downloadAcknowledgementOfReceiptBySendingIdAndRecipientId($sendingId, $recipientId);
+        $file = $lrelClient->downloadAcknowledgementOfReceiptBySendingIdAndRecipientId(
+            $sendingId,
+            $recipientId
+        );
+
+        $filesystem = new Filesystem();
+        $filesystem->rename($file->getPathname(), $localFilePath);
+
+        return new MailevaResponse();
     }
 
     /**
      * @param string $sendingId
-     * @param string|null $localFilePath
+     * @param string $localFilePath
      * @return MailevaResponse
      * @throws ApiException
      * @throws Client\LrelClient\ApiException
      * @throws MailevaCoreException
      */
-    public function downloadDepositProofBySendingId(string $sendingId, string $localFilePath = null): MailevaResponse
+    public function downloadDepositProofBySendingId(string $sendingId, string $localFilePath): MailevaResponse
     {
         if ($this->getType() !== MailevaConnection::LRE) {
             throw new MailevaCoreException('Only available for LRE');
         }
         $lrelClient = new LrelClient($this->mailevaConnection);
-        return $lrelClient->downloadDepositProofBySendingId($sendingId);
+        $file = $lrelClient->downloadDepositProofBySendingId($sendingId);
+
+        $filesystem = new Filesystem();
+        $filesystem->rename($file->getPathname(), $localFilePath);
+
+        return new MailevaResponse();
     }
 
     /**
