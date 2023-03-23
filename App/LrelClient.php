@@ -11,6 +11,7 @@ use MailevaApiAdapter\App\Client\LrelClient\Model\RecipientCreation;
 use MailevaApiAdapter\App\Client\LrelClient\Model\SendingCreation;
 use MailevaApiAdapter\App\Client\LrelClient\Model\SendingsSendingIdDocumentsGetRequestMetadata;
 use MailevaApiAdapter\App\Core\MailevaResponse;
+use SplFileObject;
 
 class LrelClient extends AbstractClient
 {
@@ -83,7 +84,7 @@ class LrelClient extends AbstractClient
             ->setAddressLine6($mailevaSending->getAddressLine6())
             ->setCountryCode($mailevaSending->getCountryCode())
             ->setCustomId($mailevaSending->getCustomId());
-        $recipientResponse = $destinatairesApi->sendingsSendingIdRecipientsPost($sendingId, $recipientCreation);
+        $destinatairesApi->sendingsSendingIdRecipientsPost($sendingId, $recipientCreation);
 
         # store into memcached to avoid duplicate sending
         $this->mailevaConnection->getMemcachedManager()
@@ -95,14 +96,13 @@ class LrelClient extends AbstractClient
     /**
      * @param string $sendingId
      *
-     * @return MailevaResponse
+     * @return SplFileObject
      * @throws ApiException
      */
-    public function downloadDepositProofBySendingId(string $sendingId): MailevaResponse
+    public function downloadDepositProofBySendingId(string $sendingId): SplFileObject
     {
         $envoiApi = new EnvoiApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
-        $response = $envoiApi->sendingsSendingIdDownloadDepositProofGet($sendingId);
-        return $this->toMailevaResponse($response);
+        return $envoiApi->sendingsSendingIdDownloadDepositProofGet($sendingId);
     }
 
     /**
@@ -173,26 +173,23 @@ class LrelClient extends AbstractClient
      * @param string $sendingId
      * @param string $recipientId
      *
-     * @return MailevaResponse
+     * @return SplFileObject
      * @throws ApiException
      */
     public function downloadAcknowledgementOfReceiptBySendingIdAndRecipientId(
         string $sendingId,
         string $recipientId
-    ): MailevaResponse
-    {
+    ): SplFileObject {
         $destinatairesApi = new DestinatairesApi(
             null,
             $this->configuration,
             null,
             $this->mailevaConnection->getHostIndex()
         );
-        $response = $destinatairesApi->sendingsSendingIdRecipientsRecipientIdDownloadAcknowledgementOfReceiptGet(
+        return $destinatairesApi->sendingsSendingIdRecipientsRecipientIdDownloadAcknowledgementOfReceiptGet(
             $sendingId,
             $recipientId
         );
-
-        return $this->toMailevaResponse($response);
     }
 
     /**
