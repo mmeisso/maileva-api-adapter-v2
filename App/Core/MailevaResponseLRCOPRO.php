@@ -8,6 +8,7 @@
 
 namespace MailevaApiAdapter\App\Core;
 
+use MailevaApiAdapter\App\Exception\MailevaResponseException;
 use MailevaApiAdapter\App\LrCoproClient;
 use MailevaApiAdapter\App\MailevaSendingStatus;
 
@@ -46,8 +47,6 @@ class MailevaResponseLRCOPRO implements MailevaResponseInterface
                 'status' => $this->status,
                 'deposit_id' => $this->depositId,
                 'expected_production_date' => $this->expectedProductionDate,
-                'duplex_printing' => $this->duplexPrinting,
-                'color_printing' => $this->colorPrinting,
             ];
             if(isset($this->postageType)) {
                 $this->responseAsArray = array_merge($this->responseAsArray, [
@@ -55,7 +54,9 @@ class MailevaResponseLRCOPRO implements MailevaResponseInterface
                     'creation_date' => $this->creationDate,
                     'pages_count' => $this->pagesCount,
                     'documents_count' => $this->documentsCount,
+                    'duplex_printing' => $this->duplexPrinting,
                     'billed_page_count' => $this->billedPageCount,
+                    'color_printing' => $this->colorPrinting,
                 ]);
             }
         }
@@ -70,32 +71,43 @@ class MailevaResponseLRCOPRO implements MailevaResponseInterface
         $this->responseAsArray = $responseAsArray;
     }
 
+    /**
+     * @param string $xmlContent
+     * @return void
+     * @throws MailevaResponseException
+     */
     public function hydrate(string $xmlContent): void
     {
         $xml = simplexml_load_string($xmlContent);
+        $xml = $xml->children('tnsb', true);
 
-        $this->trackId = (string)$xml->Request->TrackId[0];
+        if (!isset($xml->Request)) {
+            throw new MailevaResponseException("Failed to find the node request: [xmlContent: $xmlContent]");
+        }
+        $request = $xml->Request;
+
+        $this->trackId = (string)$request->TrackId;
         $this->id = trim($this->trackId, LrCoproClient::TRACK_ID_SUFFIX);
 
         # Todo pansement pas joli, mieux gérer les différents status LRCOPRO
-        if (in_array((string)$xml->Request->Status[0], ['ACCEPT', 'OK'])) {
+        if (in_array((string)$request->Status, ['ACCEPT', 'OK'])) {
             $this->status = MailevaSendingStatus::ACCEPTED;
         }
-        if ((string)$xml->Request->Status[0] === 'NACCEPT') {
+        if ((string)$request->Status[0] === 'NACCEPT') {
             $this->status = MailevaSendingStatus::SUBMIT_ERROR;
         }
 
-        $this->creationDate = (string)$xml->Request->ReceptionDate[0];
-        if (isset($xml->Request->PaperOptions)) {
-            $this->postageType = (string)$xml->Request->PaperOptions->PostageClass[0];
-            $this->pagesCount = (string)$xml->Request->PaperOptions->PageCount[0];
-            $this->documentsCount = (string)$xml->Request->PaperOptions->DocumentCount[0];
-            $this->billedPageCount = (string)$xml->Request->PaperOptions->BilledPageCount[0];
-            $this->duplexPrinting = $xml->Request->PaperOptions->PrintDuplex[0] ? 1 : 0;
-            $this->colorPrinting = $xml->Request->PaperOptions->HasColorPage[0] ? 1 : 0;
+        $this->creationDate = (string)$request->ReceptionDate;
+        $this->depositId = (string)$request->DepositId;
+        $this->expectedProductionDate = (string)$request->ExpectedProductionDate;
+        if (isset($request->PaperOptions)) {
+            $this->postageType = (string)$request->PaperOptions->PostageClass;
+            $this->pagesCount = (string)$request->PaperOptions->PageCount;
+            $this->documentsCount = (string)$request->PaperOptions->DocumentCount;
+            $this->billedPageCount = (string)$request->PaperOptions->BilledPageCount;
+            $this->duplexPrinting = strtolower($request->PaperOptions->PrintDuplex) === 'true';
+            $this->colorPrinting = strtolower($request->PaperOptions->HasColorPage) === 'true';
         }
-        $this->depositId = (string)$xml->Request->DepositId[0];
-        $this->expectedProductionDate = (string)$xml->Request->ExpectedProductionDate[0];
     }
 
     /**

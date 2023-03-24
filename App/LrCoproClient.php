@@ -171,9 +171,14 @@ class LrCoproClient extends AbstractClient
             }
 
             # Fetch notification
-            $xml = preg_replace('/tnsb:/', '', $localAdapter->read($localFilePath));
             $mailevaResponseLRCOPRO = new MailevaResponseLRCOPRO();
-            $mailevaResponseLRCOPRO->hydrate($xml);
+            try {
+                $mailevaResponseLRCOPRO->hydrate($localAdapter->read($localFilePath));
+            } catch (\Throwable $e) {
+                # error_log usage is not good but all of that process should be in a separated process
+                error_log(sprintf("ERROR on file: %s details: %s", $file->path(), (string)$e));
+                continue;
+            }
 
             if ($mailevaResponseLRCOPRO->getId() !== $sendingId) {
                 continue;
@@ -190,7 +195,8 @@ class LrCoproClient extends AbstractClient
 
             return $mailevaResponseLRCOPRO;
         }
-        throw new MailevaResponseException('Unable to retrieve by sendingId ' . $sendingId);
+        # it should be a notice
+//        throw new MailevaResponseException('Unable to retrieve by sendingId ' . $sendingId);
     }
 
     /**
