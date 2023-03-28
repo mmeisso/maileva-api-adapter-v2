@@ -35,7 +35,6 @@ abstract class AbstractClient
         if(!$mailevaConnection->requireAuthentication()) {
             return;
         }
-        $mailevaConnection->authenticate($mailevaConnection);
 
         $newConfiguration = $this->getNewConfiguration();
         if ($newConfiguration) {

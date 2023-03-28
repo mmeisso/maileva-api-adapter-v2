@@ -12,6 +12,7 @@ use GuzzleHttp\Client;
 use MailevaApiAdapter\App\Client\AuthClient\Api\AuthApi;
 use MailevaApiAdapter\App\Client\AuthClient\ApiException;
 use MailevaApiAdapter\App\Client\AuthClient\Configuration;
+use MailevaApiAdapter\App\Client\AuthClient\Model\TokenResponse;
 use MailevaApiAdapter\App\Core\MemcachedInterface;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\MemcachedStub;
@@ -84,35 +85,33 @@ class MailevaConnection
     }
 
     /**
-     * @param MailevaConnection $mailevaConnection
+     * @return TokenResponse
      * @throws ApiException
      */
-    public function authenticate(MailevaConnection $mailevaConnection): void
+    public function authenticate(): TokenResponse
     {
         $configuration = new Configuration();
         $configuration->setHost($configuration->getHostFromSettings($this->hostIndex));
         $apiInstance = new AuthApi(new Client(), $configuration);
         $authorization = 'Basic ' . base64_encode(
-                "{$mailevaConnection->getClientId()}:{$mailevaConnection->getClientSecret()}"
+                "{$this->getClientId()}:{$this->getClientSecret()}"
             );
 
         # use a special account for MailevaCopro
         if ($this->getType() === self::MAILEVA_COPRO) {
-            $username = $mailevaConnection->getUsernameMailevaCopro();
-            $password = $mailevaConnection->getUsernameMailevaCopro();
+            $username = $this->getUsernameMailevaCopro();
+            $password = $this->getUsernameMailevaCopro();
         } else {
-            $username = $mailevaConnection->getUsername();
-            $password = $mailevaConnection->getPassword();
+            $username = $this->getUsername();
+            $password = $this->getPassword();
         }
 
-        $result = $apiInstance->tokenPost(
+        return $apiInstance->tokenPost(
             $authorization,
             'password',
             $username,
             $password
         );
-
-        $this->setAccessToken($result->getAccessToken(), $result->getExpiresIn());
     }
 
     /**
@@ -491,19 +490,24 @@ class MailevaConnection
 
     /**
      * @return string
+     * @throws ApiException
      */
     public function getAccessToken(): string
     {
-        if ($this->accessToken) {
+        if (!empty($this->accessToken)) {
             return $this->accessToken;
         }
 
         $accessToken = $this->memcachedManager->get($this->getMemcachedKeyForAccessToken());
         if ($accessToken !== false) {
             $this->accessToken = $accessToken;
+            return $accessToken;
         }
 
-        return $this->accessToken;
+        $tokenResponse = $this->authenticate();
+        $this->setAccessToken($tokenResponse->getAccessToken(), $tokenResponse->getExpiresIn());
+
+        return $tokenResponse->getAccessToken();
     }
 
     /**

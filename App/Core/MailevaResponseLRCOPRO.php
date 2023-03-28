@@ -79,6 +79,9 @@ class MailevaResponseLRCOPRO implements MailevaResponseInterface
     public function hydrate(string $xmlContent): void
     {
         $xml = simplexml_load_string($xmlContent);
+        if ($xml === false) {
+            throw new MailevaResponseException("Failed to parse xml content: [xmlContent: $xmlContent]");
+        }
         $xml = $xml->children('tnsb', true);
 
         if (!isset($xml->Request)) {

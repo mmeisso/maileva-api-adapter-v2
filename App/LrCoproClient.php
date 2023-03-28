@@ -157,6 +157,11 @@ class LrCoproClient extends AbstractClient
                 continue;
             }
 
+            # Filter only .xml files
+            if (pathinfo($file->path(), PATHINFO_EXTENSION) !== 'xml') {
+                continue;
+            }
+
             # Download file if it doesn't exist into local temp directory
             $fileName = basename($file->path());
             $localFilePath = sprintf(
@@ -196,7 +201,7 @@ class LrCoproClient extends AbstractClient
             return $mailevaResponseLRCOPRO;
         }
         # it should be a notice
-//        throw new MailevaResponseException('Unable to retrieve by sendingId ' . $sendingId);
+        throw new MailevaResponseException('Unable to retrieve by sendingId ' . $sendingId);
     }
 
     /**
