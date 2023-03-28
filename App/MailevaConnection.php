@@ -498,8 +498,8 @@ class MailevaConnection
             return $this->accessToken;
         }
 
-        $accessToken = $this->memcachedManager->get($this->getMemcachedKeyForAccessToken());
-        if ($accessToken !== false) {
+        $accessToken = $this->memcachedManager->get($this->getMemcachedKeyForAccessToken(), false);
+        if (!$accessToken) {
             $this->accessToken = $accessToken;
             return $accessToken;
         }
