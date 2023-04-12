@@ -6,3 +6,4 @@ invokerPackage: MailevaApiAdapter\App\Client\MailevaCoproClient
 packageName: MailevaCoproClient
 srcBasePath: /
 variableNamingConvention: camelCase
+templateDir: /opt/openapi-custom/php

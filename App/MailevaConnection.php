@@ -39,7 +39,7 @@ class MailevaConnection
         self::MAILEVA_COPRO
     ];
     public const HOST_ENV_SANDBOX = 'sandbox';
-    public const HOST_ENV_PROD = 'prod';
+    public const HOST_ENV_PROD = 'production';
     public const HOST_ENV_LIST = [
         self::HOST_ENV_SANDBOX,
         self::HOST_ENV_PROD
@@ -91,7 +91,8 @@ class MailevaConnection
     public function authenticate(): TokenResponse
     {
         $configuration = new Configuration();
-        $configuration->setHost($configuration->getHostFromSettings($this->hostIndex));
+
+        $this->configureHost($configuration);
         $apiInstance = new AuthApi(new Client(), $configuration);
         $authorization = 'Basic ' . base64_encode(
                 "{$this->getClientId()}:{$this->getClientSecret()}"
@@ -172,9 +173,6 @@ class MailevaConnection
             throw new MailevaCoreException("Host '$hostEnv' is not a valid value");
         }
         $this->hostEnv = $hostEnv;
-        if ($this->isProdHost()) {
-            $this->hostIndex = self::HOST_PROD_IDX;
-        }
         return $this;
     }
 
@@ -538,5 +536,23 @@ class MailevaConnection
         $this->accessToken = $token;
     }
 
+    /**
+     * host index might be wrong... hosts are not generated in a defined order
+     */
+    private function configureHost(Configuration $configuration): void
+    {
+        $hosts = $configuration->getHostSettings();
+        if ($this->isProdHost()) {
+            $description = $configuration->;
+        } else {
+            $description = self::HOST_ENV_SANDBOX;
+        }
+
+        foreach ($hosts as $host) {
+            if (strtolower($host['description']) === $description) {
+                $configuration->setHost($host['url']);
+            }
+        }
+    }
 
 }

@@ -1,9 +1,9 @@
 openapi: 3.0.0
 servers:
-  - url: https://api.sandbox.aws.maileva.net/mail/v1
-    description: Sandbox
   - url: 'https://api.maileva.com/mail/v1'
     description: Production
+  - url: https://api.sandbox.aws.maileva.net/mail/v1
+    description: Sandbox
   - url: https://api.maileva.com/sendings-api/v1/mail
     description: Production (deprecated)
   - url: https://api.preprd.maileva.pop.smartpanda.eu/mail/v1

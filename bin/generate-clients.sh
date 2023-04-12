@@ -29,7 +29,7 @@ for apiName in "${!urlList[@]}"; do
   fi
 
   # create openapi-generator config file
-  if [ ! -f $openapiGeneratorConfigFile ]; then
+  #if [ ! -f $openapiGeneratorConfigFile ]; then
     cat <<EOF >$openapiGeneratorConfigFile
 # https://openapi-generator.tech/docs/generators/php
 inputSpec: $specFile
@@ -39,8 +39,9 @@ invokerPackage: MailevaApiAdapter\\App\\Client\\${pkgName}
 packageName: ${pkgName}
 srcBasePath: /
 variableNamingConvention: camelCase
+templateDir: /opt/openapi-custom/php
 EOF
-  fi
+  #fi
 
   # create .openapi-generator-ignore file
   if [ ! -f $openapiGeneratorIgnoreFile ]; then

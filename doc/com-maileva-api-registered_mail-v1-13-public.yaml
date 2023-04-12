@@ -1,9 +1,10 @@
 openapi: 3.0.0
 servers:
-  - url: https://api.sandbox.aws.maileva.net/registered_mail/v1
-    description: Sandbox
   - url: 'https://api.maileva.com/registered_mail/v1'
     description: Production
+  - url: https://api.sandbox.aws.maileva.net/registered_mail/v1
+    description: Sandbox
+
 
 info:
   version: '1.13'
