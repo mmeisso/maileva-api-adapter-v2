@@ -49,7 +49,7 @@ class MailevaCoproClient extends AbstractClient
         $sendingCreation->setRegisteredMailOptions($registeredMailOptions);
 
         # send payload
-        $envoiApi = new EnvoiApi(null, null, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $sendingResponse = $envoiApi->createSending($sendingCreation);
 
         # store into memcached to avoid duplicate sending
@@ -66,7 +66,7 @@ class MailevaCoproClient extends AbstractClient
      */
     public function submit(string $sendingId): void
     {
-        $envoiApi = new EnvoiApi(null, null, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $envoiApi->submitSending($sendingId);
     }
 
@@ -77,7 +77,7 @@ class MailevaCoproClient extends AbstractClient
      */
     public function getSendingBySendingId(string $sendingId): MailevaResponseLRCOPRO
     {
-        $envoiApi = new EnvoiApi(null, null, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $submitSending = $envoiApi->getSending($sendingId);
 
         # new status unhandled by resoposte

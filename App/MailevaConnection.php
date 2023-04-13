@@ -17,6 +17,7 @@ use MailevaApiAdapter\App\Core\MemcachedInterface;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\MemcachedStub;
 use MailevaApiAdapter\App\Exception\MailevaCoreException;
+use MailevaApiAdapter\App\Helpers\ConfigurationHelper;
 
 /**
  * Class MailevaConnection
@@ -65,7 +66,6 @@ class MailevaConnection
     private string $usernameMailevaCopro;
     private string $passwordMailevaCopro;
     private string $accessToken;
-    private int $hostIndex = self::HOST_SANDBOX_IDX;
 
     private MemcachedInterface $memcachedManager;
 
@@ -92,7 +92,8 @@ class MailevaConnection
     {
         $configuration = new Configuration();
 
-        $this->configureHost($configuration);
+        ConfigurationHelper::setHostFromEnvironment($configuration, $this->hostEnv);
+
         $apiInstance = new AuthApi(new Client(), $configuration);
         $authorization = 'Basic ' . base64_encode(
                 "{$this->getClientId()}:{$this->getClientSecret()}"
@@ -422,14 +423,6 @@ class MailevaConnection
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getHostIndex(): int
-    {
-        return $this->hostIndex;
-    }
-
 
     /**
      * @return MemcachedInterface
@@ -534,25 +527,6 @@ class MailevaConnection
             min(abs($secondsDurationValidity / 2), 2592000)
         );
         $this->accessToken = $token;
-    }
-
-    /**
-     * host index might be wrong... hosts are not generated in a defined order
-     */
-    private function configureHost(Configuration $configuration): void
-    {
-        $hosts = $configuration->getHostSettings();
-        if ($this->isProdHost()) {
-            $description = $configuration->;
-        } else {
-            $description = self::HOST_ENV_SANDBOX;
-        }
-
-        foreach ($hosts as $host) {
-            if (strtolower($host['description']) === $description) {
-                $configuration->setHost($host['url']);
-            }
-        }
     }
 
 }

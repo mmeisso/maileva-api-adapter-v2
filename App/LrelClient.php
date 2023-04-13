@@ -32,7 +32,7 @@ class LrelClient extends AbstractClient
     public function prepare(MailevaSending $mailevaSending): string
     {
         # create Lrel sending
-        $envoiApi = new EnvoiApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi($this->client, $this->configuration);
         $sendingCreation = new SendingCreation();
         $sendingCreation
             ->setName($mailevaSending->getName())
@@ -55,7 +55,7 @@ class LrelClient extends AbstractClient
         $sendingId = $response->getId();
 
         # Add document to send
-        $documentsApi = new DocumentsApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $documentsApi = new DocumentsApi(null, $this->configuration);
         $sendingsSendingIdDocumentsGetRequestMetadata = new SendingsSendingIdDocumentsGetRequestMetadata();
         $sendingsSendingIdDocumentsGetRequestMetadata
             ->setName($mailevaSending->getFilename())
@@ -71,8 +71,6 @@ class LrelClient extends AbstractClient
         $destinatairesApi = new DestinatairesApi(
             null,
             $this->configuration,
-            null,
-            $this->mailevaConnection->getHostIndex()
         );
         $recipientCreation = new RecipientCreation();
         $recipientCreation
@@ -101,7 +99,7 @@ class LrelClient extends AbstractClient
      */
     public function downloadDepositProofBySendingId(string $sendingId): SplFileObject
     {
-        $envoiApi = new EnvoiApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         return $envoiApi->sendingsSendingIdDownloadDepositProofGet($sendingId);
     }
 
@@ -112,7 +110,7 @@ class LrelClient extends AbstractClient
      */
     public function postSendingBySendingId(string $sendingId): void
     {
-        $envoiApi = new EnvoiApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $envoiApi->sendingsSendingIdSubmitPost($sendingId);
     }
 
@@ -123,7 +121,7 @@ class LrelClient extends AbstractClient
      */
     public function getSendingBySendingId(string $sendingId): MailevaResponse
     {
-        $envoiApi = new EnvoiApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $response = $envoiApi->sendingsSendingIdGet($sendingId);
 
         return $this->toMailevaResponse($response);
@@ -136,7 +134,7 @@ class LrelClient extends AbstractClient
      */
     public function deleteSendingBySendingId(string $sendingId): void
     {
-        $envoiApi = new EnvoiApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi(null, $this->configuration);
         $envoiApi->sendingsSendingIdDelete($sendingId);
     }
 
@@ -149,7 +147,7 @@ class LrelClient extends AbstractClient
      */
     public function getRecipientsBySendingId(string $sendingId, int $startIndex, int $count): MailevaResponse
     {
-        $envoiApi = new DestinatairesApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DestinatairesApi(null, $this->configuration);
         $response = $envoiApi->sendingsSendingIdRecipientsGet($sendingId, $startIndex, $count);
 
         return $this->toMailevaResponse($response);
@@ -163,7 +161,7 @@ class LrelClient extends AbstractClient
      */
     public function getSendingStatusBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
-        $envoiApi = new DestinatairesApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DestinatairesApi(null, $this->configuration, null);
         $response = $envoiApi->sendingsSendingIdRecipientsRecipientIdGet($sendingId, $recipientId);
 
         return $this->toMailevaResponse($response);
@@ -183,8 +181,6 @@ class LrelClient extends AbstractClient
         $destinatairesApi = new DestinatairesApi(
             null,
             $this->configuration,
-            null,
-            $this->mailevaConnection->getHostIndex()
         );
         return $destinatairesApi->sendingsSendingIdRecipientsRecipientIdDownloadAcknowledgementOfReceiptGet(
             $sendingId,
@@ -200,7 +196,7 @@ class LrelClient extends AbstractClient
      */
     public function getRecipientBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
-        $envoiApi = new DestinatairesApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DestinatairesApi(null, $this->configuration);
         $response = $envoiApi->sendingsSendingIdRecipientsRecipientIdGet($sendingId, $recipientId);
 
         return $this->toMailevaResponse($response);
@@ -215,7 +211,7 @@ class LrelClient extends AbstractClient
      */
     public function getDocumentsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
     {
-        $envoiApi = new DocumentsApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DocumentsApi(null, $this->configuration);
         $response = $envoiApi->sendingsSendingIdDocumentsGet($sendingId, $startIndex, $count);
 
         return $this->toMailevaResponse($response);
@@ -229,7 +225,7 @@ class LrelClient extends AbstractClient
      */
     public function getDocumentBySendingIdAndDocumentId(string $sendingId, string $documentId): MailevaResponse
     {
-        $envoiApi = new DocumentsApi(null, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DocumentsApi(null, $this->configuration);
         $response = $envoiApi->sendingsSendingIdDocumentsDocumentIdGet($sendingId, $documentId);
 
         return $this->toMailevaResponse($response);
