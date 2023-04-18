@@ -1,10 +1,10 @@
 {
-  "name": "eukles/maileva-api-adapter",
+  "name": "eukles/maileva-api-adapter-v2",
   "license": "MIT",
   "type": "library",
   "description": "Maileva api adapter",
   "platform": {
-    "php": "7.4"
+    "php": "^7.4"
   },
   "authors": [
     {
