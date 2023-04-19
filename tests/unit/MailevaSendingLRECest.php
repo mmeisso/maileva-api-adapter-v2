@@ -25,7 +25,7 @@ class MailevaSendingLRECest
         /** @var \MailevaApiAdapter\App\MailevaApiAdapter $mailevaApiAdapter */
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRE();
         /** @var \MailevaApiAdapter\App\MailevaSending $mailevaSending */
-        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
 
         $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
         $I->assertFalse($similarPrevisionSendingResult[0]);

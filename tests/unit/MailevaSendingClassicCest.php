@@ -23,16 +23,9 @@ use MailevaApiAdapter\App\MailevaSendingStatus;
 class MailevaSendingClassicCest
 {
 
+
     /**
-     * @param UnitTester $I
-     *
      * @group classic
-     *
-     * @throws \MailevaApiAdapter\App\Exception\MailevaException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
-     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
-     * @throws Exception
      */
     public function prepareAndPost(\UnitTester $I)
     {
@@ -42,6 +35,45 @@ class MailevaSendingClassicCest
         /** @var MailevaSending $mailevaSending */
         $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
 
+        $this->doPrepareAndPost($I, $mailevaApiAdapter, $mailevaSending);
+    }
+
+    /**
+     * @group classic
+     */
+    public function prepareAndPostLegacy(\UnitTester $I)
+    {
+        /** @var MailevaApiAdapter $mailevaApiAdapter */
+        $mailevaApiAdapter = $I->getMailevaApiAdapterClassic();
+
+        /** @var MailevaSending $mailevaSending */
+        $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+
+        $this->doPrepareAndPost($I, $mailevaApiAdapter, $mailevaSending);
+    }
+
+    /**
+     * @param UnitTester $I
+     * @param MailevaApiAdapter $mailevaApiAdapter
+     * @param MailevaSending $mailevaSending
+     * @return void
+     * @throws MailevaAllReadyExistException
+     * @throws \League\Flysystem\FilesystemException
+     * @throws \MailevaApiAdapter\App\Client\AuthClient\ApiException
+     * @throws \MailevaApiAdapter\App\Client\LrelClient\ApiException
+     * @throws \MailevaApiAdapter\App\Client\MailevaCoproClient\ApiException
+     * @throws \MailevaApiAdapter\App\Client\SimpleSendingClient\ApiException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaCoreException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaParameterException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaResponseException
+     * @throws \MailevaApiAdapter\App\Exception\MailevaRoutingException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
+    private function doPrepareAndPost(\UnitTester $I, MailevaApiAdapter $mailevaApiAdapter, MailevaSending $mailevaSending)
+    {
         echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
 
         $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
@@ -60,9 +92,9 @@ class MailevaSendingClassicCest
         #ALREADY SEND EXCEPTION
         if ($I->getMailevaApiConnection()->useMemcache()) {
             $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
-            $I->assertEquals($similarPrevisionSendingResult[0], true);
+            $I->assertTrue($similarPrevisionSendingResult[0]);
             $similarPrevisionMailevaSending = $similarPrevisionSendingResult[1];
-            $I->assertEquals($similarPrevisionMailevaSending['id'], $sendingId);
+            $I->assertEquals($sendingId, $similarPrevisionMailevaSending['id']);
 
             $I->expectThrowable(
                 new MailevaAllReadyExistException(
@@ -94,7 +126,7 @@ class MailevaSendingClassicCest
         $mailevaApiAdapter = $I->getMailevaApiAdapterClassic();
 
         /** @var MailevaSending $mailevaSending */
-        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
 
         $mailevaSending->setTreatUndeliveredMail(true);
         $mailevaSending->setNotificationTreatUndeliveredMail(\Helper\Unit::NOTIFICATION_EMAIL);
@@ -132,28 +164,28 @@ class MailevaSendingClassicCest
             }
         }
 
-        $I->assertEquals($result['id'], $sendingId);
-        $I->assertEquals($result['name'], $mailevaSending->getName());
-        $I->assertEquals($result['status'], MailevaSendingStatus::PENDING);
-        $I->assertEquals($result['postage_type'], $mailevaSending->getPostageType());
+        $I->assertEquals($sendingId, $result['id']);
+        $I->assertEquals($mailevaSending->getName(), $result['name']);
+        $I->assertEquals(MailevaSendingStatus::PENDING, $result['status']);
+        $I->assertEquals($mailevaSending->getPostageType(), $result['postage_type']);
         $I->assertNotNull($result['creation_date']);
-        $I->assertEquals($result['color_printing'], $mailevaSending->isColorPrinting());
-        $I->assertEquals($result['duplex_printing'], $mailevaSending->isDuplexPrinting());
-        $I->assertEquals($result['optional_address_sheet'], $mailevaSending->isOptionalAddressSheet());
-        $I->assertEquals($result['treat_undelivered_mail'], $mailevaSending->isTreatUndeliveredMail());
+        $I->assertEquals($mailevaSending->isColorPrinting(), $result['color_printing']);
+        $I->assertEquals($mailevaSending->isDuplexPrinting(), $result['duplex_printing']);
+        $I->assertEquals($mailevaSending->isOptionalAddressSheet(), $result['optional_address_sheet']);
+        $I->assertEquals($mailevaSending->isTreatUndeliveredMail(), $result['treat_undelivered_mail']);
         if (true === $result['treat_undelivered_mail']) {
-            $I->assertEquals($result['notification_treat_undelivered_mail'][0], $mailevaSending->getNotificationTreatUndeliveredMail());
+            $I->assertEquals($mailevaSending->getNotificationTreatUndeliveredMail(), $result['notification_treat_undelivered_mail'][0]);
         }
 
-        $I->assertEquals($result['recipients_counts']['total'], 1);
+        $I->assertEquals(1, $result['recipients_counts']['total']);
 
         #RECIPIENT PROPERTIES
         $recipientId = $mailevaApiAdapter->getRecipientsBySendingId($sendingId)->getResponseAsArray()['recipients'][0]['id'];
 
         $result = $mailevaApiAdapter->getRecipientBySendingIdAndRecipientId($sendingId, $recipientId)->getResponseAsArray();
         $I->assertNotEmpty($result['id']);
-        $I->assertEquals($result['id'], $recipientId);
-        $I->assertEquals($result['country_code'], $mailevaSending->getCountryCode());
+        $I->assertEquals($recipientId, $result['id']);
+        $I->assertEquals($mailevaSending->getCountryCode(), $result['country_code']);
         $I->assertTrue(
             array_key_exists('status', $result)
             && ($result['status'] === MailevaSendingStatus::PENDING || $result['status'] === MailevaSendingStatus::DRAFT)

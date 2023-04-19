@@ -22,6 +22,12 @@ class MailevaParameterException extends MailevaException
     const ERROR_MAILEVA_NPD_DETECTED = -147;
     /** email notification not set */
     const ERROR_MAILEVA_NOTIFICATION_TREAT_UNDELIVERED_MAIL_NOT_SET = -146;
+    /** too much documents */
+    CONST ERROR_MAILEVA_ECONOMIC_MAX_DOCUMENT_EXCEEDED = -141;
+    /** max page exceeded */
+    CONST ERROR_MAILEVA_ECONOMIC_MAX_PAGE_EXCEEDED = -140;
+    /** Field not set */
+    CONST ERROR_FIELD_NOT_SET = -139;
     /** Postage type does not match */
     const ERROR_POSTAGE_TYPE_DOES_NOT_MATCH = -138;
     /** A key in the array is not defined */

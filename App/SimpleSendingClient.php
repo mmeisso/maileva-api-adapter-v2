@@ -57,25 +57,29 @@ class SimpleSendingClient extends AbstractClient
             ->setAddressLine5($mailevaSending->getAddressLine5())
             ->setAddressLine6($mailevaSending->getAddressLine6())
             ->setCountryCode($mailevaSending->getCountryCode())
-            ->setCustomId($mailevaSending->getCustomId()); // <=why we set the same one?! legacy compat
+            ->setCustomId($mailevaSending->getCustomId()); // <= why we set the same one?! legacy compat
         $destinatairesApi = new DestinatairesApi(
             $this->client,
             $this->configuration,
         );
         $destinatairesApi->sendingsSendingIdRecipientsPost($sendingId, $recipientCreation);
 
-        # add document
-        $sendingsSendingIdDocumentsGetRequestMetadata = new SendingsSendingIdDocumentsGetRequestMetadata();
-        $sendingsSendingIdDocumentsGetRequestMetadata
-            ->setName($mailevaSending->getFilename())
-            ->setPriority($mailevaSending->getFilepriority());
-
+        # add documents
         $documentsApi = new DocumentsApi($this->client, $this->configuration);
-        $documentsApi->sendingsSendingIdDocumentsPost(
-            $sendingId,
-            $mailevaSending->getFile(),
+
+        # It seems the api accepts one file at a time.
+        foreach ($mailevaSending->getDocuments() as $document) {
+            $sendingsSendingIdDocumentsGetRequestMetadata = new SendingsSendingIdDocumentsGetRequestMetadata();
             $sendingsSendingIdDocumentsGetRequestMetadata
-        );
+                ->setName($document->getFilename())
+                ->setPriority($document->getFilepriority());
+
+            $documentsApi->sendingsSendingIdDocumentsPost(
+                $sendingId,
+                $document->getFile(),
+                $sendingsSendingIdDocumentsGetRequestMetadata
+            );
+        }
 
         # store into memcached to avoid duplicate sending
         $this->mailevaConnection->getMemcachedManager()
