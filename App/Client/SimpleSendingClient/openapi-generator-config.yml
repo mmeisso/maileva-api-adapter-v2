@@ -6,3 +6,4 @@ invokerPackage: MailevaApiAdapter\App\Client\SimpleSendingClient
 packageName: SimpleSendingClient
 srcBasePath: /
 variableNamingConvention: camelCase
+templateDir: /opt/openapi-custom/php

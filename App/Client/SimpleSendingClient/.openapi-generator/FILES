@@ -35,8 +35,6 @@ Model/SendingResponse.php
 Model/SendingStatus.php
 Model/SendingUpdate.php
 Model/SendingsResponse.php
-Model/SendingsSendingIdDocumentsGetRequest.php
-Model/SendingsSendingIdDocumentsGetRequestMetadata.php
 ObjectSerializer.php
 docs/Api/DestinatairesApi.md
 docs/Api/DocumentsApi.md
@@ -71,5 +69,3 @@ docs/Model/SendingResponse.md
 docs/Model/SendingStatus.md
 docs/Model/SendingUpdate.md
 docs/Model/SendingsResponse.md
-docs/Model/SendingsSendingIdDocumentsGetRequest.md
-docs/Model/SendingsSendingIdDocumentsGetRequestMetadata.md

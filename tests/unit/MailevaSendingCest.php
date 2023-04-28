@@ -9,6 +9,8 @@
 namespace MailevaApiAdapter\tests\unit;
 
 use Faker\Factory;
+use MailevaApiAdapter\App\Collection\Documents;
+use MailevaApiAdapter\App\Entity\Document;
 use MailevaApiAdapter\App\Exception\MailevaParameterException;
 use MailevaApiAdapter\App\MailevaApiAdapter;
 use MailevaApiAdapter\App\MailevaConnection;
@@ -31,16 +33,20 @@ class MailevaSendingCest
      */
     public function FileMoreThanTenMB(\UnitTester $I)
     {
+        #File More 10 MB
+        $document = new Document();
+        $document->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE()] as $mailevaApiAdapter) {
-            #File More 10 MB
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+            $mailevaSending->addDocument($document);
+
             $I->expectThrowable(
                 new MailevaParameterException(
                     MailevaParameterException::ERROR_MAILEVA_FILE_IS_TOO_BIG,
                     'The file is too big :' . codecept_root_dir(
-                    ) . 'testFiles/filesizelargeplus10mo.pdf the maximum is ' . MailevaSending::MAX_MB_FILE_MAILEVA . ' MB'
+                    ) . 'testFiles/filesizelargeplus10mo.pdf the maximum is ' . Document::MAX_MB_FILE_MAILEVA . ' MB'
                 ),
                 function () use ($mailevaSending, $mailevaApiAdapter) {
                     $mailevaSending->validate($mailevaApiAdapter->getType());
@@ -50,8 +56,9 @@ class MailevaSendingCest
 
         $mailevaApiAdapter = $I->getMailevaApiAdapterLRCOPRO();
         /** @var MailevaSending $mailevaSending */
-        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-        $mailevaSending->setFile(codecept_root_dir() . 'testFiles/filesizelargeplus10mo.pdf');
+        $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+        $mailevaSending->addDocument($document);
+
         $mailevaSending->validate($mailevaApiAdapter->getType());
     }
 
@@ -66,7 +73,7 @@ class MailevaSendingCest
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #ADDRESS LINE1 && ADDRESS LINE2 EMPTY
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $mailevaSending->setAddressLine1('');
             $mailevaSending->setAddressLine2('');
             $I->expectThrowable(
@@ -81,7 +88,7 @@ class MailevaSendingCest
 
             #ADDRESS LINE6 EMPTY
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $mailevaSending->setAddressLine6('');
             $I->expectThrowable(
                 new MailevaParameterException(
@@ -95,7 +102,7 @@ class MailevaSendingCest
 
             #TOO LONG ADDRESS LINE
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $addressLine1   = Factory::create('fr_FR')->password(39, 39);
             $mailevaSending->setAddressLine1($addressLine1);
             $I->expectThrowable(
@@ -112,7 +119,7 @@ class MailevaSendingCest
         foreach ([$I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #SENDER ADDRESSLINE1 && SENDER ADDRESS LINE2 EMPTY
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine1('');
             $mailevaSending->setSenderAddressLine2('');
             $I->expectThrowable(
@@ -127,7 +134,7 @@ class MailevaSendingCest
 
             #SENDER ADDRESS LINE6 EMPTY
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $mailevaSending->setSenderAddressLine6('');
             $I->expectThrowable(
                 new MailevaParameterException(
@@ -141,7 +148,7 @@ class MailevaSendingCest
 
             #TOO LONG SENDER ADDRESS LINE
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending     = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending     = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $senderAddressLine1 = Factory::create('fr_FR')->password(39, 39);
             $mailevaSending->setSenderAddressLine1($senderAddressLine1);
             $I->expectThrowable(
@@ -163,11 +170,14 @@ class MailevaSendingCest
      */
     public function fileExistingValidation(\UnitTester $I)
     {
+        #WRONG FILE PATH
+        $document = new Document();
+        $document->setFile('toto');
+
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
-            #WRONG FILE PATH
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
-            $mailevaSending->setFile('toto');
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+            $mailevaSending->addDocument($document);
             $I->expectThrowable(
                 new MailevaParameterException(
                     MailevaParameterException::ERROR_MAILEVA_FILE_NOT_FOUND,
@@ -190,7 +200,7 @@ class MailevaSendingCest
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             #WRONG NOTIFICATION EMAIL
             /** @var MailevaSending $mailevaSending */
-            $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $mailevaSending->setNotificationEmail('zzz@');
             $I->expectThrowable(
                 new MailevaParameterException(
@@ -211,39 +221,50 @@ class MailevaSendingCest
      */
     public function similarValidation(\UnitTester $I)
     {
+        $file = 'testFiles/1pageWithTextLayer.pdf';
+
+        $documentOnePageWithTextLayer = new Document();
+        $documentOnePageWithTextLayer->setFile($file);
+        $documentsOnePageWithTextLayer = new Documents();
+        $documentsOnePageWithTextLayer->add($documentOnePageWithTextLayer);
+
+        $file = 'testFiles/1pageWithoutTextLayer.pdf';
+
+        $documentOnePageWithoutTextLayer = new Document();
+        $documentOnePageWithoutTextLayer->setFile($file);
+        $documentsOnePageWithoutTextLayer = new Documents();
+        $documentsOnePageWithoutTextLayer->add($documentOnePageWithTextLayer);
+
         foreach ([$I->getMailevaApiAdapterClassic(), $I->getMailevaApiAdapterLRE(), $I->getMailevaApiAdapterLRCOPRO()] as $mailevaApiAdapter) {
             /** @var MailevaSending $mailevaSending1 */
-            $mailevaSending1 = $I->getMailevaSending($mailevaApiAdapter);
-            $file            = 'testFiles/1pageWithTextLayer.pdf';
-            $mailevaSending1->setFile(codecept_root_dir() . $file);
+            $mailevaSending1 = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+            $mailevaSending1->setDocuments($documentsOnePageWithTextLayer);
             $I->assertEquals(
-                $mailevaSending1->getUid()[1],
                 MailevaSending::UID_METHOD_PDFTEXT,
+                $mailevaSending1->getUid()[1],
                 'Method UID Check ' . MailevaSending::UID_METHOD_PDFTEXT
             );
 
             /** @var MailevaSending $mailevaSendingCopy1 */
-            $mailevaSendingCopy1 = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSendingCopy1 = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $this->copyMailevaSending($mailevaSending1, $mailevaSendingCopy1, $mailevaApiAdapter);
-            $file = 'testFiles/1pageWithTextLayer.pdf';
-            $mailevaSendingCopy1->setFile(codecept_root_dir() . $file);
+
+            $mailevaSendingCopy1->setDocuments($documentsOnePageWithTextLayer);
             $I->assertEquals($mailevaSending1->getUid(), $mailevaSendingCopy1->getUID(), 'Check similar detected');
 
             /** @var MailevaSending $mailevaSending2 */
-            $mailevaSending2 = $I->getMailevaSending($mailevaApiAdapter);
-            $file            = 'testFiles/1pageWithoutTextLayer.pdf';
-            $mailevaSending2->setFile(codecept_root_dir() . $file);
+            $mailevaSending2 = $I->getMailevaSendingLegacy($mailevaApiAdapter);
+            $mailevaSending2->setDocuments($documentsOnePageWithoutTextLayer);
             $I->assertEquals(
-                $mailevaSending2->getUid()[1],
                 MailevaSending::UID_METHOD_MD5_FILE,
+                $mailevaSending2->getUid()[1],
                 'Method UID Check ' . MailevaSending::UID_METHOD_MD5_FILE
             );
 
             /** @var MailevaSending $mailevaSendingCopy2 */
-            $mailevaSendingCopy2 = $I->getMailevaSending($mailevaApiAdapter);
+            $mailevaSendingCopy2 = $I->getMailevaSendingLegacy($mailevaApiAdapter);
             $this->copyMailevaSending($mailevaSending2, $mailevaSendingCopy2, $mailevaApiAdapter);
-            $file = 'testFiles/1pageWithoutTextLayer.pdf';
-            $mailevaSendingCopy2->setFile(codecept_root_dir() . $file);
+            $mailevaSendingCopy2->setDocuments($documentsOnePageWithoutTextLayer);
             $I->assertEquals($mailevaSending2->getUid(), $mailevaSendingCopy2->getUID(), 'Check similar detected');
 
             $I->assertNotEquals($mailevaSending1->getUid(), $mailevaSending2->getUID(), 'Check different detected');

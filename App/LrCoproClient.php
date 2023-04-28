@@ -209,7 +209,10 @@ class LrCoproClient extends AbstractClient
      */
     private function getHost(): string
     {
-        return self::HOST_LIST[$this->mailevaConnection->getHostIndex()]['host'];
+        if ($this->mailevaConnection->isProdHost()) {
+            return self::HOST_PROD;
+        }
+        return self::HOST_SANDBOX;
     }
 
     /**

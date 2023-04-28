@@ -17,6 +17,7 @@ use MailevaApiAdapter\App\Core\MemcachedInterface;
 use MailevaApiAdapter\App\Core\MemcachedManager;
 use MailevaApiAdapter\App\Core\MemcachedStub;
 use MailevaApiAdapter\App\Exception\MailevaCoreException;
+use MailevaApiAdapter\App\Helpers\ConfigurationHelper;
 
 /**
  * Class MailevaConnection
@@ -39,7 +40,7 @@ class MailevaConnection
         self::MAILEVA_COPRO
     ];
     public const HOST_ENV_SANDBOX = 'sandbox';
-    public const HOST_ENV_PROD = 'prod';
+    public const HOST_ENV_PROD = 'production';
     public const HOST_ENV_LIST = [
         self::HOST_ENV_SANDBOX,
         self::HOST_ENV_PROD
@@ -65,7 +66,6 @@ class MailevaConnection
     private string $usernameMailevaCopro;
     private string $passwordMailevaCopro;
     private string $accessToken;
-    private int $hostIndex = self::HOST_SANDBOX_IDX;
 
     private MemcachedInterface $memcachedManager;
 
@@ -91,7 +91,9 @@ class MailevaConnection
     public function authenticate(): TokenResponse
     {
         $configuration = new Configuration();
-        $configuration->setHost($configuration->getHostFromSettings($this->hostIndex));
+
+        ConfigurationHelper::setHostFromEnvironment($configuration, $this->hostEnv);
+
         $apiInstance = new AuthApi(new Client(), $configuration);
         $authorization = 'Basic ' . base64_encode(
                 "{$this->getClientId()}:{$this->getClientSecret()}"
@@ -172,9 +174,6 @@ class MailevaConnection
             throw new MailevaCoreException("Host '$hostEnv' is not a valid value");
         }
         $this->hostEnv = $hostEnv;
-        if ($this->isProdHost()) {
-            $this->hostIndex = self::HOST_PROD_IDX;
-        }
         return $this;
     }
 
@@ -424,14 +423,6 @@ class MailevaConnection
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getHostIndex(): int
-    {
-        return $this->hostIndex;
-    }
-
 
     /**
      * @return MemcachedInterface
@@ -537,6 +528,5 @@ class MailevaConnection
         );
         $this->accessToken = $token;
     }
-
 
 }

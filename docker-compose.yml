@@ -9,13 +9,14 @@ services:
       - ./:/app
 
   generate:
-    image: openapitools/openapi-generator-cli
+    image: openapitools/openapi-generator-cli:v6.3.0
     working_dir: /local
     profiles:
       - generate
     volumes:
       - ./App/Client:/local
       - ./bin/generate-clients.sh:/usr/local/bin/generate-clients
+      - ./custom-php:/opt/openapi-custom/php
     entrypoint:
       - generate-clients
 

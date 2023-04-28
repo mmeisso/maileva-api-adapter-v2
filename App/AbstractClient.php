@@ -7,6 +7,7 @@ use JsonSerializable;
 use MailevaApiAdapter\App\Client\AuthClient\ApiException;
 use MailevaApiAdapter\App\Client\AuthClient\Configuration;
 use MailevaApiAdapter\App\Core\MailevaResponse;
+use MailevaApiAdapter\App\Helpers\ConfigurationHelper;
 
 abstract class AbstractClient
 {
@@ -40,8 +41,7 @@ abstract class AbstractClient
         if ($newConfiguration) {
             $this->configuration = $newConfiguration;
             $this->configuration->setAccessToken($mailevaConnection->getAccessToken());
-            $host = $this->configuration->getHostFromSettings($mailevaConnection->getHostIndex());
-            $this->configuration->setHost($host);
+            ConfigurationHelper::setHostFromEnvironment($newConfiguration, $mailevaConnection->getHostEnv());
         }
     }
 

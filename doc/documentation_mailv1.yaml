@@ -1,9 +1,9 @@
 openapi: 3.0.0
 servers:
-  - url: https://api.sandbox.maileva.com/mail/v1
-    description: Sandbox
   - url: 'https://api.maileva.com/mail/v1'
     description: Production
+  - url: https://api.sandbox.maileva.com/mail/v1
+    description: Sandbox
 
 info:
   version: '1.0'

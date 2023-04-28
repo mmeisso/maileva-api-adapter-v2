@@ -29,7 +29,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function prepare(MailevaSending $mailevaSending): string
     {
-        $envoiApi = new EnvoiApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi($this->client, $this->configuration);
 
         $sendingCreation = new SendingCreation();
         $sendingCreation
@@ -57,27 +57,29 @@ class SimpleSendingClient extends AbstractClient
             ->setAddressLine5($mailevaSending->getAddressLine5())
             ->setAddressLine6($mailevaSending->getAddressLine6())
             ->setCountryCode($mailevaSending->getCountryCode())
-            ->setCustomId($mailevaSending->getCustomId()); // <=why we set the same one?! legacy compat
+            ->setCustomId($mailevaSending->getCustomId()); // <= why we set the same one?! legacy compat
         $destinatairesApi = new DestinatairesApi(
             $this->client,
             $this->configuration,
-            null,
-            $this->mailevaConnection->getHostIndex()
         );
         $destinatairesApi->sendingsSendingIdRecipientsPost($sendingId, $recipientCreation);
 
-        # add document
-        $sendingsSendingIdDocumentsGetRequestMetadata = new SendingsSendingIdDocumentsGetRequestMetadata();
-        $sendingsSendingIdDocumentsGetRequestMetadata
-            ->setName($mailevaSending->getFilename())
-            ->setPriority($mailevaSending->getFilepriority());
+        # add documents
+        $documentsApi = new DocumentsApi($this->client, $this->configuration);
 
-        $documentsApi = new DocumentsApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
-        $documentsApi->sendingsSendingIdDocumentsPost(
-            $sendingId,
-            $mailevaSending->getFile(),
+        # It seems the api accepts one file at a time.
+        foreach ($mailevaSending->getDocuments() as $document) {
+            $sendingsSendingIdDocumentsGetRequestMetadata = new SendingsSendingIdDocumentsGetRequestMetadata();
             $sendingsSendingIdDocumentsGetRequestMetadata
-        );
+                ->setName($document->getFilename())
+                ->setPriority($document->getFilepriority());
+
+            $documentsApi->sendingsSendingIdDocumentsPost(
+                $sendingId,
+                $document->getFile(),
+                $sendingsSendingIdDocumentsGetRequestMetadata
+            );
+        }
 
         # store into memcached to avoid duplicate sending
         $this->mailevaConnection->getMemcachedManager()
@@ -95,7 +97,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function deleteSendingBySendingId(string $sendingId): void
     {
-        $envoiApi = new EnvoiApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi($this->client, $this->configuration);
         $envoiApi->sendingsSendingIdDelete($sendingId);
     }
 
@@ -109,7 +111,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function getDocumentBySendingIdAndDocumentId(string $sendingId, string $documentId): MailevaResponse
     {
-        $documentsApi = new DocumentsApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $documentsApi = new DocumentsApi($this->client, $this->configuration);
         $response = $documentsApi->sendingsSendingIdDocumentsDocumentIdGet($sendingId, $documentId);
         return $this->toMailevaResponse($response);
     }
@@ -124,7 +126,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function getDocumentsBySendingId(string $sendingId, int $startIndex = 1, int $count = 100): MailevaResponse
     {
-        $documentsApi = new DocumentsApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $documentsApi = new DocumentsApi($this->client, $this->configuration, null);
         $response = $documentsApi->sendingsSendingIdDocumentsGet($sendingId, $startIndex, $count);
         return $this->toMailevaResponse($response);
     }
@@ -142,8 +144,6 @@ class SimpleSendingClient extends AbstractClient
         $destinatairesApi = new DestinatairesApi(
             $this->client,
             $this->configuration,
-            null,
-            $this->mailevaConnection->getHostIndex()
         );
         $response = $destinatairesApi->sendingsSendingIdRecipientsRecipientIdGet($sendingId, $recipientId);
         return $this->toMailevaResponse($response);
@@ -162,8 +162,6 @@ class SimpleSendingClient extends AbstractClient
         $destinatairesApi = new DestinatairesApi(
             $this->client,
             $this->configuration,
-            null,
-            $this->mailevaConnection->getHostIndex()
         );
         $response = $destinatairesApi->sendingsSendingIdRecipientsGet($sendingId, $startIndex, $count);
         return $this->toMailevaResponse($response);
@@ -176,7 +174,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function getSendingBySendingId(string $sendingId): MailevaResponse
     {
-        $envoiApi = new EnvoiApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi($this->client, $this->configuration);
         $response = $envoiApi->sendingsSendingIdGet($sendingId);
 
         return $this->toMailevaResponse($response);
@@ -190,7 +188,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function getSendingStatusBySendingIdAndRecipientId(string $sendingId, string $recipientId): MailevaResponse
     {
-        $envoiApi = new DestinatairesApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new DestinatairesApi($this->client, $this->configuration);
         $response = $envoiApi->sendingsSendingIdRecipientsRecipientIdGet($sendingId, $recipientId);
 
         return $this->toMailevaResponse($response);
@@ -203,7 +201,7 @@ class SimpleSendingClient extends AbstractClient
      */
     public function postSendingBySendingId(string $sendingId):void
     {
-        $envoiApi = new EnvoiApi($this->client, $this->configuration, null, $this->mailevaConnection->getHostIndex());
+        $envoiApi = new EnvoiApi($this->client, $this->configuration);
         $envoiApi->sendingsSendingIdSubmitPost($sendingId);
     }
 }

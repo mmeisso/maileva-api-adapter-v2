@@ -11,7 +11,7 @@ namespace MailevaApiAdapter\App\Exception;
 use Throwable;
 
 /**
- * Class MailevaParameterException
+ * Class MailevaAllReadyExistException
  *
  * @package MailevaApiAdapter\App\Exception
  */

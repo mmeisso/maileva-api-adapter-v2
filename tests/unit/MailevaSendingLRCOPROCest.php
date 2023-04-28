@@ -39,7 +39,7 @@ class MailevaSendingLRCOPROCest
         //for($i = 1; $i <= 5; $i++){
 
         /** @var MailevaSending $mailevaSending */
-        $mailevaSending = $I->getMailevaSending($mailevaApiAdapter);
+        $mailevaSending = $I->getMailevaSendingLegacy($mailevaApiAdapter);
 
         echo PHP_EOL . $mailevaSending->toString() . PHP_EOL;
 
@@ -77,19 +77,19 @@ class MailevaSendingLRCOPROCest
             }
 
 
-            $I->assertEquals($result['id'], $sendingId);
+            $I->assertEquals($sendingId, $result['id']);
             #sometimes we get the second notif without those informations
-//            $I->assertEquals($result['postage_type'], 'RECOMMANDE_AR');
-//            $I->assertEquals($result['color_printing'], $mailevaSending->isColorPrinting());
-//            $I->assertEquals($result['duplex_printing'], $mailevaSending->isDuplexPrinting());
-//            $I->assertEquals($result['billed_page_count'], '14');
+//            $I->assertEquals('RECOMMANDE_AR', $result['postage_type']);
+//            $I->assertEquals($mailevaSending->isColorPrinting(), $result['color_printing']);
+//            $I->assertEquals($mailevaSending->isDuplexPrinting(), $result['duplex_printing']);
+//            $I->assertEquals('14', $result['billed_page_count']);
             $I->assertNotNull($result['deposit_id']);
             $I->assertNotNull($result['expected_production_date']);
 
             #ALREADY SEND EXCEPTION
             if ($I->getMailevaApiConnection()->useMemcache()) {
                 $similarPrevisionSendingResult = $mailevaApiAdapter->getSimilarPreviousAlreadyBeenSent($mailevaSending);
-                $I->assertEquals($similarPrevisionSendingResult[0], true);
+                $I->assertTrue($similarPrevisionSendingResult[0]);
                 $I->assertNull($similarPrevisionSendingResult[1]);
 
                 $I->expectThrowable(new MailevaAllReadyExistException(MailevaAllReadyExistException::ERROR_SAME_MAILEVASENDING_HAS_ALREADY_BEEN_SENT_WITH_SENDINGID,

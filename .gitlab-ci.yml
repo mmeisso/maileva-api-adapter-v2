@@ -1,0 +1,22 @@
+stages:
+  - tests
+
+unit:
+  stage: tests
+  before_script:
+    - docker-compose build --build-arg UID=999 --build-arg GID=999
+    - docker-compose up -d
+    - docker-compose exec -T --user root app chown -R 999:999 .
+    - docker-compose exec -T --user root app chmod -R 777 .
+  script:
+    - docker-compose exec -T --user application app composer install --prefer-dist --no-progress
+    - docker-compose exec -T --user application app ./vendor/bin/codecept run -f
+  after_script:
+    - docker-compose exec -T --user root app rm -rdf ./vendor
+    - docker-compose exec -T --user root app chown -R 999:999 .
+    - docker-compose down -v --rmi all --remove-orphans
+  artifacts:
+    paths:
+      - ./_output
+    expire_in: 1 day
+    when: on_failure
